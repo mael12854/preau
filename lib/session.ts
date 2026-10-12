@@ -13,8 +13,13 @@ export type FollowedStudent = {
   id: string;
   firstName: string;
   name: string;
+  /** Classe principale. */
   classId: string;
   className: string;
+  /** Classe principale et classes supplémentaires (« Cours Sup »…) : emploi du temps, devoirs, liaison… */
+  classIds: string[];
+  /** Noms des classes supplémentaires. */
+  extraClasses: string[];
 };
 
 /** Personne connectée, avec tout ce dont la coque a besoin. */
@@ -62,10 +67,10 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   const levels = new Map<string, Level>();
   let children: FollowedStudent[] = [];
   if (ids.length) {
-    const { data: rows } = await supabase
-      .from("students")
-      .select("profile_id, class_id, classes(name, level), profiles(first_name, display_name)")
-      .in("profile_id", ids);
+    const [{ data: rows }, { data: extra }] = await Promise.all([
+      supabase.from("students").select("profile_id, class_id, classes(name, level), profiles(first_name, display_name)").in("profile_id", ids),
+      supabase.from("class_members").select("student_id, class_id, classes(name)").in("student_id", ids),
+    ]);
     children = (rows ?? [])
       .filter((s) => s.classes && s.profiles)
       .map((s) => {
@@ -76,6 +81,8 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
           name: s.profiles!.display_name,
           classId: s.class_id,
           className: s.classes!.name,
+          classIds: [s.class_id, ...(extra ?? []).filter((m) => m.student_id === s.profile_id).map((m) => m.class_id)],
+          extraClasses: (extra ?? []).filter((m) => m.student_id === s.profile_id).map((m) => m.classes?.name ?? ""),
         };
       })
       .sort((a, b) => a.firstName.localeCompare(b.firstName, "fr"));
@@ -154,7 +161,7 @@ async function navCounts(
     supabase.from("message_recipients").select("message_id", { count: "exact", head: true })
       .eq("recipient_id", profileId).is("read_at", null).is("archived_at", null),
     family && student
-      ? supabase.from("homework").select("id").eq("class_id", student.classId).gt("due_on", today)
+      ? supabase.from("homework").select("id").in("class_id", student.classIds).gt("due_on", today)
       : Promise.resolve({ data: [] as { id: string }[] }),
     family ? supabase.from("homework_done").select("homework_id").eq("user_id", userId) : Promise.resolve({ data: [] as { homework_id: string }[] }),
   ]);

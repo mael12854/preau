@@ -26,7 +26,7 @@ export default async function LiaisonPage() {
   }
 
   const student = profile.student;
-  const notes = student ? await getLiaisonNotes(supabase, { classId: student.classId, studentId: student.id }, reference) : [];
+  const notes = student ? await getLiaisonNotes(supabase, { classId: student.classIds, studentId: student.id }, reference) : [];
   return (
     <AppShell profile={profile} module="liaison">
       <LiaisonScreen notes={notes} mode={profile.id === "primaire" || !student ? { kind: "enfant" } : { kind: "famille", studentId: student.id }} />

@@ -3,12 +3,15 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
+  addClassMember,
   assignTeaching,
   createPerson,
   linkGuardian,
+  removeClassMember,
   type NewPerson,
 } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/choice";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextField } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
@@ -109,6 +112,7 @@ export function AddPerson({
   const [email, setEmail] = useState("");
   const [classId, setClassId] = useState(classes[0]?.id ?? "");
   const [children, setChildren] = useState<string[]>([]);
+  const [extras, setExtras] = useState<string[]>([]);
   const [teachings, setTeachings] = useState<Teaching[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [created, setCreated] = useState<{
@@ -129,6 +133,7 @@ export function AddPerson({
     setLast("");
     setEmail("");
     setChildren([]);
+    setExtras([]);
     setTeachings([]);
     setError(null);
     setCreated(null);
@@ -150,6 +155,8 @@ export function AddPerson({
         classId: kind === "eleve" ? classId : null,
         children: kind === "parent" ? children : [],
         teachings: kind === "prof" ? teachings : [],
+        extraClasses:
+          kind === "eleve" ? extras.filter((c) => c !== classId) : [],
       });
       if (!r.ok) return setError(r.error);
       setCreated({
@@ -275,12 +282,35 @@ export function AddPerson({
           />
 
           {kind === "eleve" && (
-            <SelectField
-              label="Classe"
-              options={classes.map((c) => ({ value: c.id, label: c.name }))}
-              value={classId}
-              onValueChange={setClassId}
-            />
+            <>
+              <SelectField
+                label="Classe principale"
+                options={classes.map((c) => ({ value: c.id, label: c.name }))}
+                value={classId}
+                onValueChange={setClassId}
+              />
+              {classes.length > 1 && (
+                <fieldset className="m-0 flex flex-col gap-2 border-0 p-0">
+                  <legend className="mb-1 text-label font-bold">
+                    Classes supplémentaires (facultatif)
+                  </legend>
+                  {classes
+                    .filter((c) => c.id !== classId)
+                    .map((c) => (
+                      <Checkbox
+                        key={c.id}
+                        checked={extras.includes(c.id)}
+                        onCheckedChange={(on) =>
+                          setExtras((x) =>
+                            on ? [...x, c.id] : x.filter((y) => y !== c.id),
+                          )
+                        }
+                        label={c.name}
+                      />
+                    ))}
+                </fieldset>
+              )}
+            </>
           )}
 
           {kind === "parent" && (
@@ -416,10 +446,79 @@ export function PersonLinks({
   const [pending, start] = useTransition();
   const students = people.filter((p) => p.kind === "eleve");
   const [child, setChild] = useState(students[0]?.id ?? "");
+  const [extraClass, setExtraClass] = useState("");
   const done = (r: { ok: boolean; error?: string }, ok: string) => {
     toast({ title: r.ok ? ok : (r.error ?? "") });
     if (r.ok) router.refresh();
   };
+
+  if (person.kind === "eleve") {
+    const others = classes.filter(
+      (c) =>
+        c.id !== person.classId &&
+        !person.extraClasses.some((x) => x.id === c.id),
+    );
+    const pick =
+      others.find((c) => c.id === extraClass)?.id ?? others[0]?.id ?? "";
+    return (
+      <fieldset className="m-0 flex flex-col gap-2 border-0 border-t border-line-soft p-0 pt-4">
+        <legend className="mb-1 text-label font-bold">
+          Classes supplémentaires
+        </legend>
+        <p className="m-0 text-caption text-ink-muted">
+          En plus de sa classe principale (par exemple « Cours Sup »).
+        </p>
+        {person.extraClasses.map((c) => (
+          <span
+            key={c.id}
+            className="flex items-center justify-between rounded-control bg-bg px-3 py-2 text-label"
+          >
+            {c.name}
+            <button
+              type="button"
+              disabled={pending}
+              aria-label={`Retirer de ${c.name}`}
+              onClick={() =>
+                start(async () =>
+                  done(
+                    await removeClassMember(person.id, c.id),
+                    `Retiré de ${c.name}`,
+                  ),
+                )
+              }
+              className="flex size-9 items-center justify-center rounded-control hover:bg-neutral-bg"
+            >
+              <Icon name="close" size={18} />
+            </button>
+          </span>
+        ))}
+        {others.length > 0 && (
+          <div className="flex items-end gap-3">
+            <SelectField
+              label="Ajouter une classe"
+              options={others.map((c) => ({ value: c.id, label: c.name }))}
+              value={pick}
+              onValueChange={setExtraClass}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={pending}
+              className="h-12 px-3.5 text-label"
+              onClick={() =>
+                start(async () =>
+                  done(await addClassMember(person.id, pick), "Classe ajoutée"),
+                )
+              }
+            >
+              Ajouter
+            </Button>
+          </div>
+        )}
+      </fieldset>
+    );
+  }
 
   if (person.kind === "parent")
     return students.length ? (

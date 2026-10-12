@@ -37,13 +37,13 @@ export default async function DashboardPage() {
   const student = profile.student;
   const primary = profile.scale === "primaire";
   const [today, homework, done, lastEvaluations, life, messages, liaison] = await Promise.all([
-    student ? getTodayLessons(supabase, { classId: student.classId }, reference) : [],
-    student ? getUpcomingHomework(supabase, { classId: student.classId }, reference) : [],
+    student ? getTodayLessons(supabase, { classId: student.classIds }, reference) : [],
+    student ? getUpcomingHomework(supabase, { classId: student.classIds }, reference) : [],
     getDoneHomework(supabase, profile.userId),
     student ? getLastEvaluations(supabase, student.id) : [],
     getLifeEvents(supabase, student?.id ?? null, true),
     getMessages(supabase, profile.profileId, "recus", reference),
-    primary && student ? getLiaisonNotes(supabase, { classId: student.classId, studentId: student.id }, reference) : [],
+    primary && student ? getLiaisonNotes(supabase, { classId: student.classIds, studentId: student.id }, reference) : [],
   ]);
   const next = homework[0] ?? null;
   const tomorrow = addDays(isoDay(reference), 1);

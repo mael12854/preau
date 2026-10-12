@@ -2,6 +2,7 @@ import "server-only";
 import type { EvalLevel } from "@/lib/evaluation";
 import type { Viewer } from "@/lib/session";
 import type { SupabaseServer } from "@/lib/supabase/server";
+import { classStudents } from "./common";
 import { getPublishTargets } from "./targets";
 
 export type ReportEditorView = {
@@ -50,22 +51,18 @@ export async function getReportEditor(
   if (!classId) return base;
 
   const year = profile.school.year.replace(/^\D*/, "");
-  const [{ data: students }, { data: teachings }, { data: klass }] =
-    await Promise.all([
-      supabase
-        .from("students")
-        .select("profile_id, profiles(display_name, last_name, first_name)")
-        .eq("class_id", classId),
-      supabase
-        .from("teachings")
-        .select("subject_id, teacher_id, subjects(name)")
-        .eq("class_id", classId),
-      supabase
-        .from("classes")
-        .select("teacher_id")
-        .eq("id", classId)
-        .maybeSingle(),
-    ]);
+  const [students, { data: teachings }, { data: klass }] = await Promise.all([
+    classStudents(supabase, classId),
+    supabase
+      .from("teachings")
+      .select("subject_id, teacher_id, subjects(name)")
+      .eq("class_id", classId),
+    supabase
+      .from("classes")
+      .select("teacher_id")
+      .eq("id", classId)
+      .maybeSingle(),
+  ]);
   // Le professeur ne remplit que ses matières (toutes, s'il est titulaire de la classe) ; la direction, toutes.
   const titular = klass?.teacher_id === profile.profileId;
   const subjects = [
@@ -81,7 +78,7 @@ export async function getReportEditor(
     ).values(),
   ].sort((a, b) => a.name.localeCompare(b.name, "fr"));
 
-  const ids = (students ?? []).map((s) => s.profile_id);
+  const ids = students.map((s) => s.id);
   const { data: cards } = ids.length
     ? await supabase
         .from("report_cards")
@@ -97,45 +94,34 @@ export async function getReportEditor(
   return {
     ...base,
     subjects,
-    students: (students ?? [])
-      .sort(
-        (a, b) =>
-          (a.profiles?.last_name ?? "").localeCompare(
-            b.profiles?.last_name ?? "",
-            "fr",
-          ) ||
-          (a.profiles?.first_name ?? "").localeCompare(
-            b.profiles?.first_name ?? "",
-            "fr",
-          ),
-      )
-      .map((s) => {
-        const card = byStudent.get(s.profile_id);
-        return {
-          id: s.profile_id,
-          name: s.profiles?.display_name ?? "",
-          reportCardId: card?.id ?? null,
-          publishOn: card?.publish_on ?? null,
-          lines: Object.fromEntries(
-            (card?.report_card_lines ?? []).map((l) => [
-              l.subject_id,
-              {
-                level:
-                  l.level === "MI" ||
-                  l.level === "MF" ||
-                  l.level === "MS" ||
-                  l.level === "TB"
-                    ? l.level
-                    : null,
-                comment: l.comment,
-              },
-            ]),
-          ),
-          council: {
-            mention: card?.council_mention ?? "",
-            text: card?.council_text ?? "",
-          },
-        };
-      }),
+    // Déjà triés par nom (classStudents).
+    students: students.map((s) => {
+      const card = byStudent.get(s.id);
+      return {
+        id: s.id,
+        name: s.name,
+        reportCardId: card?.id ?? null,
+        publishOn: card?.publish_on ?? null,
+        lines: Object.fromEntries(
+          (card?.report_card_lines ?? []).map((l) => [
+            l.subject_id,
+            {
+              level:
+                l.level === "MI" ||
+                l.level === "MF" ||
+                l.level === "MS" ||
+                l.level === "TB"
+                  ? l.level
+                  : null,
+              comment: l.comment,
+            },
+          ]),
+        ),
+        council: {
+          mention: card?.council_mention ?? "",
+          text: card?.council_text ?? "",
+        },
+      };
+    }),
   };
 }

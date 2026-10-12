@@ -10,7 +10,8 @@ import {
 import type { SupabaseServer } from "@/lib/supabase/server";
 import type { LessonView } from "./types";
 
-type Scope = { classId: string } | { teacherId: string };
+/** Classe : une ou plusieurs (classe principale et classes supplémentaires de l'élève). */
+type Scope = { classId: string | string[] } | { teacherId: string };
 
 /** Cours de la semaine contenant `reference` (lundi → vendredi), pour une classe ou un professeur. */
 export async function getWeekLessons(
@@ -34,7 +35,7 @@ export async function getWeekLessons(
     .order("starts_at");
   q =
     "classId" in scope
-      ? q.eq("class_id", scope.classId)
+      ? q.in("class_id", ([] as string[]).concat(scope.classId))
       : q.eq("teacher_id", scope.teacherId);
   const { data } = await q;
 

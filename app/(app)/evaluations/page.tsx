@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Évaluations" };
 export default async function EvaluationsPage() {
   const profile = await requireModule("notes");
   const supabase = await createClient();
-  const subjects = profile.student ? await getStudentEvaluations(supabase, profile.student.id, profile.student.classId) : [];
+  const subjects = profile.student ? await getStudentEvaluations(supabase, profile.student.id, profile.student.classIds) : [];
   return (
     <AppShell profile={profile} module="notes">
       <EvaluationsScreen subjects={subjects} currentTerm={1} scale={profile.scale} grading={profile.grading} />

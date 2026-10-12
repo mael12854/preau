@@ -9,6 +9,7 @@ import {
 } from "@/lib/format";
 import type { StaffDashboard } from "./staff";
 import type { SupabaseServer } from "@/lib/supabase/server";
+import { classStudents } from "./common";
 import type { StudentRow } from "./types";
 
 type Lesson = {
@@ -136,13 +137,11 @@ export async function getTeacherDashboard(
           title: `Message de ${r.messages.profiles?.display_name}`,
           sub: r.messages.subject,
         })),
-      ...(events ?? [])
-        .slice(0, 2)
-        .map((e) => ({
-          icon: "event" as const,
-          title: e.title,
-          sub: formatDateShort(e.starts_on),
-        })),
+      ...(events ?? []).slice(0, 2).map((e) => ({
+        icon: "event" as const,
+        title: e.title,
+        sub: formatDateShort(e.starts_on),
+      })),
     ],
   };
 }
@@ -169,31 +168,14 @@ export type AppelData = {
   evalStudents: StudentRow[];
 };
 
+/** Élèves de la classe, y compris ceux qui la suivent en classe supplémentaire. */
 async function roster(
   supabase: SupabaseServer,
   classId: string,
 ): Promise<StudentRow[]> {
-  const { data } = await supabase
-    .from("students")
-    .select(
-      "profile_id, profiles(display_name, initials, last_name, first_name)",
-    )
-    .eq("class_id", classId);
-  return (data ?? [])
-    .sort(
-      (a, b) =>
-        (a.profiles?.last_name ?? "").localeCompare(
-          b.profiles?.last_name ?? "",
-        ) ||
-        (a.profiles?.first_name ?? "").localeCompare(
-          b.profiles?.first_name ?? "",
-        ),
-    )
-    .map((s) => ({
-      id: s.profile_id,
-      name: s.profiles?.display_name ?? "",
-      initials: s.profiles?.initials ?? "",
-    }));
+  return (await classStudents(supabase, classId)).map(
+    ({ id, name, initials }) => ({ id, name, initials }),
+  );
 }
 
 /** Cours à appeler (en cours ou le plus proche non validé) et évaluation en cours de saisie. */

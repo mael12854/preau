@@ -243,6 +243,39 @@ export type Database = {
           },
         ]
       }
+      class_members: {
+        Row: {
+          added_at: string
+          class_id: string
+          student_id: string
+        }
+        Insert: {
+          added_at?: string
+          class_id: string
+          student_id: string
+        }
+        Update: {
+          added_at?: string
+          class_id?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_members_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_members_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       classes: {
         Row: {
           id: string
@@ -1287,6 +1320,7 @@ export type Database = {
         Args: { p_comment?: string; p_event: string; p_reason: string }
         Returns: undefined
       }
+      add_class_member: { Args: { p_class: string; p_student: string }; Returns: undefined }
       add_agenda_event: {
         Args: {
           p_class: string
@@ -1318,6 +1352,7 @@ export type Database = {
         Returns: string
       }
       publish_assessment: { Args: { p_assessment: string }; Returns: undefined }
+      remove_class_member: { Args: { p_class: string; p_student: string }; Returns: undefined }
       send_message: {
         Args: {
           p_body: string

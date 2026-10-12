@@ -9,7 +9,7 @@ import type { LastEvaluationView, SubjectEvaluationsView } from "./types";
 export async function getStudentEvaluations(
   supabase: SupabaseServer,
   studentId: string,
-  classId: string,
+  classId: string | string[],
 ) {
   const [{ data }, teachers] = await Promise.all([
     supabase

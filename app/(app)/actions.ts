@@ -379,6 +379,8 @@ export type NewPerson = {
   email: string;
   classId: string | null;
   children: string[];
+  /** Élève : classes suivies en plus de la classe principale. */
+  extraClasses: string[];
   /** Enseignant : classes (et matières, hors primaire) à lui confier. */
   teachings: { classId: string; subjectId: string | null }[];
 };
@@ -425,6 +427,17 @@ export async function createPerson(p: NewPerson): Promise<CreatedPerson> {
   if (error || !id)
     return { ok: false, error: error ? readable(error.message) : FAILED };
 
+  for (const c of p.kind === "eleve" ? p.extraClasses : []) {
+    const { error: e } = await supabase.rpc("add_class_member", {
+      p_student: id,
+      p_class: c,
+    });
+    if (e)
+      return {
+        ok: false,
+        error: `Élève ajouté, mais une classe supplémentaire a échoué : ${readable(e.message)}`,
+      };
+  }
   for (const t of p.teachings) {
     const { error: e } = await supabase.rpc("assign_teaching", {
       p_teacher: id,
@@ -472,6 +485,29 @@ export async function createPerson(p: NewPerson): Promise<CreatedPerson> {
 }
 
 /** Annuaire : rattacher un responsable à un élève. */
+/** Annuaire : inscrire un élève dans une classe supplémentaire (ex. « Cours Sup »), ou l'en retirer. */
+export async function addClassMember(
+  studentId: string,
+  classId: string,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("add_class_member", { p_student: studentId, p_class: classId }),
+    ["/annuaire"],
+  );
+}
+
+export async function removeClassMember(
+  studentId: string,
+  classId: string,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("remove_class_member", { p_student: studentId, p_class: classId }),
+    ["/annuaire"],
+  );
+}
+
 export async function linkGuardian(
   guardianId: string,
   studentId: string,

@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Emploi du temps" };
 export default async function EdtPage() {
   const profile = await requireModule("edt");
   const supabase = await createClient();
-  const scope = profile.student ? { classId: profile.student.classId } : { teacherId: profile.profileId };
+  const scope = profile.student ? { classId: profile.student.classIds } : { teacherId: profile.profileId };
   const week = await getWeekLessons(supabase, scope, now());
   return (
     <AppShell profile={profile} module="edt">

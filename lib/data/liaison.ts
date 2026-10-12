@@ -19,7 +19,9 @@ export type LiaisonNoteView = {
 /** Mots du cahier de liaison d'une classe (famille) ou de toutes les classes de l'enseignant. */
 export async function getLiaisonNotes(
   supabase: SupabaseServer,
-  scope: { classId: string; studentId: string } | { authorId: string },
+  scope:
+    | { classId: string | string[]; studentId: string }
+    | { authorId: string },
   reference: Date,
 ): Promise<LiaisonNoteView[]> {
   let q = supabase
@@ -30,7 +32,7 @@ export async function getLiaisonNotes(
     .order("created_at", { ascending: false });
   q =
     "classId" in scope
-      ? q.eq("class_id", scope.classId)
+      ? q.in("class_id", ([] as string[]).concat(scope.classId))
       : q.eq("author_id", scope.authorId);
   const { data } = await q;
   const notes = data ?? [];
@@ -46,6 +48,13 @@ export async function getLiaisonNotes(
         .in("class_id", classIds);
       (students ?? []).forEach((s) =>
         sizes.set(s.class_id, (sizes.get(s.class_id) ?? 0) + 1),
+      );
+      const { data: extra } = await supabase
+        .from("class_members")
+        .select("class_id")
+        .in("class_id", classIds);
+      (extra ?? []).forEach((m) =>
+        sizes.set(m.class_id, (sizes.get(m.class_id) ?? 0) + 1),
       );
     }
   }

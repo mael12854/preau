@@ -3,7 +3,8 @@ import { formatDayMonth, formatDueDay, isoDay } from "@/lib/format";
 import type { SupabaseServer } from "@/lib/supabase/server";
 import type { HomeworkDayView, HomeworkView } from "./types";
 
-type Scope = { classId: string } | { teacherId: string };
+/** Classe : une ou plusieurs (classe principale et classes supplémentaires de l'élève). */
+type Scope = { classId: string | string[] } | { teacherId: string };
 
 /** Devoirs à venir (échéance après aujourd'hui), groupés par jour d'échéance. */
 export async function getUpcomingHomework(
@@ -22,7 +23,7 @@ export async function getUpcomingHomework(
     .order("id");
   q =
     "classId" in scope
-      ? q.eq("class_id", scope.classId)
+      ? q.in("class_id", ([] as string[]).concat(scope.classId))
       : q.eq("teacher_id", scope.teacherId);
   const { data } = await q;
 

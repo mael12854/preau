@@ -11,6 +11,9 @@ export type PersonView = {
   email: string;
   detail: string;
   hasAccount: boolean;
+  /** Élève : classe principale et classes supplémentaires. */
+  classId: string | null;
+  extraClasses: { id: string; name: string }[];
 };
 
 /** Annuaire de l'établissement (secrétariat, direction) : la RLS limite à l'établissement de la personne connectée. */
@@ -22,6 +25,7 @@ export async function getDirectory(
     { data: emails },
     { data: students },
     { data: guardians },
+    { data: members },
   ] = await Promise.all([
     supabase
       .from("profiles")
@@ -31,11 +35,24 @@ export async function getDirectory(
       .order("last_name")
       .order("display_name"),
     supabase.from("profile_private").select("profile_id, email"),
-    supabase.from("students").select("profile_id, classes(name)"),
+    supabase.from("students").select("profile_id, class_id, classes(name)"),
     supabase
       .from("guardians")
       .select("guardian_id, students(profiles(display_name))"),
+    supabase
+      .from("class_members")
+      .select("student_id, class_id, classes(name)"),
   ]);
+  const extra = new Map<string, { id: string; name: string }[]>();
+  (members ?? []).forEach((m) =>
+    extra.set(m.student_id, [
+      ...(extra.get(m.student_id) ?? []),
+      { id: m.class_id, name: m.classes?.name ?? "" },
+    ]),
+  );
+  const mainClass = new Map(
+    (students ?? []).map((s) => [s.profile_id, s.class_id]),
+  );
   const email = new Map(
     (emails ?? []).map((e) => [e.profile_id, e.email ?? ""]),
   );
@@ -61,12 +78,16 @@ export async function getDirectory(
     email: email.get(p.id) ?? "",
     detail:
       p.kind === "eleve"
-        ? (klass.get(p.id) ?? "")
+        ? [klass.get(p.id) ?? "", ...(extra.get(p.id) ?? []).map((c) => c.name)]
+            .filter(Boolean)
+            .join(" + ")
         : p.kind === "parent"
           ? (children.get(p.id) ?? [])
               .map((n) => `Responsable de ${n}`)
               .join(", ")
           : (p.role_label ?? ""),
     hasAccount: !!p.user_id,
+    classId: mainClass.get(p.id) ?? null,
+    extraClasses: extra.get(p.id) ?? [],
   }));
 }
