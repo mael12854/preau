@@ -371,6 +371,136 @@ export async function saveReportCouncil(
   );
 }
 
+export type NewPerson = {
+  kind: "eleve" | "parent" | "prof" | "cpe" | "direction" | "secretariat";
+  firstName: string;
+  lastName: string;
+  civility: "madame" | "monsieur" | null;
+  email: string;
+  classId: string | null;
+  children: string[];
+  /** Enseignant : classes (et matières, hors primaire) à lui confier. */
+  teachings: { classId: string; subjectId: string | null }[];
+};
+export type CreatedPerson =
+  | { ok: true; password: string | null }
+  | { ok: false; error: string };
+
+/** Mot de passe provisoire lisible : 4 groupes de 4 caractères sans ambiguïté (pas de 0/O, 1/l). */
+function temporaryPassword(): string {
+  const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.getRandomValues(new Uint8Array(16));
+  const chars = [...bytes].map((b) => alphabet[b % alphabet.length]).join("");
+  return chars.match(/.{4}/g)!.join("-");
+}
+
+/**
+ * Annuaire : ajouter une personne. create_person vérifie les droits et crée la fiche ;
+ * avec une adresse e-mail, le serveur ouvre aussi le compte (mot de passe provisoire, affiché une fois).
+ */
+export async function createPerson(p: NewPerson): Promise<CreatedPerson> {
+  const supabase = await createClient();
+  const readable = (m: string) =>
+    /^[A-ZÉÈ]/.test(m) && !/permission|violates|duplicate/i.test(m)
+      ? m
+      : FAILED;
+  const address = p.email.trim().toLowerCase();
+  if (address && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(address))
+    return { ok: false, error: "Adresse e-mail invalide." };
+  const admin = createAdminClient();
+  if (address && !admin)
+    return {
+      ok: false,
+      error: "La création de comptes n'est pas configurée sur le serveur.",
+    };
+
+  const { data: id, error } = await supabase.rpc("create_person", {
+    p_kind: p.kind,
+    p_first_name: p.firstName,
+    p_last_name: p.lastName,
+    p_civility: p.civility as "madame",
+    p_class: p.classId as string,
+    p_children: p.children,
+  });
+  if (error || !id)
+    return { ok: false, error: error ? readable(error.message) : FAILED };
+
+  for (const t of p.teachings) {
+    const { error: e } = await supabase.rpc("assign_teaching", {
+      p_teacher: id,
+      p_class: t.classId,
+      p_subject: t.subjectId as string,
+      p_head: false,
+    });
+    if (e)
+      return {
+        ok: false,
+        error: `Personne ajoutée, mais une affectation a échoué : ${readable(e.message)}`,
+      };
+  }
+
+  let password: string | null = null;
+  if (address) {
+    await supabase.rpc("update_person_email", {
+      p_profile: id,
+      p_email: address,
+    });
+    password = temporaryPassword();
+    const { data: created, error: authError } =
+      await admin!.auth.admin.createUser({
+        email: address,
+        password,
+        email_confirm: true,
+      });
+    if (authError || !created.user) {
+      return {
+        ok: false,
+        error: /already|exists|registered/i.test(authError?.message ?? "")
+          ? "Personne ajoutée, mais cette adresse e-mail a déjà un compte."
+          : "Personne ajoutée, mais le compte n'a pas pu être créé.",
+      };
+    }
+    // La fiche vient d'être créée par cet utilisateur (create_person a vérifié ses droits) : on y rattache le compte.
+    await admin!
+      .from("profiles")
+      .update({ user_id: created.user.id })
+      .eq("id", id)
+      .is("user_id", null);
+  }
+  revalidatePath("/annuaire");
+  return { ok: true, password };
+}
+
+/** Annuaire : rattacher un responsable à un élève. */
+export async function linkGuardian(
+  guardianId: string,
+  studentId: string,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("link_guardian", { p_guardian: guardianId, p_student: studentId }),
+    ["/annuaire"],
+  );
+}
+
+/** Annuaire : confier une classe (et une matière hors primaire) à un enseignant. */
+export async function assignTeaching(
+  teacherId: string,
+  classId: string,
+  subjectId: string | null,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("assign_teaching", {
+        p_teacher: teacherId,
+        p_class: classId,
+        p_subject: subjectId as string,
+        p_head: false,
+      }),
+    ["/annuaire"],
+  );
+}
+
 export async function setScore(
   assessmentId: string,
   studentId: string,

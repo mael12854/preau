@@ -1266,6 +1266,17 @@ export type Database = {
         }
         Returns: { id: string; storage_path: string }[]
       }
+      create_person: {
+        Args: {
+          p_children: string[]
+          p_civility: Database["public"]["Enums"]["civility"]
+          p_class: string
+          p_first_name: string
+          p_kind: Database["public"]["Enums"]["person_kind"]
+          p_last_name: string
+        }
+        Returns: string
+      }
       create_report_cards: {
         Args: { p_class: string; p_publish_on: string; p_term: number }
         Returns: number
@@ -1287,6 +1298,10 @@ export type Database = {
         }
         Returns: string
       }
+      assign_teaching: {
+        Args: { p_class: string; p_head: boolean; p_subject: string; p_teacher: string }
+        Returns: undefined
+      }
       cancel_payment: { Args: { p_payment: string }; Returns: undefined }
       confirm_payment: {
         Args: {
@@ -1296,6 +1311,7 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["payment_status"]
       }
+      link_guardian: { Args: { p_guardian: string; p_student: string }; Returns: undefined }
       manageable_person: { Args: { p_profile: string }; Returns: string }
       post_liaison_note: {
         Args: { p_body: string; p_class: string; p_requires_signature?: boolean; p_title: string }

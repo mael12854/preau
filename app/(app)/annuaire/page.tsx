@@ -9,10 +9,20 @@ export const metadata: Metadata = { title: "Annuaire" };
 
 export default async function Page() {
   const profile = await requireModule("annuaire");
-  const people = await getDirectory(await createClient());
+  const supabase = await createClient();
+  const [people, { data: classes }, { data: subjects }] = await Promise.all([
+    getDirectory(supabase),
+    supabase.from("classes").select("id, name, level").order("name"),
+    supabase.from("subjects").select("id, name").order("name"),
+  ]);
   return (
     <AppShell profile={profile} module="annuaire">
-      <DirectoryScreen people={people} />
+      <DirectoryScreen
+        people={people}
+        classes={classes ?? []}
+        subjects={subjects ?? []}
+        canAddDirection={profile.id === "direction"}
+      />
     </AppShell>
   );
 }

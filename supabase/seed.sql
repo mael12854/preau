@@ -27,13 +27,14 @@ insert into public.schools (name, domain, year_label, grading) values
 on conflict (domain) do nothing;
 
 -- ── Classes ──
--- EWK : IE0 = PS ou avant, IE1 = MS, IE2 = GS, IE3 = CP, IE4 = CE1, IE5 = CE2 et après (propre à l'EWK).
+-- EWK : IE0 = PS ou avant, IE1 = MS, IE2 = GS, IE3 = CP, IE4 = CE1, IE5 = CE2 et après, puis Cours Sup (propre à l'EWK).
 insert into public.classes (school_id, name, level)
 select s.id, c.name, c.level::public.school_level
 from (values
   ('ecole-du-weekend.preau.fr', 'IE0', 'primaire'), ('ecole-du-weekend.preau.fr', 'IE1', 'primaire'),
   ('ecole-du-weekend.preau.fr', 'IE2', 'primaire'), ('ecole-du-weekend.preau.fr', 'IE3', 'primaire'),
   ('ecole-du-weekend.preau.fr', 'IE4', 'primaire'), ('ecole-du-weekend.preau.fr', 'IE5', 'primaire'),
+  ('ecole-du-weekend.preau.fr', 'Cours Sup', 'primaire'),
   ('college-du-weekend.preau.fr', '6e', 'college'), ('college-du-weekend.preau.fr', '5e', 'college'),
   ('college-du-weekend.preau.fr', '4e', 'college'), ('college-du-weekend.preau.fr', '3e', 'college'),
   ('vk.preau.fr', '2de', 'lycee'), ('vk.preau.fr', '1re', 'lycee'),

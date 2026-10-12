@@ -10,6 +10,12 @@ import { SelectField, TextField } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { useToast } from "@/components/ui/toast";
 import type { PersonView } from "@/lib/data/directory";
+import {
+  AddPerson,
+  PersonLinks,
+  type ClassOption,
+  type SubjectOption,
+} from "./annuaire-create";
 
 const GROUPS: { kind: PersonView["kind"]; label: string }[] = [
   { kind: "direction", label: "Direction" },
@@ -24,7 +30,19 @@ const fold = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Modifier le nom et l'adresse e-mail d'une personne. */
-function EditPerson({ person }: { person: PersonView }) {
+type Context = {
+  people: PersonView[];
+  classes: ClassOption[];
+  subjects: SubjectOption[];
+};
+
+function EditPerson({
+  person,
+  context,
+}: {
+  person: PersonView;
+  context: Context;
+}) {
   const toast = useToast();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -132,12 +150,24 @@ function EditPerson({ person }: { person: PersonView }) {
           </Button>
         </div>
       </form>
+      <PersonLinks person={person} {...context} />
     </Dialog>
   );
 }
 
 /** Annuaire de l'établissement : recherche, groupes par fonction, modification des noms et adresses. */
-export function DirectoryScreen({ people }: { people: PersonView[] }) {
+export function DirectoryScreen({
+  people,
+  classes,
+  subjects,
+  canAddDirection,
+}: {
+  people: PersonView[];
+  classes: ClassOption[];
+  subjects: SubjectOption[];
+  canAddDirection: boolean;
+}) {
+  const context = { people, classes, subjects };
   const [query, setQuery] = useState("");
   const q = fold(query.trim());
   const shown = q
@@ -150,13 +180,21 @@ export function DirectoryScreen({ people }: { people: PersonView[] }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <TextField
-        label="Rechercher une personne"
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        className="max-w-md"
-      />
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <TextField
+          label="Rechercher une personne"
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          className="max-w-md"
+        />
+        <AddPerson
+          people={people}
+          classes={classes}
+          subjects={subjects}
+          canAddDirection={canAddDirection}
+        />
+      </div>
       {shown.length === 0 && (
         <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">
           Personne ne correspond.
@@ -194,7 +232,7 @@ export function DirectoryScreen({ people }: { people: PersonView[] }) {
                     </span>
                   </div>
                   {!p.hasAccount && <Badge tone="neutral">Sans compte</Badge>}
-                  <EditPerson person={p} />
+                  <EditPerson person={p} context={context} />
                 </li>
               ))}
             </ul>

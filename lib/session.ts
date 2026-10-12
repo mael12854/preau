@@ -92,9 +92,9 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
       supabase.from("teachings").select("classes(level)").eq("teacher_id", me.id),
       supabase.from("classes").select("name").eq("teacher_id", me.id).eq("level", "primaire").order("name"),
     ]);
-    // Titulaire de plusieurs classes : « IE0 à IE5 » ; d'une seule : son nom.
+    // Titulaire d'une ou deux classes : leurs noms ; de plus : leur nombre (« 7 classes »).
     const names = (own ?? []).map((c) => c.name);
-    primaryClass = names.length > 1 ? `${names[0]} à ${names[names.length - 1]}` : (names[0] ?? null);
+    primaryClass = names.length > 2 ? `${names.length} classes` : names.length ? names.join(" et ") : null;
     primaryTeacher = names.length > 0 && (t ?? []).every((x) => x.classes?.level === "primaire");
   }
   // Administration d'une école primaire : toutes les classes de l'établissement sont du primaire.
