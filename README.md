@@ -66,7 +66,7 @@ Variables d'environnement (serveur uniquement) :
 
 Tant qu'une de ces variables manque, les paiements restent « en attente » et aucune demande n'est envoyée.
 
-Les valeurs non secrètes (URL, clés publiables, unité) sont dans `vercel.json`. Les secrets restent dans les réglages du projet Vercel : `SUPABASE_SERVICE_ROLE_KEY`, et `CREDIT_DOMESTIQUE_COMPANY_ACCOUNT` (non secret, mais propre au déploiement).
+Les valeurs non secrètes (URL, clés publiables, unité) sont dans `vercel.json`. Le compte entreprise de Préau dans Crédit Domestique est `preau`. Le seul secret, `SUPABASE_SERVICE_ROLE_KEY`, reste dans les réglages du projet Vercel.
 
 ⚠️ Les tables de Crédit Domestique sont lisibles et modifiables avec sa clé publique : quiconque l'a en main peut marquer une demande « acceptée » sans payer. Tant que ce n'est pas corrigé, ne l'utilisez pas pour de vrais paiements.
 
@@ -85,7 +85,7 @@ Pour ouvrir une classe : créer la classe avec `level = 'primaire'` et `teacher_
 ### Encore sur données du prototype
 
 - **Tableaux de bord de la vie scolaire, de la direction et du secrétariat** (`lib/mock/staff.ts`) : il manque les tables des demandes administratives et des conseils de classe. Le tableau de bord du professeur, lui, est calculé depuis la base.
-- **Paiements** : branchés sur Crédit Domestique. Il reste à renseigner `CREDIT_DOMESTIQUE_COMPANY_ACCOUNT` et `SUPABASE_SERVICE_ROLE_KEY` sur Vercel, et à appliquer la migration `20261012100800_credit_domestique.sql`.
+- **Paiements** : branchés sur Crédit Domestique. Il reste à renseigner `SUPABASE_SERVICE_ROLE_KEY` sur Vercel et à appliquer la migration `20261012100800_credit_domestique.sql`.
 - **Documents** : il n'y a pas encore de fichiers dans Supabase Storage (le téléchargement est factice).
 
 ## Stack

@@ -4,14 +4,17 @@
   "installCommand": "npm ci",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "regions": ["dub1"],
+  "regions": [
+    "dub1"
+  ],
   "env": {
     "NEXT_PUBLIC_SUPABASE_URL": "https://otbbahelfojhubcfufaf.supabase.co",
     "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_xv7YFi8kvEHu7t0R5bNG3Q_X29t7pPE",
     "PREAU_NOW": "real",
     "CREDIT_DOMESTIQUE_URL": "https://zalvstnzvxdcibnbdbwm.supabase.co",
     "CREDIT_DOMESTIQUE_KEY": "sb_publishable_DR7KL1dgiv-y1wTXnA1X8Q_aeLSQ50H",
-    "CREDIT_DOMESTIQUE_UNIT": "cents"
+    "CREDIT_DOMESTIQUE_UNIT": "cents",
+    "CREDIT_DOMESTIQUE_COMPANY_ACCOUNT": "preau"
   },
   "build": {
     "env": {
