@@ -3,9 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
-import type { StaffDashboard as StaffDashboardData } from "@/lib/mock/staff";
+import type { StaffDashboard as StaffDashboardData } from "@/lib/data/staff";
 import type { Viewer } from "@/lib/session";
-import { DemoActionButton } from "./demo-action";
 import { Greeting, Stat } from "./greeting";
 
 /** Tableau de bord du personnel : 3 indicateurs, liste du jour, « À traiter ». */
@@ -27,6 +26,7 @@ export function StaffDashboard({ profile, data }: { profile: Viewer; data: Staff
           <h2 id="staff-list" className="m-0 mb-2.5 font-display text-card font-bold">
             {data.listTitle}
           </h2>
+          {data.list.length === 0 && <p className="m-0 border-t border-line-soft py-3 text-ui text-ink-muted">{data.empty}</p>}
           <ul className="m-0 list-none p-0">
             {data.list.map((r) => (
               <li key={r.time + r.title} className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2 border-t border-line-soft py-3 @lg:grid-cols-[3.5rem_minmax(0,1fr)_auto_auto]">
@@ -37,14 +37,11 @@ export function StaffDashboard({ profile, data }: { profile: Viewer; data: Staff
                 </div>
                 <div className="col-start-2 flex flex-wrap items-center gap-3 @lg:contents">
                   <Badge tone={r.tone}>{r.status}</Badge>
-                  {r.action &&
-                    (r.href ? (
-                      <Button asChild size="sm">
-                        <Link href={r.href}>{r.action}</Link>
-                      </Button>
-                    ) : (
-                      <DemoActionButton label={r.action} message={r.done ?? r.action} />
-                    ))}
+                  {r.action && r.href && (
+                    <Button asChild size="sm">
+                      <Link href={r.href}>{r.action}</Link>
+                    </Button>
+                  )}
                 </div>
               </li>
             ))}
@@ -54,6 +51,7 @@ export function StaffDashboard({ profile, data }: { profile: Viewer; data: Staff
           <h2 id="staff-todo" className="m-0 font-display text-card font-bold">
             À traiter
           </h2>
+          {data.todo.length === 0 && <p className="m-0 text-ui text-ink-muted">Rien à traiter pour l'instant.</p>}
           <ul className="m-0 flex list-none flex-col gap-3 p-0">
             {data.todo.map((t) => (
               <li key={t.title} className="flex items-start gap-3 rounded-control bg-bg p-3">

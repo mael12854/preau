@@ -1,7 +1,7 @@
 import "server-only";
 import type { EvalValue } from "@/lib/evaluation";
 import { addDays, formatDateShort, formatTimeGrid, formatTimeText, isoDay } from "@/lib/format";
-import type { StaffDashboard } from "@/lib/mock/staff";
+import type { StaffDashboard } from "./staff";
 import type { SupabaseServer } from "@/lib/supabase/server";
 import type { StudentRow } from "./types";
 
@@ -43,6 +43,7 @@ export async function getTeacherDashboard(supabase: SupabaseServer, teacherId: s
       { value: String(unread?.length ?? 0), label: "Messages non lus" },
     ],
     listTitle: "Mes cours aujourd'hui",
+    empty: "Aucun cours aujourd'hui.",
     list: lessons.map((l) => {
       const started = new Date(l.starts_at) <= reference;
       const base = { time: formatTimeGrid(l.starts_at), title: `${l.classes?.name} · ${l.subjects?.name}`, sub: `Salle ${l.room}` };

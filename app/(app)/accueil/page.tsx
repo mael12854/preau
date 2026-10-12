@@ -8,10 +8,10 @@ import { getLiaisonNotes } from "@/lib/data/liaison";
 import { getDoneHomework, getUpcomingHomework } from "@/lib/data/homework";
 import { getMessages } from "@/lib/data/messages";
 import { getLifeEvents } from "@/lib/data/school-life";
+import { getStaffDashboard } from "@/lib/data/staff";
 import { getTeacherDashboard } from "@/lib/data/teacher";
 import { getTodayLessons } from "@/lib/data/timetable";
 import { addDays, formatDayLong, isoDay } from "@/lib/format";
-import { STAFF_DASHBOARDS } from "@/lib/mock/staff";
 import { requireModule } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
@@ -23,9 +23,10 @@ export default async function DashboardPage() {
   const reference = now();
 
   if (profile.staff) {
-    // Le tableau de bord du professeur est calculé depuis la base ; ceux de la vie scolaire,
-    // de la direction et du secrétariat utilisent encore les données du prototype.
-    const data = profile.id === "prof" ? await getTeacherDashboard(supabase, profile.profileId, reference) : STAFF_DASHBOARDS[profile.id]!;
+    const data =
+      profile.id === "cpe" || profile.id === "direction" || profile.id === "secretariat"
+        ? await getStaffDashboard(supabase, profile.id, reference)
+        : await getTeacherDashboard(supabase, profile.profileId, reference);
     return (
       <AppShell profile={profile} module="dash">
         <StaffDashboard profile={profile} data={data} />
