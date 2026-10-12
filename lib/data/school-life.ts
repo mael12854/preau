@@ -19,16 +19,25 @@ const KIND: Record<Kind, { type: string; icon: IconName; tone: Tone }> = {
 
 function status(kind: Kind, s: Status): { label: string; tone: Tone } {
   if (s === "a_justifier") return { label: "À justifier", tone: "danger" };
-  if (s === "justificatif_envoye") return { label: "Justificatif envoyé", tone: "info" };
+  if (s === "justificatif_envoye")
+    return { label: "Justificatif envoyé", tone: "info" };
   if (s === "justifie") return { label: "Justifié", tone: "ok" };
-  return kind === "encouragement" ? { label: "Encouragement", tone: "ok" } : { label: "Noté", tone: "neutral" };
+  return kind === "encouragement"
+    ? { label: "Encouragement", tone: "ok" }
+    : { label: "Noté", tone: "neutral" };
 }
 
 /** Événements de vie scolaire : d'un élève, ou de tout l'établissement pour la vie scolaire. */
-export async function getLifeEvents(supabase: SupabaseServer, studentId: string | null, canJustify: boolean) {
+export async function getLifeEvents(
+  supabase: SupabaseServer,
+  studentId: string | null,
+  canJustify: boolean,
+) {
   let q = supabase
     .from("life_events")
-    .select("id, kind, occurred_at, whole_day, detail, status, minutes, students(profiles(display_name))")
+    .select(
+      "id, kind, occurred_at, whole_day, detail, status, minutes, students(profiles(display_name))",
+    )
     .order("occurred_at", { ascending: false });
   if (studentId) q = q.eq("student_id", studentId);
   const { data } = await q;
@@ -37,7 +46,11 @@ export async function getLifeEvents(supabase: SupabaseServer, studentId: string 
   const events: LifeEventView[] = rows.map((e) => {
     const k = KIND[e.kind];
     const st = status(e.kind, e.status);
-    const when = e.whole_day ? "journée" : e.kind === "retard" ? formatTimeText(e.occurred_at) : null;
+    const when = e.whole_day
+      ? "journée"
+      : e.kind === "retard"
+        ? formatTimeText(e.occurred_at)
+        : null;
     return {
       id: e.id,
       icon: k.icon,
@@ -55,7 +68,9 @@ export async function getLifeEvents(supabase: SupabaseServer, studentId: string 
     absences: rows.filter((e) => e.kind === "absence").length,
     toJustify: rows.filter((e) => e.status === "a_justifier").length,
     lates: rows.filter((e) => e.kind === "retard").length,
-    lateMinutes: rows.filter((e) => e.kind === "retard").reduce((n, e) => n + (e.minutes ?? 0), 0),
+    lateMinutes: rows
+      .filter((e) => e.kind === "retard")
+      .reduce((n, e) => n + (e.minutes ?? 0), 0),
     sanctions: rows.filter((e) => e.kind === "sanction").length,
     encouragements: rows.filter((e) => e.kind === "encouragement").length,
   };

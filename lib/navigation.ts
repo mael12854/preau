@@ -3,7 +3,7 @@ import type { IconName } from "@/lib/icons";
 
 export type ModuleKey =
   | "dash" | "edt" | "devoirs" | "notes" | "viesco" | "messages"
-  | "documents" | "agenda" | "paiements" | "bulletins" | "saisie" | "liaison" | "compte";
+  | "documents" | "agenda" | "paiements" | "bulletins" | "saisie" | "liaison" | "annuaire" | "compte";
 
 export type Module = { key: ModuleKey; label: string; icon: IconName; slug: string };
 
@@ -20,6 +20,7 @@ export const MODULES: Record<ModuleKey, Module> = {
   bulletins: { key: "bulletins", label: "Bulletins", icon: "article", slug: "bulletins" },
   saisie: { key: "saisie", label: "Appel & évaluation", icon: "fact_check", slug: "appel" },
   liaison: { key: "liaison", label: "Cahier de liaison", icon: "sticky_note_2", slug: "cahier-de-liaison" },
+  annuaire: { key: "annuaire", label: "Annuaire", icon: "badge", slug: "annuaire" },
   compte: { key: "compte", label: "Mon compte", icon: "settings", slug: "compte" },
 };
 
@@ -63,8 +64,8 @@ export const PROFILES: Profile[] = [
   },
   {
     id: "enseignant-primaire", label: "Enseignant · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: true,
-    labels: { devoirs: "Cahier de textes" },
-    nav: ["dash", "liaison", "saisie", "devoirs", "messages", "documents", "agenda", "compte"],
+    labels: { devoirs: "Cahier de textes", bulletins: "Livret scolaire" },
+    nav: ["dash", "liaison", "saisie", "devoirs", "bulletins", "messages", "documents", "agenda", "compte"],
   },
   { id: "college", label: "Élève · collège", name: "Léa Martin", role: "4e B", initials: "LM", hello: "Bonjour Léa", email: "lea.martin@jean-moulin.preau.fr", staff: false, nav: ELEVE },
   { id: "lycee", label: "Élève · lycée", name: "Hugo Benali", role: "1re 3 · Spé. Maths, SES", initials: "HB", hello: "Bonjour Hugo", email: "hugo.benali@preau.fr", staff: false, nav: ELEVE },
@@ -75,7 +76,7 @@ export const PROFILES: Profile[] = [
   {
     id: "prof", label: "Professeur", name: "Marc Durand", role: "Mathématiques", initials: "MD", hello: "Bonjour Monsieur Durand", email: "marc.durand@ac-academie.fr", staff: true,
     labels: { devoirs: "Cahier de textes" },
-    nav: ["dash", "saisie", "edt", "devoirs", "messages", "documents", "agenda", "compte"],
+    nav: ["dash", "saisie", "edt", "devoirs", "bulletins", "messages", "documents", "agenda", "compte"],
   },
   {
     id: "cpe", label: "Vie scolaire / CPE", name: "Nadia Kader", role: "Conseillère principale d'éducation", initials: "NK", hello: "Bonjour Madame Kader", email: "nadia.kader@ac-academie.fr", staff: true,
@@ -83,11 +84,11 @@ export const PROFILES: Profile[] = [
   },
   {
     id: "direction", label: "Direction", name: "Paul Lefèvre", role: "Principal", initials: "PL", hello: "Bonjour Monsieur Lefèvre", email: "principal@jean-moulin.preau.fr", staff: true,
-    nav: ["dash", "bulletins", "viesco", "agenda", "messages", "documents", "compte"],
+    nav: ["dash", "bulletins", "viesco", "agenda", "messages", "documents", "annuaire", "compte"],
   },
   {
     id: "secretariat", label: "Secrétariat", name: "Claire Roux", role: "Secrétariat de direction", initials: "CR", hello: "Bonjour Madame Roux", email: "secretariat@jean-moulin.preau.fr", staff: true,
-    nav: ["dash", "paiements", "documents", "messages", "agenda", "compte"],
+    nav: ["dash", "paiements", "bulletins", "documents", "messages", "agenda", "annuaire", "compte"],
   },
 ];
 

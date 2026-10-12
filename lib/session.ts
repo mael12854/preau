@@ -90,10 +90,12 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   if (me.kind === "prof") {
     const [{ data: t }, { data: own }] = await Promise.all([
       supabase.from("teachings").select("classes(level)").eq("teacher_id", me.id),
-      supabase.from("classes").select("name").eq("teacher_id", me.id).eq("level", "primaire").limit(1).maybeSingle(),
+      supabase.from("classes").select("name").eq("teacher_id", me.id).eq("level", "primaire").order("name"),
     ]);
-    primaryClass = own?.name ?? null;
-    primaryTeacher = !!own && (t ?? []).every((x) => x.classes?.level === "primaire");
+    // Titulaire de plusieurs classes : « IE0 à IE5 » ; d'une seule : son nom.
+    const names = (own ?? []).map((c) => c.name);
+    primaryClass = names.length > 1 ? `${names[0]} à ${names[names.length - 1]}` : (names[0] ?? null);
+    primaryTeacher = names.length > 0 && (t ?? []).every((x) => x.classes?.level === "primaire");
   }
   // Administration d'une école primaire : toutes les classes de l'établissement sont du primaire.
   let primarySchool = false;

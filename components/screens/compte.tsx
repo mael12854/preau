@@ -68,8 +68,8 @@ export function CompteScreen({ account }: { account: Account }) {
         <h2 id="profil" className="m-0 font-display text-h3 font-bold">
           Profil
         </h2>
-        <TextField label="Nom" value={account.name} readOnly hint="Modifiable par le secrétariat uniquement" />
-        <TextField label="Adresse e-mail" type="email" value={account.email} readOnly hint="Adresse de connexion, modifiable par le secrétariat" />
+        <TextField label="Nom" value={account.name} readOnly hint="Modifiable par le secrétariat ou la direction, dans l'Annuaire" />
+        <TextField label="Adresse e-mail" type="email" value={account.email} readOnly hint="Adresse de connexion, modifiable par le secrétariat ou la direction" />
         <form
           className="flex flex-col gap-3"
           onSubmit={(e) => {

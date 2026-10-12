@@ -30,7 +30,11 @@ export type HomeworkView = {
   className?: string;
 };
 
-export type HomeworkDayView = { day: string; dueOn: string; items: HomeworkView[] };
+export type HomeworkDayView = {
+  day: string;
+  dueOn: string;
+  items: HomeworkView[];
+};
 
 export type EvaluationView = {
   id: string;
@@ -44,9 +48,20 @@ export type EvaluationView = {
   term: number;
 };
 
-export type SubjectEvaluationsView = { subject: SubjectRef; prof: string; evaluations: EvaluationView[] };
+export type SubjectEvaluationsView = {
+  subject: SubjectRef;
+  prof: string;
+  evaluations: EvaluationView[];
+};
 
-export type LastEvaluationView = { id: string; title: string; subject: string; date: string; level: EvalValue; score: number | null };
+export type LastEvaluationView = {
+  id: string;
+  title: string;
+  subject: string;
+  date: string;
+  level: EvalValue;
+  score: number | null;
+};
 
 export type LifeEventView = {
   id: string;
@@ -61,7 +76,14 @@ export type LifeEventView = {
   student?: string;
 };
 
-export type LifeStatsView = { absences: number; toJustify: number; lates: number; lateMinutes: number; sanctions: number; encouragements: number };
+export type LifeStatsView = {
+  absences: number;
+  toJustify: number;
+  lates: number;
+  lateMinutes: number;
+  sanctions: number;
+  encouragements: number;
+};
 
 export type MessageView = {
   id: string;
@@ -90,7 +112,18 @@ export type DocumentView = {
   canDelete: boolean;
 };
 
-export type AgendaEventView = { title: string; tone: Tone; startsOn: string; endsOn: string | null; holiday: boolean };
+export type AgendaEventView = {
+  id: string;
+  title: string;
+  tone: Tone;
+  startsOn: string;
+  endsOn: string | null;
+  holiday: boolean;
+  /** Classe concernée (nul : tout l'établissement). */
+  className: string | null;
+  /** L'auteur, la direction ou le secrétariat peuvent le retirer. */
+  canDelete: boolean;
+};
 
 export type BillView = {
   id: string;

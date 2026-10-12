@@ -6,20 +6,33 @@ import type { HomeworkDayView, HomeworkView } from "./types";
 type Scope = { classId: string } | { teacherId: string };
 
 /** Devoirs à venir (échéance après aujourd'hui), groupés par jour d'échéance. */
-export async function getUpcomingHomework(supabase: SupabaseServer, scope: Scope, reference: Date) {
+export async function getUpcomingHomework(
+  supabase: SupabaseServer,
+  scope: Scope,
+  reference: Date,
+) {
   const today = isoDay(reference);
   let q = supabase
     .from("homework")
-    .select("id, content, given_on, due_on, is_exam, attachment_name, subjects(id, name, hue), classes(name)")
+    .select(
+      "id, content, given_on, due_on, is_exam, attachment_name, subjects(id, name, hue), classes(name)",
+    )
     .gt("due_on", today)
     .order("due_on")
     .order("id");
-  q = "classId" in scope ? q.eq("class_id", scope.classId) : q.eq("teacher_id", scope.teacherId);
+  q =
+    "classId" in scope
+      ? q.eq("class_id", scope.classId)
+      : q.eq("teacher_id", scope.teacherId);
   const { data } = await q;
 
   const items: HomeworkView[] = (data ?? []).map((h) => ({
     id: h.id,
-    subject: { id: h.subjects!.id, name: h.subjects!.name, hue: h.subjects!.hue },
+    subject: {
+      id: h.subjects!.id,
+      name: h.subjects!.name,
+      hue: h.subjects!.hue,
+    },
     text: h.content,
     given: formatDayMonth(h.given_on),
     dueOn: h.due_on,
@@ -37,7 +50,13 @@ export async function getUpcomingHomework(supabase: SupabaseServer, scope: Scope
 }
 
 /** Devoirs cochés par la personne connectée (coche personnelle). */
-export async function getDoneHomework(supabase: SupabaseServer, userId: string): Promise<string[]> {
-  const { data } = await supabase.from("homework_done").select("homework_id").eq("user_id", userId);
+export async function getDoneHomework(
+  supabase: SupabaseServer,
+  userId: string,
+): Promise<string[]> {
+  const { data } = await supabase
+    .from("homework_done")
+    .select("homework_id")
+    .eq("user_id", userId);
   return (data ?? []).map((d) => d.homework_id);
 }

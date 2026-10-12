@@ -215,6 +215,162 @@ export async function deleteDocument(
   return { ok: true };
 }
 
+export type AgendaInput = {
+  title: string;
+  startsOn: string;
+  endsOn: string | null;
+  classId: string | null;
+  tone: "ok" | "danger" | "warn" | "info" | "neutral" | "brand";
+  holiday: boolean;
+};
+
+/** Agenda : ajouter un événement (administration ; professeur pour ses classes). */
+export async function addAgendaEvent(e: AgendaInput): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("add_agenda_event", {
+        p_title: e.title,
+        p_starts_on: e.startsOn,
+        p_ends_on: e.endsOn as string,
+        p_class: e.classId as string,
+        p_tone: e.tone,
+        p_is_holiday: e.holiday,
+      }),
+    ["/agenda", "/accueil"],
+  );
+}
+
+export async function deleteAgendaEvent(
+  eventId: string,
+): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("delete_agenda_event", { p_event: eventId }),
+    ["/agenda", "/accueil"],
+  );
+}
+
+/** Annuaire (secrétariat, direction) : nom et civilité d'une personne de l'établissement. */
+export async function updatePersonName(
+  profileId: string,
+  firstName: string,
+  lastName: string,
+  civility: "madame" | "monsieur" | null,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("update_person_name", {
+        p_profile: profileId,
+        p_first_name: firstName,
+        p_last_name: lastName,
+        p_civility: civility as "madame",
+      }),
+    ["/annuaire"],
+  );
+}
+
+/**
+ * Annuaire : adresse e-mail. update_person_email vérifie les droits et enregistre l'adresse de contact ;
+ * si la personne a un compte, le serveur change aussi son adresse de connexion.
+ */
+export async function updatePersonEmail(
+  profileId: string,
+  email: string,
+): Promise<ActionResult> {
+  const supabase = await createClient();
+  const address = email.trim().toLowerCase();
+  const { error } = await supabase.rpc("update_person_email", {
+    p_profile: profileId,
+    p_email: address,
+  });
+  if (error)
+    return {
+      ok: false,
+      error:
+        /^[A-ZÉÈ]/.test(error.message) &&
+        !/permission|violates/i.test(error.message)
+          ? error.message
+          : FAILED,
+    };
+  const { data: userId } = await supabase.rpc("manageable_person", {
+    p_profile: profileId,
+  });
+  if (userId) {
+    const admin = createAdminClient();
+    if (!admin)
+      return {
+        ok: false,
+        error:
+          "Adresse de contact enregistrée, mais l'adresse de connexion n'a pas pu être changée (serveur non configuré).",
+      };
+    const { error: authError } = await admin.auth.admin.updateUserById(userId, {
+      email: address,
+      email_confirm: true,
+    });
+    if (authError)
+      return {
+        ok: false,
+        error: /already|exists|registered/i.test(authError.message)
+          ? "Cette adresse est déjà utilisée par un autre compte."
+          : FAILED,
+      };
+  }
+  revalidatePath("/annuaire");
+  return { ok: true };
+}
+
+/** Bulletins : préparer ceux d'une classe pour un trimestre (direction, secrétariat). */
+export async function prepareReportCards(
+  classId: string,
+  term: number,
+  publishOn: string,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("create_report_cards", {
+        p_class: classId,
+        p_term: term,
+        p_publish_on: publishOn,
+      }),
+    ["/bulletins"],
+  );
+}
+
+/** Bulletins : positionnement (nul si noté sur 20) et appréciation d'une matière. Appréciation vide : ligne retirée. */
+export async function saveReportLine(
+  reportCardId: string,
+  subjectId: string,
+  level: "MI" | "MF" | "MS" | "TB" | null,
+  comment: string,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("set_report_line", {
+        p_report_card: reportCardId,
+        p_subject: subjectId,
+        p_level: level as "MI",
+        p_comment: comment,
+      }),
+    ["/bulletins"],
+  );
+}
+
+/** Bulletins : avis du conseil de classe (direction). */
+export async function saveReportCouncil(
+  reportCardId: string,
+  mention: string,
+  text: string,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("set_report_council", {
+        p_report_card: reportCardId,
+        p_mention: mention,
+        p_text: text,
+      }),
+    ["/bulletins"],
+  );
+}
+
 export async function setScore(
   assessmentId: string,
   studentId: string,

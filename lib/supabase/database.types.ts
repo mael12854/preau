@@ -19,6 +19,7 @@ export type Database = {
     Tables: {
       agenda_events: {
         Row: {
+          created_by: string | null
           class_id: string | null
           ends_on: string | null
           id: string
@@ -29,6 +30,7 @@ export type Database = {
           tone: Database["public"]["Enums"]["tone"]
         }
         Insert: {
+          created_by?: string | null
           class_id?: string | null
           ends_on?: string | null
           id?: string
@@ -39,6 +41,7 @@ export type Database = {
           tone?: Database["public"]["Enums"]["tone"]
         }
         Update: {
+          created_by?: string | null
           class_id?: string | null
           ends_on?: string | null
           id?: string
@@ -1041,6 +1044,7 @@ export type Database = {
       }
       report_card_lines: {
         Row: {
+          updated_by: string | null
           comment: string
           level: Database["public"]["Enums"]["eval_value"]
           position: number
@@ -1048,6 +1052,7 @@ export type Database = {
           subject_id: string
         }
         Insert: {
+          updated_by?: string | null
           comment: string
           level: Database["public"]["Enums"]["eval_value"]
           position?: number
@@ -1055,6 +1060,7 @@ export type Database = {
           subject_id: string
         }
         Update: {
+          updated_by?: string | null
           comment?: string
           level?: Database["public"]["Enums"]["eval_value"]
           position?: number
@@ -1260,10 +1266,26 @@ export type Database = {
         }
         Returns: { id: string; storage_path: string }[]
       }
+      create_report_cards: {
+        Args: { p_class: string; p_publish_on: string; p_term: number }
+        Returns: number
+      }
+      delete_agenda_event: { Args: { p_event: string }; Returns: undefined }
       delete_document: { Args: { p_document: string }; Returns: string }
       justify_life_event: {
         Args: { p_comment?: string; p_event: string; p_reason: string }
         Returns: undefined
+      }
+      add_agenda_event: {
+        Args: {
+          p_class: string
+          p_ends_on: string
+          p_is_holiday: boolean
+          p_starts_on: string
+          p_title: string
+          p_tone: Database["public"]["Enums"]["tone"]
+        }
+        Returns: string
       }
       cancel_payment: { Args: { p_payment: string }; Returns: undefined }
       confirm_payment: {
@@ -1274,6 +1296,7 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["payment_status"]
       }
+      manageable_person: { Args: { p_profile: string }; Returns: string }
       post_liaison_note: {
         Args: { p_body: string; p_class: string; p_requires_signature?: boolean; p_title: string }
         Returns: string
@@ -1306,6 +1329,19 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_report_council: {
+        Args: { p_mention: string; p_report_card: string; p_text: string }
+        Returns: undefined
+      }
+      set_report_line: {
+        Args: {
+          p_comment: string
+          p_level: Database["public"]["Enums"]["eval_value"]
+          p_report_card: string
+          p_subject: string
+        }
+        Returns: undefined
+      }
       sign_document: { Args: { p_document: string }; Returns: undefined }
       sign_liaison_note: { Args: { p_note: string; p_student: string }; Returns: undefined }
       start_payment: {
@@ -1316,6 +1352,19 @@ export type Database = {
           p_student: string
         }
         Returns: string
+      }
+      update_person_email: {
+        Args: { p_email: string; p_profile: string }
+        Returns: undefined
+      }
+      update_person_name: {
+        Args: {
+          p_civility: Database["public"]["Enums"]["civility"]
+          p_first_name: string
+          p_last_name: string
+          p_profile: string
+        }
+        Returns: undefined
       }
       validate_attendance: {
         Args: { p_lesson: string; p_statuses: Json }
