@@ -66,7 +66,7 @@ Variables d'environnement (serveur uniquement) :
 
 Tant qu'une de ces variables manque, les paiements restent « en attente » et aucune demande n'est envoyée.
 
-Les valeurs non secrètes (URL, clés publiables, unité) sont dans `vercel.json`. Le compte entreprise de Préau dans Crédit Domestique est `preau`. Le seul secret, `SUPABASE_SERVICE_ROLE_KEY`, reste dans les réglages du projet Vercel.
+Les valeurs non secrètes (URL, clé publiable de Préau, unité, compte entreprise `preau`) sont dans `vercel.json`. `CREDIT_DOMESTIQUE_KEY` et `SUPABASE_SERVICE_ROLE_KEY` restent dans les réglages du projet Vercel : le dépôt est public, et les règles d'accès de Crédit Domestique laissent tout passer avec sa clé.
 
 ⚠️ Les tables de Crédit Domestique sont lisibles et modifiables avec sa clé publique : quiconque l'a en main peut marquer une demande « acceptée » sans payer. Tant que ce n'est pas corrigé, ne l'utilisez pas pour de vrais paiements.
 
