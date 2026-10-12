@@ -317,14 +317,17 @@ export type Database = {
           category: Database["public"]["Enums"]["doc_category"]
           class_id: string | null
           created_at: string
+          created_by: string | null
           icon: string
           id: string
+          mime_type: string | null
           requires_signature: boolean
           school_id: string
           size_bytes: number
           storage_path: string | null
           student_id: string | null
           title: string
+          uploaded_at: string | null
         }
         Insert: {
           category: Database["public"]["Enums"]["doc_category"]
@@ -338,6 +341,9 @@ export type Database = {
           storage_path?: string | null
           student_id?: string | null
           title: string
+          created_by?: string | null
+          mime_type?: string | null
+          uploaded_at?: string | null
         }
         Update: {
           category?: Database["public"]["Enums"]["doc_category"]
@@ -351,6 +357,9 @@ export type Database = {
           storage_path?: string | null
           student_id?: string | null
           title?: string
+          created_by?: string | null
+          mime_type?: string | null
+          uploaded_at?: string | null
         }
         Relationships: [
           {
@@ -1239,6 +1248,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_document: {
+        Args: {
+          p_category: Database["public"]["Enums"]["doc_category"]
+          p_class: string
+          p_file_name: string
+          p_mime_type: string
+          p_requires_signature: boolean
+          p_size_bytes: number
+          p_title: string
+        }
+        Returns: { id: string; storage_path: string }[]
+      }
+      delete_document: { Args: { p_document: string }; Returns: string }
       justify_life_event: {
         Args: { p_comment?: string; p_event: string; p_reason: string }
         Returns: undefined

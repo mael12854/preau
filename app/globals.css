@@ -508,3 +508,15 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Impression (bulletins, « Enregistrer en PDF ») : seul le contenu de la page est imprimé. */
+@media print {
+  aside,
+  header:has(> h1),
+  .print\:hidden {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+}

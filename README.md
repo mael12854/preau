@@ -166,3 +166,14 @@ design_handoff_preau/    référence de design (guide de marque et prototype cli
 - **Valeurs du mode sombre** : le README du handoff ne donne pas toutes les valeurs sombres (surfaces secondaires, tons sémantiques, barre latérale). Elles ont été dérivées et vérifiées pour le contraste.
 - **Pastilles du tableau d'évaluations** : le prototype n'affiche que des disques. Le sigle est maintenant visible à côté de chaque disque, pour respecter la règle « jamais seule ».
 - **Taille de texte et contraste renforcé** : ces options sont décrites dans le guide (section Accessibilité) mais absentes du prototype de Mon compte. Elles sont ajoutées dans une carte « Lisibilité ».
+
+## Documents
+
+Les fichiers sont dans le compartiment privé `documents` de Supabase Storage (10 Mo au plus par fichier), sans aucune règle d'accès : seul le serveur y accède, avec `SUPABASE_SERVICE_ROLE_KEY`.
+
+- **Ajout** : l'administration (pour tout l'établissement ou une classe) et les professeurs (documents pédagogiques de leurs classes). `create_document` vérifie les droits, puis le serveur délivre un lien d'envoi à usage unique ; le navigateur envoie le fichier directement au stockage. Le document n'apparaît qu'une fois le fichier arrivé.
+- **Téléchargement** : `/documents/<id>/fichier`. La RLS de `documents` décide si la personne le voit ; si oui, le serveur la redirige vers un lien valable 60 secondes.
+- **Retrait** : l'auteur, la direction ou le secrétariat (`delete_document`, puis suppression du fichier).
+
+Migration : `20261012101000_document_storage.sql`.
+

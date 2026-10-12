@@ -4,7 +4,8 @@ import type { Database } from "./database.types";
 
 /**
  * Client Préau avec la clé service_role : serveur uniquement, jamais exposé au navigateur.
- * Sert seulement à confirmer les paiements (confirm_payment), après vérification chez Crédit Domestique.
+ * Sert à confirmer les paiements (confirm_payment), après vérification chez Crédit Domestique,
+ * et à lire ou écrire les fichiers du compartiment privé « documents », après vérification des droits.
  */
 export function createAdminClient() {
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;

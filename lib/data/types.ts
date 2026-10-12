@@ -84,6 +84,10 @@ export type DocumentView = {
   size: string;
   toSign: boolean;
   signed: boolean;
+  /** Un fichier est stocké : le bouton de téléchargement est actif. */
+  downloadable: boolean;
+  /** L'auteur, la direction ou le secrétariat peuvent retirer le document. */
+  canDelete: boolean;
 };
 
 export type AgendaEventView = { title: string; tone: Tone; startsOn: string; endsOn: string | null; holiday: boolean };

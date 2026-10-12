@@ -110,12 +110,11 @@ export function BulletinsScreen({
           <Button
             variant="secondary"
             className="h-10 px-3.5 text-label"
-            icon="download"
-            onClick={() =>
-              toast({ title: "Téléchargement du bulletin en PDF" })
-            }
+            icon="print"
+            aria-label="Imprimer ou enregistrer en PDF"
+            onClick={() => window.print()}
           >
-            PDF
+            Imprimer
           </Button>
         </header>
 

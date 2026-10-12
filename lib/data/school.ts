@@ -7,9 +7,14 @@ import type { AgendaEventView, BillView, DocumentView, PendingTopUpView, ReportP
 
 const CATEGORY = { administratif: "Administratif", pedagogique: "Pédagogique", cantine: "Cantine" } as const;
 
-export async function getDocuments(supabase: SupabaseServer, profileId: string): Promise<DocumentView[]> {
+export async function getDocuments(supabase: SupabaseServer, profileId: string, manager = false): Promise<DocumentView[]> {
   const [{ data }, { data: signed }] = await Promise.all([
-    supabase.from("documents").select("id, title, category, icon, size_bytes, requires_signature, created_at").order("created_at", { ascending: false }),
+    supabase
+      .from("documents")
+      .select("id, title, category, icon, size_bytes, requires_signature, created_at, storage_path, uploaded_at, created_by")
+      // Un envoi interrompu (fichier jamais arrivé) reste invisible.
+      .or("storage_path.is.null,uploaded_at.not.is.null")
+      .order("created_at", { ascending: false }),
     supabase.from("document_signatures").select("document_id").eq("profile_id", profileId),
   ]);
   const signedIds = new Set((signed ?? []).map((s) => s.document_id));
@@ -22,6 +27,8 @@ export async function getDocuments(supabase: SupabaseServer, profileId: string):
     size: formatSize(d.size_bytes),
     toSign: d.requires_signature && !signedIds.has(d.id),
     signed: d.requires_signature && signedIds.has(d.id),
+    downloadable: !!d.storage_path && !!d.uploaded_at,
+    canDelete: manager || d.created_by === profileId,
   }));
 }
 
