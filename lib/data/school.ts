@@ -106,8 +106,13 @@ export async function getReportCards(supabase: SupabaseServer, reference: Date):
       headTeacher: rc.head_teacher,
       lines: [...rc.report_card_lines]
         .sort((x, y) => x.position - y.position)
-        .filter((l) => l.level !== "NE" && l.level !== "ABS" && l.level !== "DISP")
-        .map((l) => ({ subject: { id: l.subjects!.id, name: l.subjects!.name, hue: l.subjects!.hue }, level: l.level as "MI" | "MF" | "MS" | "TB", comment: l.comment })),
+        // Sans positionnement (établissement noté sur 20), la ligne garde son appréciation seule.
+        .filter((l) => l.level !== "ABS" && l.level !== "DISP")
+        .map((l) => ({
+          subject: { id: l.subjects!.id, name: l.subjects!.name, hue: l.subjects!.hue },
+          level: l.level === "NE" ? null : (l.level as "MI" | "MF" | "MS" | "TB"),
+          comment: l.comment,
+        })),
       council: rc.council_mention ? { title: rc.council_mention, text: rc.council_text ?? "" } : null,
     };
   });

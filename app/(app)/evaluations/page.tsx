@@ -13,7 +13,7 @@ export default async function EvaluationsPage() {
   const subjects = profile.student ? await getStudentEvaluations(supabase, profile.student.id, profile.student.classId) : [];
   return (
     <AppShell profile={profile} module="notes">
-      <EvaluationsScreen subjects={subjects} currentTerm={1} scale={profile.scale} />
+      <EvaluationsScreen subjects={subjects} currentTerm={1} scale={profile.scale} grading={profile.grading} />
     </AppShell>
   );
 }

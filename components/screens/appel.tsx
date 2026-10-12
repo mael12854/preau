@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { publishAssessment, setSkillLevels, validateAttendance } from "@/app/(app)/actions";
+import { publishAssessment, setScore, setSkillLevels, validateAttendance } from "@/app/(app)/actions";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PastilleDot } from "@/components/ui/pastille";
@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import type { AppelData } from "@/lib/data/teacher";
 import { evalText, nextEvalValue, type EvalScale, type EvalValue } from "@/lib/evaluation";
+import { formatScore, parseScore, type Grading } from "@/lib/grading";
 import { ATTENDANCE_OPTIONS, type Attendance } from "@/lib/reference";
 
 const ATTENDANCE_STYLE: Record<Attendance, string> = {
@@ -172,8 +173,119 @@ function EvaluationTab({ data, scale }: { data: AppelData; scale: EvalScale }) {
   );
 }
 
+type Status = "NE" | "ABS" | "DISP";
+const STATUS_OPTIONS: { value: Status; label: string }[] = [
+  { value: "NE", label: "Noté" },
+  { value: "ABS", label: "Absent" },
+  { value: "DISP", label: "Dispensé" },
+];
+
+/** Saisie des notes sur 20 (établissements notés sur 20). Aucune moyenne n'est calculée. */
+function ScoreTab({ data }: { data: AppelData }) {
+  const toast = useToast();
+  const a = data.assessment;
+  const initial = a?.scores ?? {};
+  const [text, setText] = useState<Record<string, string>>(() =>
+    Object.fromEntries(Object.entries(initial).map(([id, r]) => [id, r.score === null ? "" : formatScore(r.score)])),
+  );
+  const [status, setStatus] = useState<Record<string, Status>>(() =>
+    Object.fromEntries(Object.entries(initial).map(([id, r]) => [id, r.status === "ABS" || r.status === "DISP" ? r.status : "NE"])),
+  );
+  const [invalid, setInvalid] = useState<Record<string, boolean>>({});
+  const [published, setPublished] = useState(a?.published ?? false);
+  const [pending, start] = useTransition();
+  if (!a) return <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">Aucune évaluation en cours de saisie.</p>;
+
+  const save = (studentId: string, value: string, st: Status) => {
+    const score = st === "NE" ? parseScore(value) : null;
+    if (score === undefined) {
+      setInvalid((v) => ({ ...v, [studentId]: true }));
+      return;
+    }
+    setInvalid((v) => ({ ...v, [studentId]: false }));
+    start(async () => {
+      const r = await setScore(a.id, studentId, score, st);
+      if (!r.ok) toast({ title: r.error });
+    });
+  };
+
+  return (
+    <div className="overflow-hidden rounded-card border border-line bg-surface">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-surface-2 px-5 py-3.5 text-label">
+        <span>
+          <b>{a.title}</b> · {a.label} · {published ? "publiée" : "notes sur 20, au demi-point"}
+        </span>
+        <Button
+          className="h-10 px-4 text-label"
+          disabled={published || pending}
+          onClick={() =>
+            start(async () => {
+              const r = await publishAssessment(a.id);
+              if (r.ok) setPublished(true);
+              toast({ title: r.ok ? "Notes publiées pour les élèves et les familles" : r.error });
+            })
+          }
+        >
+          {published ? "Publiée" : "Publier"}
+        </Button>
+      </div>
+      <ul className="m-0 list-none p-0">
+        {data.evalStudents.map((s) => {
+          const st = status[s.id] ?? "NE";
+          const inputId = `note-${s.id}`;
+          return (
+            <li key={s.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3.5 gap-y-2 border-b border-line-soft px-5 py-2.5 last:border-b-0 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+              <label htmlFor={inputId} className="text-ui font-bold">
+                {s.name}
+              </label>
+              <div className="flex items-center gap-1.5">
+                <input
+                  id={inputId}
+                  inputMode="decimal"
+                  autoComplete="off"
+                  disabled={published || st !== "NE"}
+                  aria-invalid={invalid[s.id] || undefined}
+                  aria-describedby={invalid[s.id] ? `${inputId}-err` : undefined}
+                  value={st === "NE" ? (text[s.id] ?? "") : ""}
+                  onChange={(e) => setText((t) => ({ ...t, [s.id]: e.target.value }))}
+                  onBlur={(e) => save(s.id, e.target.value, st)}
+                  className="h-10 w-20 rounded-control border border-line bg-surface px-2.5 text-right text-ui tabular aria-invalid:border-danger disabled:bg-neutral-bg"
+                />
+                <span aria-hidden="true" className="text-label text-ink-muted">sur 20</span>
+              </div>
+              <div role="radiogroup" aria-label={`${s.name} : statut`} className="col-span-2 flex gap-1.5 sm:col-span-1">
+                {STATUS_OPTIONS.map((o) => (
+                  <button
+                    key={o.value}
+                    type="button"
+                    role="radio"
+                    disabled={published}
+                    aria-checked={st === o.value}
+                    onClick={() => {
+                      setStatus((v) => ({ ...v, [s.id]: o.value }));
+                      save(s.id, text[s.id] ?? "", o.value);
+                    }}
+                    className="h-9 min-w-[5.5rem] flex-1 rounded-[9px] border-[1.5px] border-line bg-surface px-3 text-sm font-bold text-ink-2 aria-checked:border-brand aria-checked:bg-brand-tint aria-checked:text-brand sm:flex-none"
+                  >
+                    {o.label}
+                  </button>
+                ))}
+              </div>
+              {invalid[s.id] && (
+                <p id={`${inputId}-err`} className="col-span-full m-0 text-caption text-danger">
+                  Saisissez une note entre 0 et 20, au demi-point (par exemple 14,5).
+                </p>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
 /** Appel & évaluation (professeur), enregistrés dans Supabase. */
-export function AppelScreen({ data, scale = "college" }: { data: AppelData; scale?: EvalScale }) {
+export function AppelScreen({ data, scale = "college", grading = "competences" }: { data: AppelData; scale?: EvalScale; grading?: Grading }) {
   return (
     <SegmentedTabs
       aria-label="Saisie"
@@ -187,7 +299,7 @@ export function AppelScreen({ data, scale = "college" }: { data: AppelData; scal
       }
       tabs={[
         { value: "appel", label: "Appel", content: <AppelTab data={data} /> },
-        { value: "eval", label: "Évaluation", content: <EvaluationTab data={data} scale={scale} /> },
+        { value: "eval", label: "Évaluation", content: grading === "note20" ? <ScoreTab data={data} /> : <EvaluationTab data={data} scale={scale} /> },
       ]}
     />
   );

@@ -4,6 +4,7 @@ import { Counter } from "@/components/ui/badge";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PastilleDot } from "@/components/ui/pastille";
+import { scoreLabel, scoreShort } from "@/lib/grading";
 import { cn } from "@/lib/cn";
 import type { LiaisonNoteView } from "@/lib/data/liaison";
 import type { HomeworkDayView, LastEvaluationView, LessonView, LifeStatsView, MessageView } from "@/lib/data/types";
@@ -161,14 +162,20 @@ export function StudentDashboard({ profile, data }: { profile: Viewer; data: Stu
             {data.lastEvaluations.map((e) => {
               return (
                 <li key={e.id} className="flex items-center gap-3 border-b border-line-soft py-1.5 last:border-b-0">
-                  <PastilleDot value={e.level} size={20} />
+                  {profile.grading !== "note20" && <PastilleDot value={e.level} size={20} />}
                   <div className="flex min-w-0 flex-1 flex-col">
                     <b className="text-label">{e.title}</b>
                     <span className="text-caption text-ink-muted">
                       {e.subject} · {e.date}
                     </span>
                   </div>
-                  <span className="text-right text-caption text-ink-2">{evalText(e.level, scale).label}</span>
+                  {profile.grading === "note20" ? (
+                    <b className="tabular text-right text-label" aria-label={scoreLabel(e.score, e.level)}>
+                      {scoreShort(e.score, e.level)}
+                    </b>
+                  ) : (
+                    <span className="text-right text-caption text-ink-2">{evalText(e.level, scale).label}</span>
+                  )}
                 </li>
               );
             })}

@@ -46,6 +46,10 @@ export async function setSkillLevels(assessmentId: string, studentId: string, le
   return run((s) => s.rpc("set_assessment_result", { p_assessment: assessmentId, p_student: studentId, p_level: "NE", p_skill_levels: levels }), []);
 }
 
+export async function setScore(assessmentId: string, studentId: string, score: number | null, status: "NE" | "ABS" | "DISP"): Promise<ActionResult> {
+  return run((s) => s.rpc("set_assessment_score", { p_assessment: assessmentId, p_student: studentId, p_score: score as number, p_status: status }), []);
+}
+
 export async function publishAssessment(assessmentId: string): Promise<ActionResult> {
   return run((s) => s.rpc("publish_assessment", { p_assessment: assessmentId }), ["/appel", "/accueil", "/evaluations"]);
 }

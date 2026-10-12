@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { now } from "@/lib/clock";
 import { isoDay } from "@/lib/format";
+import type { Grading } from "@/lib/grading";
 import { PRIMARY_PROFILES, PROFILES, type ModuleKey, type Profile, type ProfileId } from "@/lib/navigation";
 import { createClient } from "@/lib/supabase/server";
 
@@ -23,6 +24,8 @@ export type Viewer = Profile & {
   student: FollowedStudent | null;
   /** Échelle d'affichage des évaluations : collège/lycée (MI → TB) ou livret scolaire du primaire. */
   scale: "college" | "primaire";
+  /** Mode de notation de l'établissement : compétences, ou note sur 20 (sans moyenne). */
+  grading: Grading;
   counts: Partial<Record<ModuleKey, number>>;
 };
 
@@ -36,7 +39,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
 
   const { data: me } = await supabase
     .from("profiles")
-    .select("id, kind, first_name, last_name, civility, display_name, initials, role_label, specialities, schools(name, year_label, domain)")
+    .select("id, kind, first_name, last_name, civility, display_name, initials, role_label, specialities, schools(name, year_label, domain, grading)")
     .eq("user_id", auth.user.id)
     .maybeSingle();
   if (!me) return null;
@@ -117,6 +120,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     school: { name: me.schools?.name ?? "", year: me.schools?.year_label ?? "", domain: me.schools?.domain ?? "" },
     student,
     scale: PRIMARY_PROFILES.includes(variant) || primarySchool ? "primaire" : "college",
+    grading: me.schools?.grading ?? "competences",
     counts: await navCounts(supabase, me.id, student, me.kind === "eleve" || me.kind === "parent", auth.user.id),
   };
 });

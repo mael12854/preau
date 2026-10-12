@@ -10,7 +10,7 @@ export async function getStudentEvaluations(supabase: SupabaseServer, studentId:
   const [{ data }, teachers] = await Promise.all([
     supabase
       .from("assessment_results")
-      .select("level, skill_levels, comment, assessments!inner(id, title, held_on, term, skills, published_at, subjects(id, name, hue))")
+      .select("level, score, skill_levels, comment, assessments!inner(id, title, held_on, term, skills, published_at, subjects(id, name, hue))")
       .eq("student_id", studentId)
       .not("assessments.published_at", "is", null),
     getTeachers(supabase, classId),
@@ -27,6 +27,7 @@ export async function getStudentEvaluations(supabase: SupabaseServer, studentId:
       title: a.title,
       date: formatDayMonth(a.held_on),
       level: r.level,
+      score: r.score,
       skills: a.skills.map((name, i) => ({ name, level: (r.skill_levels[i] ?? "NE") as EvalValue })),
       comment: r.comment,
       term: a.term,
@@ -39,7 +40,7 @@ export async function getStudentEvaluations(supabase: SupabaseServer, studentId:
 export async function getLastEvaluations(supabase: SupabaseServer, studentId: string, limit = 4): Promise<LastEvaluationView[]> {
   const { data } = await supabase
     .from("assessment_results")
-    .select("level, assessments!inner(id, title, held_on, published_at, subjects(name))")
+    .select("level, score, assessments!inner(id, title, held_on, published_at, subjects(name))")
     .eq("student_id", studentId)
     .not("assessments.published_at", "is", null);
   return (data ?? [])
@@ -51,5 +52,6 @@ export async function getLastEvaluations(supabase: SupabaseServer, studentId: st
       subject: r.assessments.subjects?.name ?? "",
       date: formatDayMonth(r.assessments.held_on),
       level: r.level,
+      score: r.score,
     }));
 }

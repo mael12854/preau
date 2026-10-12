@@ -66,7 +66,12 @@ export type AppelData = {
   lesson: { id: string; label: string; detail: string; validated: boolean } | null;
   students: StudentRow[];
   attendance: Record<string, "present" | "absent" | "late">;
-  assessment: { id: string; title: string; label: string; skills: string[]; grid: Record<string, EvalValue[]>; published: boolean } | null;
+  assessment: {
+    id: string; title: string; label: string; skills: string[]; grid: Record<string, EvalValue[]>;
+    /** Notes sur 20 par élève (établissements notés sur 20). */
+    scores: Record<string, { score: number | null; status: EvalValue }>;
+    published: boolean;
+  } | null;
   evalStudents: StudentRow[];
 };
 
@@ -96,7 +101,7 @@ export async function getAppel(supabase: SupabaseServer, teacherId: string, refe
 
   const { data: a } = await supabase
     .from("assessments")
-    .select("id, title, skills, published_at, class_id, classes(name), subjects(name), assessment_results(student_id, skill_levels)")
+    .select("id, title, skills, published_at, class_id, classes(name), subjects(name), assessment_results(student_id, skill_levels, score, level)")
     .eq("teacher_id", teacherId)
     .order("published_at", { ascending: false, nullsFirst: true })
     .order("held_on", { ascending: false })
@@ -109,7 +114,10 @@ export async function getAppel(supabase: SupabaseServer, teacherId: string, refe
     const grid: Record<string, EvalValue[]> = {};
     evalStudents.forEach((s) => (grid[s.id] = a.skills.map(() => "NE")));
     a.assessment_results.forEach((r) => (grid[r.student_id] = a.skills.map((_, i) => (r.skill_levels[i] ?? "NE") as EvalValue)));
-    assessment = { id: a.id, title: a.title, label: `${a.classes?.name} · ${a.subjects?.name}`, skills: a.skills, grid, published: !!a.published_at };
+    const scores: Record<string, { score: number | null; status: EvalValue }> = {};
+    evalStudents.forEach((s) => (scores[s.id] = { score: null, status: "NE" }));
+    a.assessment_results.forEach((r) => (scores[r.student_id] = { score: r.score, status: r.level }));
+    assessment = { id: a.id, title: a.title, label: `${a.classes?.name} · ${a.subjects?.name}`, skills: a.skills, grid, scores, published: !!a.published_at };
   }
 
   return {

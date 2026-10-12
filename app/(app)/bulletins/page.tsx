@@ -13,7 +13,7 @@ export default async function Page() {
   const periods = await getReportCards(await createClient(), now());
   return (
     <AppShell profile={profile} module="bulletins">
-      <BulletinsScreen periods={periods} showStudent={profile.staff} scale={profile.scale} />
+      <BulletinsScreen periods={periods} showStudent={profile.staff} scale={profile.scale} grading={profile.grading} />
     </AppShell>
   );
 }

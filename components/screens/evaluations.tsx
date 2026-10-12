@@ -7,6 +7,7 @@ import { SubjectChip, SubjectDot } from "@/components/ui/subject-chip";
 import { cn } from "@/lib/cn";
 import type { SubjectEvaluationsView } from "@/lib/data/types";
 import { distribution, evalText, type EvalScale } from "@/lib/evaluation";
+import { scoreLabel, scoreShort, type Grading } from "@/lib/grading";
 
 const COLS = "@2xl:grid-cols-[12.5rem_minmax(0,1fr)_8.75rem]";
 const TERMS = [
@@ -15,8 +16,61 @@ const TERMS = [
   { value: "t3", label: "Trimestre 3" },
 ];
 
+/** Notes sur 20 (établissements notés sur 20) : chaque note, par matière. Aucune moyenne, aucun rang. */
+function ScoresScreen({ subjects, currentTerm }: { subjects: SubjectEvaluationsView[]; currentTerm: number }) {
+  const [term, setTerm] = useState(`t${currentTerm}`);
+  const termNo = Number(term.slice(1));
+  const rows = subjects
+    .map((r) => ({ ...r, evaluations: r.evaluations.filter((e) => e.term === termNo) }))
+    .filter((r) => r.evaluations.length > 0);
+  return (
+    <div className="flex flex-col gap-4">
+      <SegmentedControl aria-label="Période" options={TERMS} value={term} onValueChange={setTerm} />
+      {rows.length === 0 ? (
+        <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">
+          Les notes du {TERMS.find((t) => t.value === term)?.label.toLowerCase()} apparaîtront ici.
+        </p>
+      ) : (
+        <ul className="m-0 grid list-none gap-4 p-0 lg:grid-cols-2">
+          {rows.map((r) => (
+            <li key={r.subject.id} className="flex flex-col gap-2 rounded-card border border-line bg-surface p-5">
+              <div className="flex items-center gap-2.5">
+                <SubjectDot hue={r.subject.hue} />
+                <div className="flex flex-col">
+                  <h2 className="m-0 text-ui font-bold">{r.subject.name}</h2>
+                  <span className="text-meta text-ink-muted">{r.prof}</span>
+                </div>
+              </div>
+              <ul className="m-0 list-none p-0">
+                {r.evaluations.map((ev) => (
+                  <li key={ev.id} className="flex flex-col gap-1 border-t border-line-soft py-2.5">
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="text-label">
+                        <b>{ev.title}</b> <span className="text-caption text-ink-muted">· {ev.date}</span>
+                      </span>
+                      <b className="tabular text-ui" aria-label={scoreLabel(ev.score, ev.level)}>
+                        {scoreShort(ev.score, ev.level)}
+                      </b>
+                    </div>
+                    {ev.comment && <p className="m-0 text-caption leading-normal text-ink-2">« {ev.comment} »</p>}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 /** Évaluations : matière × pastilles, répartition, panneau de détail. Aucune moyenne. */
-export function EvaluationsScreen({ subjects, currentTerm, scale = "college" }: { subjects: SubjectEvaluationsView[]; currentTerm: number; scale?: EvalScale }) {
+export function EvaluationsScreen({ subjects, currentTerm, scale = "college", grading = "competences" }: { subjects: SubjectEvaluationsView[]; currentTerm: number; scale?: EvalScale; grading?: Grading }) {
+  if (grading === "note20") return <ScoresScreen subjects={subjects} currentTerm={currentTerm} />;
+  return <CompetencesScreen subjects={subjects} currentTerm={currentTerm} scale={scale} />;
+}
+
+function CompetencesScreen({ subjects, currentTerm, scale }: { subjects: SubjectEvaluationsView[]; currentTerm: number; scale: EvalScale }) {
   const [term, setTerm] = useState(`t${currentTerm}`);
   const termNo = Number(term.slice(1));
   const rows = subjects

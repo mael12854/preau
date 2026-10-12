@@ -37,6 +37,8 @@ export type EvaluationView = {
   title: string;
   date: string;
   level: EvalValue;
+  /** Note sur 20 (établissements notés sur 20 uniquement). */
+  score: number | null;
   skills: { name: string; level: EvalValue }[];
   comment: string | null;
   term: number;
@@ -44,7 +46,7 @@ export type EvaluationView = {
 
 export type SubjectEvaluationsView = { subject: SubjectRef; prof: string; evaluations: EvaluationView[] };
 
-export type LastEvaluationView = { id: string; title: string; subject: string; date: string; level: EvalValue };
+export type LastEvaluationView = { id: string; title: string; subject: string; date: string; level: EvalValue; score: number | null };
 
 export type LifeEventView = {
   id: string;
@@ -110,7 +112,7 @@ export type ReportPeriodView = {
   student: string;
   className: string;
   headTeacher: string | null;
-  lines: { subject: SubjectRef; level: EvalLevel; comment: string }[];
+  lines: { subject: SubjectRef; level: EvalLevel | null; comment: string }[];
   council: { title: string; text: string } | null;
 };
 

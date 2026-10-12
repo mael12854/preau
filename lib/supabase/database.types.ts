@@ -70,6 +70,7 @@ export type Database = {
           assessment_id: string
           comment: string | null
           level: Database["public"]["Enums"]["eval_value"]
+          score: number | null
           skill_levels: Database["public"]["Enums"]["eval_value"][]
           student_id: string
           updated_at: string
@@ -78,6 +79,7 @@ export type Database = {
           assessment_id: string
           comment?: string | null
           level?: Database["public"]["Enums"]["eval_value"]
+          score?: number | null
           skill_levels?: Database["public"]["Enums"]["eval_value"][]
           student_id: string
           updated_at?: string
@@ -86,6 +88,7 @@ export type Database = {
           assessment_id?: string
           comment?: string | null
           level?: Database["public"]["Enums"]["eval_value"]
+          score?: number | null
           skill_levels?: Database["public"]["Enums"]["eval_value"][]
           student_id?: string
           updated_at?: string
@@ -1113,18 +1116,21 @@ export type Database = {
       schools: {
         Row: {
           domain: string
+          grading: Database["public"]["Enums"]["grading_mode"]
           id: string
           name: string
           year_label: string
         }
         Insert: {
           domain: string
+          grading?: Database["public"]["Enums"]["grading_mode"]
           id?: string
           name: string
           year_label: string
         }
         Update: {
           domain?: string
+          grading?: Database["public"]["Enums"]["grading_mode"]
           id?: string
           name?: string
           year_label?: string
@@ -1269,6 +1275,15 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_assessment_score: {
+        Args: {
+          p_assessment: string
+          p_score: number
+          p_status?: Database["public"]["Enums"]["eval_value"]
+          p_student: string
+        }
+        Returns: undefined
+      }
       sign_document: { Args: { p_document: string }; Returns: undefined }
       sign_liaison_note: { Args: { p_note: string; p_student: string }; Returns: undefined }
       start_payment: {
@@ -1290,6 +1305,7 @@ export type Database = {
       civility: "madame" | "monsieur"
       doc_category: "administratif" | "pedagogique" | "cantine"
       eval_value: "MI" | "MF" | "MS" | "TB" | "NE" | "ABS" | "DISP"
+      grading_mode: "competences" | "note20"
       invoice_status: "a_payer" | "payee" | "creditee"
       payment_kind: "facture" | "recharge_cantine"
       payment_status: "en_attente" | "reussi" | "echoue" | "annule"
