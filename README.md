@@ -47,15 +47,26 @@ Les écritures sensibles passent par des fonctions SQL qui vérifient les droits
 
 ### Paiements (Crédit Domestique)
 
-Le navigateur ne crédite jamais rien : seul le serveur du prestataire confirme un paiement.
+Crédit Domestique est un projet Supabase à part. Préau y a un compte « entreprise » et adresse aux responsables des **demandes de paiement** (table `charges`), qu'ils acceptent ou refusent dans Crédit Domestique.
 
-1. Le responsable clique sur « Payer » ou « + 20 € ». L'action serveur appelle `start_payment`, qui crée une ligne `payments` en attente (un seul paiement en attente par facture).
-2. `createCheckout` (`lib/payments.ts`) ouvre la session de paiement chez Crédit Domestique et renvoie l'adresse de sa page de paiement, vers laquelle la famille est redirigée. **À brancher** : tant que la fonction renvoie `null`, le paiement reste « en attente de confirmation » et la famille peut l'annuler.
-3. Le webhook du prestataire, reçu par une Supabase Edge Function ou une route API, appelle `confirm_payment(id, 'reussi' | 'echoue', référence)` avec la clé `service_role`. Cette fonction n'est exécutable par aucun utilisateur connecté. Elle est idempotente : un paiement déjà traité n'est pas modifié. En cas de succès, elle règle la facture ou crédite le solde cantine.
+1. Le responsable indique son numéro de compte Crédit Domestique dans **Mon compte**.
+2. « Payer » ou « + 20 € » crée un paiement en attente dans Préau (`start_payment`), puis une demande `charges` chez Crédit Domestique (`lib/credit-domestique.ts`).
+3. Le responsable accepte la demande dans Crédit Domestique (`respond_charge`).
+4. À l'affichage de **Paiements**, le serveur relit les demandes (`syncPayments`, dans `lib/payments.ts`). Il confirme dans Préau avec la clé `service_role` (`confirm_payment`) : une demande acceptée règle la facture ou crédite la cantine, une demande refusée fait échouer le paiement. La confirmation n'a lieu que si l'entreprise et le montant correspondent.
 
-Pensez à vérifier la signature du webhook avant d'appeler `confirm_payment`.
+Variables d'environnement (serveur uniquement) :
 
-Les comptes sont créés par l'établissement, pas par inscription libre. Un compte sans fiche dans un établissement ne voit rien et tombe sur la page « compte non rattaché ».
+| Variable | Rôle |
+|---|---|
+| `CREDIT_DOMESTIQUE_URL` | URL du projet Supabase Crédit Domestique |
+| `CREDIT_DOMESTIQUE_KEY` | Clé d'API de ce projet |
+| `CREDIT_DOMESTIQUE_COMPANY_ACCOUNT` | Identifiant du compte entreprise de Préau |
+| `CREDIT_DOMESTIQUE_UNIT` | `cents` (défaut) ou `euros` |
+| `SUPABASE_SERVICE_ROLE_KEY` | Clé `service_role` de Préau, pour confirmer les paiements |
+
+Tant qu'une de ces variables manque, les paiements restent « en attente » et aucune demande n'est envoyée.
+
+⚠️ Les tables de Crédit Domestique sont lisibles et modifiables avec sa clé publique : quiconque l'a en main peut marquer une demande « acceptée » sans payer. Tant que ce n'est pas corrigé, ne l'utilisez pas pour de vrais paiements.
 
 ### École primaire
 
@@ -72,7 +83,7 @@ Pour ouvrir une classe : créer la classe avec `level = 'primaire'` et `teacher_
 ### Encore sur données du prototype
 
 - **Tableaux de bord de la vie scolaire, de la direction et du secrétariat** (`lib/mock/staff.ts`) : il manque les tables des demandes administratives et des conseils de classe. Le tableau de bord du professeur, lui, est calculé depuis la base.
-- **Paiements** : le parcours est prêt côté base ; il reste à brancher l'API Crédit Domestique dans `lib/payments.ts` et le webhook de confirmation.
+- **Paiements** : branchés sur Crédit Domestique. Il reste à renseigner `CREDIT_DOMESTIQUE_COMPANY_ACCOUNT` et `SUPABASE_SERVICE_ROLE_KEY` sur Vercel, et à appliquer la migration `20261012100800_credit_domestique.sql`.
 - **Documents** : il n'y a pas encore de fichiers dans Supabase Storage (le téléchargement est factice).
 
 ## Stack

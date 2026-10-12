@@ -14,9 +14,22 @@ export default async function Page() {
     .eq("profile_id", profile.profileId)
     .maybeSingle();
   const settings = (data?.notification_settings ?? {}) as Record<string, boolean>;
+  // Lu à part : la colonne n'existe qu'une fois la migration Crédit Domestique appliquée.
+  const isParent = profile.id === "parent" || profile.id === "parent-primaire";
+  const cd = isParent
+    ? (await (await createClient()).from("profile_private").select("credit_domestique_account").eq("profile_id", profile.profileId).maybeSingle()).data
+    : null;
   return (
     <AppShell profile={profile} module="compte">
-      <CompteScreen account={{ name: profile.name, email: profile.email, phone: data?.phone ?? "", notifications: settings }} />
+      <CompteScreen
+        account={{
+          name: profile.name,
+          email: profile.email,
+          phone: data?.phone ?? "",
+          notifications: settings,
+          creditDomestique: isParent ? (cd?.credit_domestique_account ?? "") : undefined,
+        }}
+      />
     </AppShell>
   );
 }
