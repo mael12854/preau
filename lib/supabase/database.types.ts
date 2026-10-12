@@ -941,18 +941,21 @@ export type Database = {
       }
       profile_private: {
         Row: {
+          credit_domestique_account: string | null
           email: string | null
           notification_settings: Json
           phone: string | null
           profile_id: string
         }
         Insert: {
+          credit_domestique_account?: string | null
           email?: string | null
           notification_settings?: Json
           phone?: string | null
           profile_id: string
         }
         Update: {
+          credit_domestique_account?: string | null
           email?: string | null
           notification_settings?: Json
           phone?: string | null

@@ -24,11 +24,10 @@ type Props = {
   canPay: boolean;
 };
 
-const WAITING = "Paiement en attente de confirmation par Crédit Domestique";
-
 /**
  * Paiements & cantine : solde et recharge, menu du jour, factures.
- * Un paiement n'est jamais crédité par le navigateur : il reste en attente jusqu'à la confirmation du prestataire.
+ * Un paiement n'est jamais crédité par le navigateur : il reste en attente jusqu'à ce que le responsable
+ * accepte la demande dans Crédit Domestique (vérifié côté serveur à chaque affichage).
  */
 export function PaiementsScreen({ student, balance, menu, menuDay, bills, pendingTopUps, canPay }: Props) {
   const toast = useToast();
@@ -36,9 +35,7 @@ export function PaiementsScreen({ student, balance, menu, menuDay, bills, pendin
   const pay = (fn: () => Promise<PaymentResult>) =>
     start(async () => {
       const r = await fn();
-      if (!r.ok) return toast({ title: r.error });
-      if (r.checkoutUrl) window.location.assign(r.checkoutUrl);
-      else toast({ title: WAITING });
+      toast({ title: r.ok ? r.message : r.error });
     });
   const cancel = (id: string) =>
     start(async () => {

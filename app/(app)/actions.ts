@@ -1,7 +1,6 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
 import { createCheckout } from "@/lib/payments";
 import type { EvalValue } from "@/lib/evaluation";
 import { getViewer } from "@/lib/session";
@@ -75,22 +74,28 @@ export async function archiveMessage(messageId: string): Promise<ActionResult> {
   );
 }
 
-/** Résultat d'un paiement lancé : adresse du prestataire, ou paiement en attente de confirmation. */
-export type PaymentResult = { ok: true; checkoutUrl: string | null } | { ok: false; error: string };
+/** Résultat d'un paiement lancé : message à afficher (demande envoyée à Crédit Domestique). */
+export type PaymentResult = { ok: true; message: string } | { ok: false; error: string };
 
 async function startPayment(args: { p_kind: "facture" | "recharge_cantine"; p_student: string; p_invoice?: string; p_amount_cents?: number }, label: string): Promise<PaymentResult> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, error: FAILED };
   const supabase = await createClient();
+  const { data: account } = await supabase.from("profile_private").select("credit_domestique_account").eq("profile_id", viewer.profileId).maybeSingle();
   const { data: id, error } = await supabase.rpc("start_payment", args);
   if (error || !id) {
     const readable = error && /^[A-ZÉÈ][^:]*\.?$/.test(error.message) && !/permission|violates/i.test(error.message);
     return { ok: false, error: readable ? error!.message : FAILED };
   }
   const { data: payment } = await supabase.from("payments").select("amount_cents").eq("id", id).single();
-  const h = await headers();
-  const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
-  const checkoutUrl = await createCheckout({ paymentId: id, amountCents: payment?.amount_cents ?? 0, label, returnUrl: `${origin}/paiements` });
+  const result = await createCheckout(supabase, {
+    paymentId: id,
+    amountCents: payment?.amount_cents ?? 0,
+    label,
+    payerAccount: account?.credit_domestique_account ?? null,
+  });
   revalidatePath("/paiements");
-  return { ok: true, checkoutUrl };
+  return result;
 }
 
 /** Recharger le compte cantine : crée un paiement en attente chez Crédit Domestique. */
@@ -133,4 +138,13 @@ export async function postLiaisonNote(classId: string, title: string, body: stri
 /** Cahier de liaison : « Lu et signé » (responsable). */
 export async function signLiaisonNote(noteId: string, studentId: string): Promise<ActionResult> {
   return run((s) => s.rpc("sign_liaison_note", { p_note: noteId, p_student: studentId }), ["/cahier-de-liaison", "/accueil"]);
+}
+
+/** Numéro de compte Crédit Domestique du responsable. */
+export async function updateCreditDomestiqueAccount(account: string): Promise<ActionResult> {
+  const viewer = await getViewer();
+  if (!viewer) return { ok: false, error: FAILED };
+  const clean = account.trim();
+  if (clean.length > 64) return { ok: false, error: "Ce numéro de compte est trop long." };
+  return run((s) => s.from("profile_private").update({ credit_domestique_account: clean || null }).eq("profile_id", viewer.profileId), ["/compte", "/paiements"]);
 }

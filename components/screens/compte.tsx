@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { updateNotifications, updatePhone } from "@/app/(app)/actions";
+import { updateCreditDomestiqueAccount, updateNotifications, updatePhone } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/choice";
@@ -18,7 +18,14 @@ const NOTIFICATIONS = [
   { key: "absences", label: "Absences et retards" },
 ] as const;
 
-type Account = { name: string; email: string; phone: string; notifications: Record<string, boolean> };
+type Account = {
+  name: string;
+  email: string;
+  phone: string;
+  notifications: Record<string, boolean>;
+  /** Responsables uniquement : compte qui reçoit les demandes de paiement. */
+  creditDomestique?: string;
+};
 
 function Panel({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -39,6 +46,8 @@ export function CompteScreen({ account }: { account: Account }) {
   const [notif, setNotif] = useState(account.notifications);
   const [phone, setPhone] = useState(account.phone);
   const [phoneError, setPhoneError] = useState<string>();
+  const [cdAccount, setCdAccount] = useState(account.creditDomestique ?? "");
+  const [cdError, setCdError] = useState<string>();
   const [, start] = useTransition();
 
   const toggleNotif = (key: string, value: boolean) => {
@@ -77,6 +86,31 @@ export function CompteScreen({ account }: { account: Account }) {
             Enregistrer
           </Button>
         </form>
+        {account.creditDomestique !== undefined && (
+          <form
+            className="flex flex-col gap-3 border-t border-line-soft pt-4"
+            onSubmit={(e) => {
+              e.preventDefault();
+              start(async () => {
+                const r = await updateCreditDomestiqueAccount(cdAccount);
+                setCdError(r.ok ? undefined : r.error);
+                if (r.ok) toast({ title: "Compte Crédit Domestique enregistré" });
+              });
+            }}
+          >
+            <TextField
+              label="Compte Crédit Domestique"
+              value={cdAccount}
+              onChange={(e) => setCdAccount(e.target.value)}
+              error={cdError}
+              hint="Les demandes de paiement (cantine, sorties) y sont envoyées : vous les acceptez dans Crédit Domestique."
+              autoComplete="off"
+            />
+            <Button type="submit" variant="secondary" size="sm" className="self-start" disabled={cdAccount === (account.creditDomestique ?? "")}>
+              Enregistrer
+            </Button>
+          </form>
+        )}
       </section>
 
       <div className="flex flex-col gap-5">
