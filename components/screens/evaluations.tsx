@@ -6,7 +6,7 @@ import { SegmentedControl } from "@/components/ui/segmented";
 import { SubjectChip, SubjectDot } from "@/components/ui/subject-chip";
 import { cn } from "@/lib/cn";
 import type { SubjectEvaluationsView } from "@/lib/data/types";
-import { distribution, EVAL_META } from "@/lib/evaluation";
+import { distribution, evalText, type EvalScale } from "@/lib/evaluation";
 
 const COLS = "@2xl:grid-cols-[12.5rem_minmax(0,1fr)_8.75rem]";
 const TERMS = [
@@ -16,7 +16,7 @@ const TERMS = [
 ];
 
 /** Évaluations : matière × pastilles, répartition, panneau de détail. Aucune moyenne. */
-export function EvaluationsScreen({ subjects, currentTerm }: { subjects: SubjectEvaluationsView[]; currentTerm: number }) {
+export function EvaluationsScreen({ subjects, currentTerm, scale = "college" }: { subjects: SubjectEvaluationsView[]; currentTerm: number; scale?: EvalScale }) {
   const [term, setTerm] = useState(`t${currentTerm}`);
   const termNo = Number(term.slice(1));
   const rows = subjects
@@ -34,7 +34,7 @@ export function EvaluationsScreen({ subjects, currentTerm }: { subjects: Subject
       <div className="flex min-w-0 flex-col gap-4">
         <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-3">
           <SegmentedControl aria-label="Période" options={TERMS} value={term} onValueChange={setTerm} />
-          <PastilleLegend />
+          <PastilleLegend scale={scale} />
         </div>
 
         <div className="@container overflow-hidden rounded-card border border-line bg-surface">
@@ -59,7 +59,7 @@ export function EvaluationsScreen({ subjects, currentTerm }: { subjects: Subject
                       <SubjectDot hue={sub.hue} />
                       <div className="flex flex-col">
                         <h2 className="m-0 text-ui font-bold">{sub.name}</h2>
-                        <span className="text-meta text-ink-muted">{sub.prof}</span>
+                        {scale !== "primaire" && <span className="text-meta text-ink-muted">{sub.prof}</span>}
                       </div>
                     </div>
                     <ul className="m-0 -my-2.5 flex list-none flex-wrap p-0" aria-label={`Évaluations de ${sub.name}`}>
@@ -70,8 +70,8 @@ export function EvaluationsScreen({ subjects, currentTerm }: { subjects: Subject
                             <button
                               type="button"
                               aria-pressed={active}
-                              aria-label={`${ev.title}, ${ev.date} : ${EVAL_META[ev.level].label}`}
-                              title={`${ev.title} · ${EVAL_META[ev.level].label}`}
+                              aria-label={`${ev.title}, ${ev.date} : ${evalText(ev.level, scale).label}`}
+                              title={`${ev.title} · ${evalText(ev.level, scale).label}`}
                               onClick={() => {
                                 setSel({ subject: k, index: i });
                                 // Sur petit écran, le détail est sous le tableau : on y amène le focus.
@@ -82,13 +82,13 @@ export function EvaluationsScreen({ subjects, currentTerm }: { subjects: Subject
                               <span className={cn("flex rounded-full", active && "shadow-[0_0_0_2px_var(--surface),0_0_0_4px_var(--ink)]")}>
                                 <PastilleDot value={ev.level} size={24} />
                               </span>
-                              {EVAL_META[ev.level].short}
+                              {evalText(ev.level, scale).short}
                             </button>
                           </li>
                         );
                       })}
                     </ul>
-                    <DistributionBar counts={distribution(evs.map((x) => x.level))} />
+                    <DistributionBar counts={distribution(evs.map((x) => x.level))} scale={scale} />
                   </li>
                 );
               })}
@@ -111,7 +111,7 @@ export function EvaluationsScreen({ subjects, currentTerm }: { subjects: Subject
           {current.level !== "NE" && (
             <div className="flex items-center gap-3 rounded-alert bg-bg p-3.5">
               <PastilleDot value={current.level} size={28} />
-              <b className="text-body">{EVAL_META[current.level].label}</b>
+              <b className="text-body">{evalText(current.level, scale).label}</b>
             </div>
           )}
           <div className="flex flex-col gap-2.5">
@@ -121,7 +121,7 @@ export function EvaluationsScreen({ subjects, currentTerm }: { subjects: Subject
                 <li key={skill.name} className="flex items-center gap-2.5 text-label">
                   <PastilleDot value={skill.level} size={16} />
                   <span className="flex-1">{skill.name}</span>
-                  <span className="text-caption text-ink-muted">{EVAL_META[skill.level].legend}</span>
+                  <span className="text-caption text-ink-muted">{evalText(skill.level, scale).legend}</span>
                 </li>
               ))}
             </ul>

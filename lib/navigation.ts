@@ -3,7 +3,7 @@ import type { IconName } from "@/lib/icons";
 
 export type ModuleKey =
   | "dash" | "edt" | "devoirs" | "notes" | "viesco" | "messages"
-  | "documents" | "agenda" | "paiements" | "bulletins" | "saisie" | "compte";
+  | "documents" | "agenda" | "paiements" | "bulletins" | "saisie" | "liaison" | "compte";
 
 export type Module = { key: ModuleKey; label: string; icon: IconName; slug: string };
 
@@ -19,10 +19,16 @@ export const MODULES: Record<ModuleKey, Module> = {
   paiements: { key: "paiements", label: "Paiements & cantine", icon: "payments", slug: "paiements" },
   bulletins: { key: "bulletins", label: "Bulletins", icon: "article", slug: "bulletins" },
   saisie: { key: "saisie", label: "Appel & évaluation", icon: "fact_check", slug: "appel" },
+  liaison: { key: "liaison", label: "Cahier de liaison", icon: "sticky_note_2", slug: "cahier-de-liaison" },
   compte: { key: "compte", label: "Mon compte", icon: "settings", slug: "compte" },
 };
 
-export type ProfileId = "college" | "lycee" | "parent" | "prof" | "cpe" | "direction" | "secretariat";
+export type ProfileId =
+  | "primaire" | "college" | "lycee" | "parent" | "parent-primaire"
+  | "prof" | "enseignant-primaire" | "cpe" | "direction" | "secretariat";
+
+/** Profils de l'école primaire : évaluations affichées avec les libellés du livret scolaire. */
+export const PRIMARY_PROFILES: ProfileId[] = ["primaire", "parent-primaire", "enseignant-primaire"];
 
 export type Profile = {
   id: ProfileId;
@@ -48,6 +54,18 @@ const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "notes", "viesco", "messag
  * la personne connectée est lue dans Supabase (lib/session.ts).
  */
 export const PROFILES: Profile[] = [
+  // École primaire : l'enfant a une interface très simple (ses devoirs et le cahier de liaison).
+  { id: "primaire", label: "Élève · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false, nav: ["dash", "devoirs", "liaison", "compte"] },
+  {
+    id: "parent-primaire", label: "Parent · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,
+    labels: { bulletins: "Livret scolaire", viesco: "Absences" },
+    nav: ["dash", "liaison", "devoirs", "notes", "viesco", "messages", "paiements", "bulletins", "documents", "agenda", "compte"],
+  },
+  {
+    id: "enseignant-primaire", label: "Enseignant · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: true,
+    labels: { devoirs: "Cahier de textes" },
+    nav: ["dash", "liaison", "saisie", "devoirs", "messages", "documents", "agenda", "compte"],
+  },
   { id: "college", label: "Élève · collège", name: "Léa Martin", role: "4e B", initials: "LM", hello: "Bonjour Léa", email: "lea.martin@jean-moulin.preau.fr", staff: false, nav: ELEVE },
   { id: "lycee", label: "Élève · lycée", name: "Hugo Benali", role: "1re 3 · Spé. Maths, SES", initials: "HB", hello: "Bonjour Hugo", email: "hugo.benali@preau.fr", staff: false, nav: ELEVE },
   {

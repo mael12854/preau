@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { cache } from "react";
 import { now } from "@/lib/clock";
 import { isoDay } from "@/lib/format";
-import { PROFILES, type ModuleKey, type Profile, type ProfileId } from "@/lib/navigation";
+import { PRIMARY_PROFILES, PROFILES, type ModuleKey, type Profile, type ProfileId } from "@/lib/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 /** Élève suivi : l'élève connecté, ou l'enfant d'un responsable. */
@@ -21,6 +21,8 @@ export type Viewer = Profile & {
   userId: string;
   school: { name: string; year: string; domain: string };
   student: FollowedStudent | null;
+  /** Échelle d'affichage des évaluations : collège/lycée (MI → TB) ou livret scolaire du primaire. */
+  scale: "college" | "primaire";
   counts: Partial<Record<ModuleKey, number>>;
 };
 
@@ -40,7 +42,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   if (!me) return null;
 
   let student: FollowedStudent | null = null;
-  let level: "college" | "lycee" = "college";
+  let level: "primaire" | "college" | "lycee" = "college";
   const studentId =
     me.kind === "eleve"
       ? me.id
@@ -65,7 +67,25 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     }
   }
 
-  const variant: ProfileId = me.kind === "eleve" ? level : me.kind;
+  // Enseignant du primaire : titulaire d'une classe de primaire, et toutes ses classes sont du primaire.
+  let primaryTeacher = false;
+  let primaryClass: string | null = null;
+  if (me.kind === "prof") {
+    const [{ data: t }, { data: own }] = await Promise.all([
+      supabase.from("teachings").select("classes(level)").eq("teacher_id", me.id),
+      supabase.from("classes").select("name").eq("teacher_id", me.id).eq("level", "primaire").limit(1).maybeSingle(),
+    ]);
+    primaryClass = own?.name ?? null;
+    primaryTeacher = !!own && (t ?? []).every((x) => x.classes?.level === "primaire");
+  }
+  const variant: ProfileId =
+    me.kind === "eleve"
+      ? level
+      : me.kind === "parent"
+        ? level === "primaire" ? "parent-primaire" : "parent"
+        : me.kind === "prof" && primaryTeacher
+          ? "enseignant-primaire"
+          : me.kind;
   const base = NAV[variant];
   const fullName = [me.first_name, me.last_name].filter(Boolean).join(" ") || me.display_name;
   const civility = me.civility === "madame" ? "Madame" : me.civility === "monsieur" ? "Monsieur" : "";
@@ -75,7 +95,9 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
       ? [student?.className, me.specialities].filter(Boolean).join(" · ")
       : me.kind === "parent" && student
         ? `Responsable de ${student.firstName} (${student.className})`
-        : (me.role_label ?? base.role);
+        : primaryTeacher && primaryClass
+          ? `${me.civility === "madame" ? "Professeure" : "Professeur"} des écoles · ${primaryClass}`
+          : (me.role_label ?? base.role);
 
   return {
     ...base,
@@ -88,6 +110,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     userId: auth.user.id,
     school: { name: me.schools?.name ?? "", year: me.schools?.year_label ?? "", domain: me.schools?.domain ?? "" },
     student,
+    scale: PRIMARY_PROFILES.includes(variant) ? "primaire" : "college",
     counts: await navCounts(supabase, me.id, student, me.kind === "eleve" || me.kind === "parent", auth.user.id),
   };
 });

@@ -49,6 +49,7 @@ export const ICON_NAMES = [
   "send",
   "settings",
   "space_dashboard",
+  "sticky_note_2",
   "swap_horiz",
   "thumb_up",
   "warning",

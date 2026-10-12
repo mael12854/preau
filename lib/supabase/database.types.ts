@@ -243,18 +243,21 @@ export type Database = {
           level: Database["public"]["Enums"]["school_level"]
           name: string
           school_id: string
+          teacher_id: string | null
         }
         Insert: {
           id?: string
           level: Database["public"]["Enums"]["school_level"]
           name: string
           school_id: string
+          teacher_id?: string | null
         }
         Update: {
           id?: string
           level?: Database["public"]["Enums"]["school_level"]
           name?: string
           school_id?: string
+          teacher_id?: string | null
         }
         Relationships: [
           {
@@ -262,6 +265,13 @@ export type Database = {
             columns: ["school_id"]
             isOneToOne: false
             referencedRelation: "schools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "classes_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -579,6 +589,94 @@ export type Database = {
           },
         ]
       }
+      liaison_notes: {
+        Row: {
+          author_id: string
+          body: string
+          class_id: string
+          created_at: string
+          id: string
+          requires_signature: boolean
+          title: string
+        }
+        Insert: {
+          author_id: string
+          body: string
+          class_id: string
+          created_at?: string
+          id?: string
+          requires_signature?: boolean
+          title: string
+        }
+        Update: {
+          author_id?: string
+          body?: string
+          class_id?: string
+          created_at?: string
+          id?: string
+          requires_signature?: boolean
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liaison_notes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liaison_notes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      liaison_signatures: {
+        Row: {
+          guardian_id: string
+          note_id: string
+          signed_at: string
+          student_id: string
+        }
+        Insert: {
+          guardian_id: string
+          note_id: string
+          signed_at?: string
+          student_id: string
+        }
+        Update: {
+          guardian_id?: string
+          note_id?: string
+          signed_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "liaison_signatures_guardian_id_fkey"
+            columns: ["guardian_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liaison_signatures_note_id_fkey"
+            columns: ["note_id"]
+            isOneToOne: false
+            referencedRelation: "liaison_notes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "liaison_signatures_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       life_events: {
         Row: {
           created_by: string | null
@@ -824,6 +922,20 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "students"
             referencedColumns: ["profile_id"]
+          },
+        ]
+      }
+      primary_subjects: {
+        Row: { subject_id: string }
+        Insert: { subject_id: string }
+        Update: { subject_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "primary_subjects_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: true
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -1131,6 +1243,10 @@ export type Database = {
         }
         Returns: Database["public"]["Enums"]["payment_status"]
       }
+      post_liaison_note: {
+        Args: { p_body: string; p_class: string; p_requires_signature?: boolean; p_title: string }
+        Returns: string
+      }
       publish_assessment: { Args: { p_assessment: string }; Returns: undefined }
       send_message: {
         Args: {
@@ -1151,6 +1267,7 @@ export type Database = {
         Returns: undefined
       }
       sign_document: { Args: { p_document: string }; Returns: undefined }
+      sign_liaison_note: { Args: { p_note: string; p_student: string }; Returns: undefined }
       start_payment: {
         Args: {
           p_amount_cents?: number
@@ -1191,7 +1308,7 @@ export type Database = {
         | "cpe"
         | "direction"
         | "secretariat"
-      school_level: "college" | "lycee"
+      school_level: "primaire" | "college" | "lycee"
       tone: "ok" | "danger" | "warn" | "info" | "neutral" | "brand"
     }
     CompositeTypes: {

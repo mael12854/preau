@@ -5,8 +5,9 @@ import { Button, buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { PastilleDot } from "@/components/ui/pastille";
 import { cn } from "@/lib/cn";
+import type { LiaisonNoteView } from "@/lib/data/liaison";
 import type { HomeworkDayView, LastEvaluationView, LessonView, LifeStatsView, MessageView } from "@/lib/data/types";
-import { EVAL_META } from "@/lib/evaluation";
+import { evalText } from "@/lib/evaluation";
 import { formatTimeGrid } from "@/lib/format";
 import type { Viewer } from "@/lib/session";
 import { subjectStyle } from "@/lib/subjects";
@@ -37,11 +38,60 @@ export type StudentDashboardData = {
   toJustify: string | null;
   unread: number;
   messages: MessageView[];
+  /** Primaire : derniers mots du cahier de liaison. */
+  liaison?: LiaisonNoteView[];
 };
+
+/** Carte « Cahier de liaison » (primaire). */
+function LiaisonCard({ notes, big }: { notes: LiaisonNoteView[]; big?: boolean }) {
+  const toSign = notes.filter((n) => n.requiresSignature && !n.signed).length;
+  return (
+    <Card aria-labelledby="dash-liaison" className="flex flex-col gap-3">
+      <CardTitle
+        id="dash-liaison"
+        action={<Link href="/cahier-de-liaison" className={linkAction}>Tout voir</Link>}
+      >
+        Cahier de liaison
+      </CardTitle>
+      {toSign > 0 && (
+        <p className="m-0 text-label font-bold text-danger">
+          {toSign > 1 ? `${toSign} mots à signer` : "1 mot à signer"}
+        </p>
+      )}
+      {notes.length === 0 && <p className="m-0 text-ui text-ink-2">Aucun mot pour l&apos;instant.</p>}
+      <ul className="m-0 flex list-none flex-col gap-3 p-0">
+        {notes.slice(0, 3).map((n) => (
+          <li key={n.id} className="flex flex-col gap-0.5">
+            <b className={big ? "text-h3" : "text-ui"}>{n.title}</b>
+            <span className="text-caption text-ink-muted">
+              {n.author} · {n.date}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </Card>
+  );
+}
+
+/** Tableau de bord de l'enfant de primaire : ses devoirs et le cahier de liaison, en grand. */
+export function ChildDashboard({ profile, data }: { profile: Viewer; data: StudentDashboardData }) {
+  return (
+    <div className="flex flex-col gap-6">
+      <Greeting hello={profile.hello} />
+      <div className="grid items-start gap-4 md:grid-cols-2">
+        <Card aria-labelledby="dash-tomorrow" className="flex flex-col gap-3 text-h3">
+          <TomorrowHomework headingId="dash-tomorrow" day={data.next} title={data.nextTitle} initialDone={data.done} />
+        </Card>
+        <LiaisonCard notes={data.liaison ?? []} big />
+      </div>
+    </div>
+  );
+}
 
 /** Tableau de bord élève (collège, lycée) et parent. */
 export function StudentDashboard({ profile, data }: { profile: Viewer; data: StudentDashboardData }) {
   const { today } = data;
+  const scale = profile.scale;
   return (
     <div className="flex flex-col gap-6">
       <Greeting
@@ -64,6 +114,9 @@ export function StudentDashboard({ profile, data }: { profile: Viewer; data: Stu
       )}
 
       <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-[1.1fr_1fr_1fr]">
+        {profile.scale === "primaire" ? (
+          <LiaisonCard notes={data.liaison ?? []} />
+        ) : (
         <Card aria-labelledby="dash-today" className="flex flex-col gap-3.5 xl:row-span-2">
           <CardTitle id="dash-today" action={<Link href="/emploi-du-temps" className={linkAction}>Semaine</Link>}>
             Aujourd&apos;hui
@@ -93,6 +146,7 @@ export function StudentDashboard({ profile, data }: { profile: Viewer; data: Stu
             })}
           </ol>
         </Card>
+        )}
 
         <Card aria-labelledby="dash-tomorrow" className="flex flex-col gap-3">
           <TomorrowHomework headingId="dash-tomorrow" day={data.next} title={data.nextTitle} initialDone={data.done} />
@@ -114,7 +168,7 @@ export function StudentDashboard({ profile, data }: { profile: Viewer; data: Stu
                       {e.subject} · {e.date}
                     </span>
                   </div>
-                  <span className="text-right text-caption text-ink-2">{EVAL_META[e.level].label}</span>
+                  <span className="text-right text-caption text-ink-2">{evalText(e.level, scale).label}</span>
                 </li>
               );
             })}

@@ -6,13 +6,13 @@ import { Icon } from "@/components/ui/icon";
 import { SubjectDot } from "@/components/ui/subject-chip";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
-import { EVAL_LEVELS, EVAL_META } from "@/lib/evaluation";
+import { EVAL_LEVELS, EVAL_META, evalText, type EvalScale } from "@/lib/evaluation";
 import type { ReportPeriodView } from "@/lib/data/types";
 
 const COLS = "@2xl:grid-cols-[10.625rem_4fr_6fr]";
 
 /** Bulletins : périodes, positionnement sur 4 cases, appréciations, mention du conseil. */
-export function BulletinsScreen({ periods: REPORT_PERIODS, showStudent }: { periods: ReportPeriodView[]; showStudent?: boolean }) {
+export function BulletinsScreen({ periods: REPORT_PERIODS, showStudent, scale = "college" }: { periods: ReportPeriodView[]; showStudent?: boolean; scale?: EvalScale }) {
   const toast = useToast();
   const [period, setPeriod] = useState(REPORT_PERIODS.find((p) => p.available)?.id);
   const current = REPORT_PERIODS.find((p) => p.id === period);
@@ -51,11 +51,11 @@ export function BulletinsScreen({ periods: REPORT_PERIODS, showStudent }: { peri
         <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-5">
           <div>
             <h2 id="bulletin-title" className="m-0 font-display text-title-sm font-bold">
-              {current.reportTitle}
+              {scale === "primaire" ? current.reportTitle.replace("Bulletin du", "Livret scolaire du") : current.reportTitle}
             </h2>
             <p className="m-0 text-sm text-ink-muted">
               {current.student} · {current.className}
-              {current.headTeacher && ` · Professeure principale : ${current.headTeacher}`}
+              {current.headTeacher && (scale === "primaire" ? ` · Classe de ${current.headTeacher}` : ` · Professeure principale : ${current.headTeacher}`)}
             </p>
           </div>
           <Button variant="secondary" className="h-10 px-3.5 text-label" icon="download" onClick={() => toast({ title: "Téléchargement du bulletin en PDF" })}>
@@ -81,11 +81,11 @@ export function BulletinsScreen({ periods: REPORT_PERIODS, showStudent }: { peri
                       <SubjectDot hue={s.hue} size={9} />
                       {s.name}
                     </h3>
-                    <div role="img" aria-label={`Positionnement : ${EVAL_META[r.level].label}`} className="flex items-center gap-1.5">
+                    <div role="img" aria-label={`Positionnement : ${evalText(r.level, scale).label}`} className="flex items-center gap-1.5">
                       {EVAL_LEVELS.map((l) => (
                         <span key={l} className="h-[1.375rem] flex-1 rounded-[5px]" style={{ background: l === r.level ? EVAL_META[l].color! : "var(--neutral-bg)" }} />
                       ))}
-                      <span className="w-[5.625rem] pl-1.5 text-caption text-ink-2">{EVAL_META[r.level].short}</span>
+                      <span className="w-[5.625rem] pl-1.5 text-caption text-ink-2">{evalText(r.level, scale).short}</span>
                     </div>
                     <p className="m-0 text-label leading-[1.45] text-ink-2">{r.comment}</p>
                   </li>
