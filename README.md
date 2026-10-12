@@ -22,19 +22,9 @@ npm run dev                  # http://localhost:3000
 
 On se connecte sur `/connexion` avec une adresse e-mail et un mot de passe (Supabase Auth). Chaque profil ne voit que ses modules. La page `/design-system` présente tous les composants.
 
-### Comptes de démonstration
+### Comptes
 
-Mot de passe commun : `preau-demo-2026`. **À supprimer avant toute utilisation réelle.** Les adresses utilisent le domaine réservé `.example` : aucun e-mail ne peut leur être envoyé.
-
-| Profil | Adresse |
-|---|---|
-| Élève · collège (Léa Martin, 4e B) | `lea.martin@jean-moulin.example` |
-| Élève · lycée (Hugo Benali, 1re 3) | `hugo.benali@jean-moulin.example` |
-| Parent (Sophie Martin) | `sophie.martin@famille.example` |
-| Professeur (Marc Durand) | `marc.durand@jean-moulin.example` |
-| Vie scolaire / CPE (Nadia Kader) | `nadia.kader@jean-moulin.example` |
-| Direction (Paul Lefèvre) | `principal@jean-moulin.example` |
-| Secrétariat (Claire Roux) | `secretariat@jean-moulin.example` |
+Les comptes sont créés par l'établissement (pas d'inscription libre). Les adresses e-mail des comptes existants sont dans `supabase/seed.sql`.
 
 L'application utilise l'heure réelle. Pour des essais, `PREAU_NOW` permet de la figer.
 
