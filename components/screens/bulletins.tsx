@@ -7,15 +7,19 @@ import { SubjectDot } from "@/components/ui/subject-chip";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import { EVAL_LEVELS, EVAL_META } from "@/lib/evaluation";
-import { DEFAULT_PERIOD, REPORT, REPORT_PERIODS, SUBJECTS } from "@/lib/mock";
+import type { ReportPeriodView } from "@/lib/data/types";
 
 const COLS = "@2xl:grid-cols-[10.625rem_4fr_6fr]";
 
 /** Bulletins : périodes, positionnement sur 4 cases, appréciations, mention du conseil. */
-export function BulletinsScreen() {
+export function BulletinsScreen({ periods: REPORT_PERIODS, showStudent }: { periods: ReportPeriodView[]; showStudent?: boolean }) {
   const toast = useToast();
-  const [period, setPeriod] = useState(DEFAULT_PERIOD);
-  const current = REPORT_PERIODS.find((p) => p.id === period)!;
+  const [period, setPeriod] = useState(REPORT_PERIODS.find((p) => p.available)?.id);
+  const current = REPORT_PERIODS.find((p) => p.id === period);
+
+  if (!current) {
+    return <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">Aucun bulletin publié pour l&apos;instant.</p>;
+  }
 
   return (
     <div className="grid items-start gap-5 lg:grid-cols-[16.25rem_minmax(0,1fr)]">
@@ -35,6 +39,7 @@ export function BulletinsScreen() {
                 )}
               >
                 <b className="text-ui">{p.title}</b>
+                {showStudent && <span className="text-caption text-ink-2">{p.student}</span>}
                 <span className="text-caption text-ink-muted">{p.detail}</span>
               </button>
             </li>
@@ -48,14 +53,17 @@ export function BulletinsScreen() {
             <h2 id="bulletin-title" className="m-0 font-display text-title-sm font-bold">
               {current.reportTitle}
             </h2>
-            <p className="m-0 text-sm text-ink-muted">{REPORT.student}</p>
+            <p className="m-0 text-sm text-ink-muted">
+              {current.student} · {current.className}
+              {current.headTeacher && ` · Professeure principale : ${current.headTeacher}`}
+            </p>
           </div>
           <Button variant="secondary" className="h-10 px-3.5 text-label" icon="download" onClick={() => toast({ title: "Téléchargement du bulletin en PDF" })}>
             PDF
           </Button>
         </header>
 
-        {period !== DEFAULT_PERIOD ? (
+        {current.lines.length === 0 ? (
           <p className="m-0 px-6 py-10 text-ui text-ink-2">Ce bulletin est disponible au format PDF.</p>
         ) : (
           <>
@@ -65,10 +73,10 @@ export function BulletinsScreen() {
               <span>Appréciation</span>
             </div>
             <ul className="m-0 list-none p-0">
-              {REPORT.lines.map((r) => {
-                const s = SUBJECTS[r.subject];
+              {current.lines.map((r) => {
+                const s = r.subject;
                 return (
-                  <li key={r.subject} className={cn("grid items-center gap-x-4 gap-y-2 border-b border-line-soft px-6 py-3.5", COLS)}>
+                  <li key={s.id} className={cn("grid items-center gap-x-4 gap-y-2 border-b border-line-soft px-6 py-3.5", COLS)}>
                     <h3 className="m-0 flex items-center gap-2 text-label font-bold">
                       <SubjectDot hue={s.hue} size={9} />
                       {s.name}
@@ -84,12 +92,14 @@ export function BulletinsScreen() {
                 );
               })}
             </ul>
-            <div className="flex items-center gap-4 bg-brand-tint px-6 py-[1.125rem]">
-              <Icon name="workspace_premium" size={24} className="text-brand" />
-              <p className="m-0 text-ui leading-[1.45]">
-                <b>{REPORT.council.title}</b> {REPORT.council.text}
-              </p>
-            </div>
+            {current.council && (
+              <div className="flex items-center gap-4 bg-brand-tint px-6 py-[1.125rem]">
+                <Icon name="workspace_premium" size={24} className="text-brand" />
+                <p className="m-0 text-ui leading-[1.45]">
+                  <b>{current.council.title}</b> {current.council.text}
+                </p>
+              </div>
+            )}
           </>
         )}
       </article>

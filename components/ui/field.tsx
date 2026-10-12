@@ -1,7 +1,7 @@
 "use client";
 
 import { Select as RSelect } from "radix-ui";
-import { useId, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import { useId, type ComponentProps, type ComponentPropsWithoutRef, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { Icon } from "./icon";
 
@@ -39,7 +39,7 @@ function FieldShell({ id, label, hint, error, children, className }: FieldShellP
   );
 }
 
-type TextFieldProps = Omit<ComponentPropsWithoutRef<"input">, "id"> & {
+type TextFieldProps = Omit<ComponentProps<"input">, "id"> & {
   label: string;
   hint?: ReactNode;
   error?: ReactNode;

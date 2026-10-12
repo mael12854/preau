@@ -2,17 +2,18 @@ import Link from "next/link";
 import { Counter } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
-import { MODULES, moduleLabel, navCount, navCountLabel, type ModuleKey, type Profile } from "@/lib/mock/profiles";
+import { MODULES, moduleLabel, navCountLabel, type ModuleKey } from "@/lib/navigation";
+import type { Viewer } from "@/lib/session";
 
 /** Navigation principale, filtrée selon le profil. */
-export function Nav({ profile, active }: { profile: Profile; active: ModuleKey }) {
+export function Nav({ profile, active }: { profile: Viewer; active: ModuleKey }) {
   return (
     <nav aria-label="Navigation principale" className="flex-1">
       <ul className="m-0 flex list-none flex-col gap-0.5 p-0">
         {profile.nav.map((key) => {
           const m = MODULES[key];
           const isActive = key === active;
-          const count = navCount(profile, key);
+          const count = profile.counts[key] ?? 0;
           return (
             <li key={key}>
               <Link

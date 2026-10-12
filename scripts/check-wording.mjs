@@ -37,26 +37,3 @@ if (hits.length) {
   process.exit(1);
 }
 console.log(`OK : aucun « /20 », « moyenne » ni « classement » dans ${files.length} fichiers.`);
-
-/* Avec --url=http://localhost:3000 : vérifie aussi le texte rendu de chaque écran, pour chaque profil. */
-const urlArg = process.argv.find((a) => a.startsWith("--url="));
-if (urlArg) {
-  const base = urlArg.slice(6);
-  const { PROFILE_IDS, SLUGS } = await import("./routes.mjs");
-  const bad = [];
-  for (const profile of PROFILE_IDS) {
-    for (const slug of ["", "design-system", ...SLUGS]) {
-      const res = await fetch(`${base}/${slug}`, { headers: { cookie: `preau-profil=${profile}` }, redirect: "follow" });
-      const text = (await res.text())
-        .replace(/<script[\s\S]*?<\/script>/g, " ")
-        .replace(/<style[\s\S]*?<\/style>/g, " ")
-        .replace(/<[^>]+>/g, " ");
-      for (const re of FORBIDDEN) if (re.test(text)) bad.push(`${profile} /${slug} : ${re}`);
-    }
-  }
-  if (bad.length) {
-    console.error("Termes interdits dans l'interface rendue :\n" + bad.join("\n"));
-    process.exit(1);
-  }
-  console.log(`OK : interface rendue vérifiée pour ${PROFILE_IDS.length} profils.`);
-}

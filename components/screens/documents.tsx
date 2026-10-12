@@ -1,19 +1,22 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { signDocument } from "@/app/(app)/actions";
+import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
-import { DOCUMENTS } from "@/lib/mock";
+import type { DocumentView } from "@/lib/data/types";
 
 type Filter = "all" | "Administratif" | "Pédagogique" | "sign";
 const COLS = "@3xl:grid-cols-[minmax(0,1fr)_10rem_8.125rem_5.625rem_2.75rem]";
 
 /** Documents : filtres, liste, badge « À signer ». */
-export function DocumentsScreen() {
+export function DocumentsScreen({ documents: DOCUMENTS }: { documents: DocumentView[] }) {
   const toast = useToast();
   const [filter, setFilter] = useState<Filter>("all");
+  const [pending, start] = useTransition();
   const toSign = DOCUMENTS.filter((d) => d.toSign).length;
   const filters: { value: Filter; label: string }[] = [
     { value: "all", label: "Tous" },
@@ -51,11 +54,27 @@ export function DocumentsScreen() {
         </div>
         <ul className="m-0 list-none p-0" aria-live="polite">
           {docs.map((d) => (
-            <li key={d.name} className={cn("grid grid-cols-[minmax(0,1fr)_2.75rem] items-center gap-x-4 gap-y-1 border-b border-line-soft px-5 py-3.5 text-ui last:border-b-0", COLS)}>
+            <li key={d.id} className={cn("grid grid-cols-[minmax(0,1fr)_2.75rem] items-center gap-x-4 gap-y-1 border-b border-line-soft px-5 py-3.5 text-ui last:border-b-0", COLS)}>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <Icon name={d.icon} size={24} className="text-brand" />
                 <b>{d.name}</b>
                 {d.toSign && <Badge tone="danger" className="text-xs">À signer</Badge>}
+                {d.signed && <Badge tone="ok" className="text-xs">Signé</Badge>}
+                {d.toSign && (
+                  <Button
+                    size="sm"
+                    disabled={pending}
+                    aria-label={`Signer « ${d.name} »`}
+                    onClick={() =>
+                      start(async () => {
+                        const r = await signDocument(d.id);
+                        toast({ title: r.ok ? "Document signé" : r.error });
+                      })
+                    }
+                  >
+                    Signer
+                  </Button>
+                )}
               </div>
               <span className="row-start-2 text-ink-2 @3xl:row-start-auto">
                 <span className="sr-only">Catégorie : </span>

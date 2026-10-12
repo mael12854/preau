@@ -16,8 +16,7 @@ import { SubjectChip } from "@/components/ui/subject-chip";
 import { ToastPreview, useToast } from "@/components/ui/toast";
 import { distribution, type EvalValue } from "@/lib/evaluation";
 import { ICON_NAMES } from "@/lib/icons";
-import { SUBJECTS } from "@/lib/mock/subjects";
-import { ABSENCE_REASONS } from "@/lib/mock/viesco";
+import { ABSENCE_REASONS } from "@/lib/reference";
 import { subjectColor, SUBJECT_HUES } from "@/lib/subjects";
 import { usePreferences } from "@/lib/use-preferences";
 
@@ -233,10 +232,10 @@ export function Showcase() {
               <Counter count={3} label="3 messages non lus" />
             </div>
             <div className="flex flex-wrap gap-2">
-              <SubjectChip name="Mathématiques" hue={SUBJECTS.ma.hue} dot />
-              <SubjectChip name="Français" hue={SUBJECTS.fr.hue} dot />
-              <SubjectChip name="SVT" hue={SUBJECTS.svt.hue} dot />
-              <SubjectChip name="Anglais" hue={SUBJECTS.en.hue} />
+              <SubjectChip name="Mathématiques" hue={SUBJECT_HUES.maths} dot />
+              <SubjectChip name="Français" hue={SUBJECT_HUES.francais} dot />
+              <SubjectChip name="SVT" hue={SUBJECT_HUES.svt} dot />
+              <SubjectChip name="Anglais" hue={SUBJECT_HUES.anglais} />
             </div>
             <div className="flex items-center gap-3">
               <Avatar initials="MP" />
