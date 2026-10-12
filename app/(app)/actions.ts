@@ -1,9 +1,10 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { cookies } from "next/headers";
 import { createCheckout } from "@/lib/payments";
 import type { EvalValue } from "@/lib/evaluation";
-import { getViewer } from "@/lib/session";
+import { CHILD_COOKIE, getViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 /** Résultat d'une action : message lisible en cas d'échec (jamais de code d'erreur brut). */
@@ -44,6 +45,15 @@ export async function validateAttendance(lessonId: string, statuses: Record<stri
 export async function setSkillLevels(assessmentId: string, studentId: string, levels: EvalValue[]): Promise<ActionResult> {
   // Le niveau global reste « non évalué » : il n'est jamais calculé à partir des compétences (pas de moyenne).
   return run((s) => s.rpc("set_assessment_result", { p_assessment: assessmentId, p_student: studentId, p_level: "NE", p_skill_levels: levels }), []);
+}
+
+/** Responsable : choisir l'enfant affiché. Seul un enfant dont on est responsable est accepté. */
+export async function selectChild(studentId: string): Promise<ActionResult> {
+  const viewer = await getViewer();
+  if (!viewer?.children.some((c) => c.id === studentId)) return { ok: false, error: FAILED };
+  (await cookies()).set(CHILD_COOKIE, studentId, { httpOnly: true, sameSite: "lax", secure: true, path: "/", maxAge: 60 * 60 * 24 * 365 });
+  revalidatePath("/", "layout");
+  return { ok: true };
 }
 
 export async function setScore(assessmentId: string, studentId: string, score: number | null, status: "NE" | "ABS" | "DISP"): Promise<ActionResult> {

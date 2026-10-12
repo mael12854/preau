@@ -1,4 +1,5 @@
 import "server-only";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { now } from "@/lib/clock";
@@ -22,12 +23,17 @@ export type Viewer = Profile & {
   userId: string;
   school: { name: string; year: string; domain: string };
   student: FollowedStudent | null;
+  /** Tous les enfants d'un responsable (vide pour les autres profils). */
+  children: FollowedStudent[];
   /** Échelle d'affichage des évaluations : collège/lycée (MI → TB) ou livret scolaire du primaire. */
   scale: "college" | "primaire";
   /** Mode de notation de l'établissement : compétences, ou note sur 20 (sans moyenne). */
   grading: Grading;
   counts: Partial<Record<ModuleKey, number>>;
 };
+
+/** Cookie de l'enfant affiché pour un responsable (identifiant d'élève, vérifié à chaque lecture). */
+export const CHILD_COOKIE = "preau-enfant";
 
 const NAV = Object.fromEntries(PROFILES.map((p) => [p.id, p])) as Record<ProfileId, Profile>;
 
@@ -44,31 +50,39 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     .maybeSingle();
   if (!me) return null;
 
-  let student: FollowedStudent | null = null;
-  let level: "primaire" | "college" | "lycee" = "college";
-  const studentId =
+  // Élève : lui-même. Responsable : tous ses enfants, l'enfant affiché étant choisi par cookie.
+  type Level = "primaire" | "college" | "lycee";
+  let level: Level = "college" as Level;
+  const ids =
     me.kind === "eleve"
-      ? me.id
+      ? [me.id]
       : me.kind === "parent"
-        ? (await supabase.from("guardians").select("student_id").eq("guardian_id", me.id).limit(1).maybeSingle()).data?.student_id
-        : undefined;
-  if (studentId) {
-    const { data: s } = await supabase
+        ? ((await supabase.from("guardians").select("student_id").eq("guardian_id", me.id)).data ?? []).map((g) => g.student_id)
+        : [];
+  const levels = new Map<string, Level>();
+  let children: FollowedStudent[] = [];
+  if (ids.length) {
+    const { data: rows } = await supabase
       .from("students")
       .select("profile_id, class_id, classes(name, level), profiles(first_name, display_name)")
-      .eq("profile_id", studentId)
-      .maybeSingle();
-    if (s?.classes && s.profiles) {
-      level = s.classes.level;
-      student = {
-        id: s.profile_id,
-        firstName: s.profiles.first_name ?? s.profiles.display_name,
-        name: s.profiles.display_name,
-        classId: s.class_id,
-        className: s.classes.name,
-      };
-    }
+      .in("profile_id", ids);
+    children = (rows ?? [])
+      .filter((s) => s.classes && s.profiles)
+      .map((s) => {
+        levels.set(s.profile_id, s.classes!.level);
+        return {
+          id: s.profile_id,
+          firstName: s.profiles!.first_name ?? s.profiles!.display_name,
+          name: s.profiles!.display_name,
+          classId: s.class_id,
+          className: s.classes!.name,
+        };
+      })
+      .sort((a, b) => a.firstName.localeCompare(b.firstName, "fr"));
   }
+  const chosen = (await cookies()).get(CHILD_COOKIE)?.value;
+  const student = children.find((c) => c.id === chosen) ?? children[0] ?? null;
+  if (student) level = levels.get(student.id) ?? level;
 
   // Enseignant du primaire : titulaire d'une classe de primaire, et toutes ses classes sont du primaire.
   let primaryTeacher = false;
@@ -119,6 +133,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     userId: auth.user.id,
     school: { name: me.schools?.name ?? "", year: me.schools?.year_label ?? "", domain: me.schools?.domain ?? "" },
     student,
+    children: me.kind === "parent" ? children : [],
     scale: PRIMARY_PROFILES.includes(variant) || primarySchool ? "primaire" : "college",
     grading: me.schools?.grading ?? "competences",
     counts: await navCounts(supabase, me.id, student, me.kind === "eleve" || me.kind === "parent", auth.user.id),

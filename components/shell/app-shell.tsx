@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { MODULES, moduleLabel, type ModuleKey } from "@/lib/navigation";
 import type { Viewer } from "@/lib/session";
+import { ChildSelector } from "@/components/screens/child-selector";
 import { MobileNav } from "./mobile-nav";
 import { SidebarContent } from "./sidebar";
 import { SkipLink } from "./skip-link";
@@ -39,6 +40,12 @@ export function AppShell({ profile, module, children }: AppShellProps) {
             <TopbarTools entries={entries} unread={profile.counts.messages ?? 0} inbox={profile.nav.includes("messages") ? `/${MODULES.messages.slug}` : null} />
           </header>
           <main id="contenu" tabIndex={-1} className="min-w-0 flex-1 px-4 py-5 outline-none sm:px-8 sm:py-7">
+            {/* Responsable de plusieurs enfants : le choix reste accessible sur toutes les pages. */}
+            {module !== "dash" && profile.children.length > 1 && profile.student && (
+              <div className="mb-5 flex justify-end">
+                <ChildSelector students={profile.children} currentId={profile.student.id} />
+              </div>
+            )}
             {children}
           </main>
         </div>

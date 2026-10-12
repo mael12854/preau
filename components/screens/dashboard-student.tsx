@@ -97,7 +97,7 @@ export function StudentDashboard({ profile, data }: { profile: Viewer; data: Stu
     <div className="flex flex-col gap-6">
       <Greeting
         hello={profile.hello}
-        aside={profile.id === "parent" && profile.student ? <ChildSelector student={profile.student} /> : undefined}
+        aside={profile.children.length > 0 && profile.student ? <ChildSelector students={profile.children} currentId={profile.student.id} /> : undefined}
       />
 
       {data.stats.toJustify > 0 && (
