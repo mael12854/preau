@@ -57,6 +57,18 @@ Pensez à vérifier la signature du webhook avant d'appeler `confirm_payment`.
 
 Les comptes sont créés par l'établissement, pas par inscription libre. Un compte sans fiche dans un établissement ne voit rien et tombe sur la page « compte non rattaché ».
 
+### École primaire
+
+- **Niveau `primaire`** pour les classes. Le profil (élève, parent, enseignant) se déduit de la classe.
+- **Un seul enseignant par classe** : le titulaire (`classes.teacher_id`). Le nommer lui rattache toutes les matières du primaire (`primary_subjects`). La base refuse d'affecter un autre enseignant à une matière de cette classe.
+- **Évaluations** : mêmes 4 niveaux et mêmes couleurs, avec les libellés du livret scolaire (objectifs non atteints, partiellement atteints, atteints, dépassés).
+- **Cahier de liaison** (`/cahier-de-liaison`) : l'enseignant écrit un mot à la classe, avec ou sans demande de signature ; les parents cliquent sur « Lu et signé » ; l'enseignant suit le nombre de signatures.
+- **Interfaces** :
+  - l'enfant n'a que ses devoirs et le cahier de liaison, en grand ;
+  - le parent a les mêmes modules qu'au collège, sauf l'emploi du temps ; le bulletin s'appelle « Livret scolaire ».
+
+Pour ouvrir une classe : créer la classe avec `level = 'primaire'` et `teacher_id` = l'enseignant, puis y inscrire les élèves (`students`) et rattacher leurs parents (`guardians`).
+
 ### Encore sur données du prototype
 
 - **Tableaux de bord de la vie scolaire, de la direction et du secrétariat** (`lib/mock/staff.ts`) : il manque les tables des demandes administratives et des conseils de classe. Le tableau de bord du professeur, lui, est calculé depuis la base.

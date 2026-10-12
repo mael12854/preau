@@ -13,7 +13,7 @@ export default async function AppelPage() {
   const data = await getAppel(await createClient(), profile.profileId, now());
   return (
     <AppShell profile={profile} module="saisie">
-      <AppelScreen data={data} />
+      <AppelScreen data={data} scale={profile.scale} />
     </AppShell>
   );
 }

@@ -40,3 +40,21 @@ export function nextEvalValue(value: EvalValue): EvalValue {
 export function distribution(values: readonly EvalValue[]): { level: EvalLevel; count: number }[] {
   return EVAL_LEVELS.map((level) => ({ level, count: values.filter((v) => v === level).length }));
 }
+
+/** Échelle d'affichage : collège/lycée (socle) ou livret scolaire du primaire. */
+export type EvalScale = "college" | "primaire";
+
+/** Libellés du livret scolaire (école primaire) : mêmes 4 niveaux, mêmes couleurs. */
+const PRIMARY_TEXT: Partial<Record<EvalValue, { short: string; label: string; legend: string }>> = {
+  MI: { short: "NA", label: "Objectifs non atteints", legend: "Non atteints" },
+  MF: { short: "PA", label: "Objectifs partiellement atteints", legend: "Partiellement atteints" },
+  MS: { short: "A", label: "Objectifs atteints", legend: "Atteints" },
+  TB: { short: "D", label: "Objectifs dépassés", legend: "Dépassés" },
+};
+
+/** Texte d'un niveau selon l'échelle (la couleur, elle, ne change jamais). */
+export function evalText(value: EvalValue, scale: EvalScale = "college") {
+  const base = EVAL_META[value];
+  const p = scale === "primaire" ? PRIMARY_TEXT[value] : undefined;
+  return { short: p?.short ?? base.short, label: p?.label ?? base.label, legend: p?.legend ?? base.legend };
+}

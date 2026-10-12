@@ -124,3 +124,13 @@ export async function updateNotifications(settings: Record<string, boolean>): Pr
   if (!viewer) return { ok: false, error: FAILED };
   return run((s) => s.from("profile_private").update({ notification_settings: settings }).eq("profile_id", viewer.profileId), ["/compte"]);
 }
+
+/** Cahier de liaison : écrire un mot à la classe (enseignant). */
+export async function postLiaisonNote(classId: string, title: string, body: string, requiresSignature: boolean): Promise<ActionResult> {
+  return run((s) => s.rpc("post_liaison_note", { p_class: classId, p_title: title, p_body: body, p_requires_signature: requiresSignature }), ["/cahier-de-liaison", "/accueil"]);
+}
+
+/** Cahier de liaison : « Lu et signé » (responsable). */
+export async function signLiaisonNote(noteId: string, studentId: string): Promise<ActionResult> {
+  return run((s) => s.rpc("sign_liaison_note", { p_note: noteId, p_student: studentId }), ["/cahier-de-liaison", "/accueil"]);
+}

@@ -9,7 +9,7 @@ import { SegmentedTabs } from "@/components/ui/segmented";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import type { AppelData } from "@/lib/data/teacher";
-import { EVAL_META, nextEvalValue, type EvalValue } from "@/lib/evaluation";
+import { evalText, nextEvalValue, type EvalScale, type EvalValue } from "@/lib/evaluation";
 import { ATTENDANCE_OPTIONS, type Attendance } from "@/lib/reference";
 
 const ATTENDANCE_STYLE: Record<Attendance, string> = {
@@ -81,7 +81,7 @@ function AppelTab({ data }: { data: AppelData }) {
   );
 }
 
-function EvaluationTab({ data }: { data: AppelData }) {
+function EvaluationTab({ data, scale }: { data: AppelData; scale: EvalScale }) {
   const toast = useToast();
   const a = data.assessment;
   const [grid, setGrid] = useState(a?.grid ?? {});
@@ -95,7 +95,7 @@ function EvaluationTab({ data }: { data: AppelData }) {
     const row = [...grid[studentId]];
     row[j] = next;
     setGrid((g) => ({ ...g, [studentId]: row }));
-    setAnnounce(`${name}, ${a.skills[j]} : ${EVAL_META[next].label}`);
+    setAnnounce(`${name}, ${a.skills[j]} : ${evalText(next, scale).label}`);
     start(async () => {
       const r = await setSkillLevels(a.id, studentId, row);
       if (!r.ok) toast({ title: r.error });
@@ -153,13 +153,13 @@ function EvaluationTab({ data }: { data: AppelData }) {
                     <button
                       type="button"
                       disabled={published}
-                      aria-label={`${s.name}, ${a.skills[j]} : ${EVAL_META[v].label}.${published ? "" : " Activer pour passer au niveau suivant."}`}
-                      title={EVAL_META[v].label}
+                      aria-label={`${s.name}, ${a.skills[j]} : ${evalText(v, scale).label}.${published ? "" : " Activer pour passer au niveau suivant."}`}
+                      title={evalText(v, scale).label}
                       onClick={() => cycle(s.id, s.name, j, v)}
                       className="inline-flex h-11 min-w-16 items-center justify-center gap-2 rounded-control px-2.5 text-caption text-ink-2 hover:bg-neutral-bg disabled:hover:bg-transparent"
                     >
                       <PastilleDot value={v} size={20} className={v === "NE" ? "border-dashed" : undefined} />
-                      <span>{EVAL_META[v].short}</span>
+                      <span>{evalText(v, scale).short}</span>
                     </button>
                   </td>
                 ))}
@@ -173,7 +173,7 @@ function EvaluationTab({ data }: { data: AppelData }) {
 }
 
 /** Appel & évaluation (professeur), enregistrés dans Supabase. */
-export function AppelScreen({ data }: { data: AppelData }) {
+export function AppelScreen({ data, scale = "college" }: { data: AppelData; scale?: EvalScale }) {
   return (
     <SegmentedTabs
       aria-label="Saisie"
@@ -187,7 +187,7 @@ export function AppelScreen({ data }: { data: AppelData }) {
       }
       tabs={[
         { value: "appel", label: "Appel", content: <AppelTab data={data} /> },
-        { value: "eval", label: "Évaluation", content: <EvaluationTab data={data} /> },
+        { value: "eval", label: "Évaluation", content: <EvaluationTab data={data} scale={scale} /> },
       ]}
     />
   );

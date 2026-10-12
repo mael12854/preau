@@ -1,5 +1,5 @@
 import { cn } from "@/lib/cn";
-import { EVAL_META, type EvalValue } from "@/lib/evaluation";
+import { EVAL_META, evalText, type EvalScale, type EvalValue } from "@/lib/evaluation";
 
 /** Tailles : 16 (liste) · 20 (saisie) · 24 (tableau) · 28 (détail). */
 export type PastilleSize = 14 | 16 | 20 | 24 | 28;
@@ -45,14 +45,15 @@ type PastilleProps = DotProps & {
   context?: string;
   className?: string;
   labelClassName?: string;
+  scale?: EvalScale;
 };
 
 /**
  * Pastille d'évaluation : jamais seule, son libellé est toujours affiché à côté
  * et repris dans l'aria-label.
  */
-export function Pastille({ value, size = 16, display = "label", context, className, labelClassName }: PastilleProps) {
-  const meta = EVAL_META[value];
+export function Pastille({ value, size = 16, display = "label", context, className, labelClassName, scale }: PastilleProps) {
+  const meta = evalText(value, scale);
   const text = display === "label" ? meta.label : display === "legend" ? meta.legend : meta.short;
   return (
     <span
@@ -67,15 +68,15 @@ export function Pastille({ value, size = 16, display = "label", context, classNa
 }
 
 /** Légende des 4 niveaux, ordre fixe MI → TB. */
-export function PastilleLegend({ className, size = 12 }: { className?: string; size?: number }) {
+export function PastilleLegend({ className, size = 12, scale }: { className?: string; size?: number; scale?: EvalScale }) {
   return (
     <ul className={cn("m-0 flex list-none flex-wrap gap-x-3.5 gap-y-2 p-0 text-caption text-ink-2", className)} aria-label="Légende des niveaux de maîtrise">
       {(["MI", "MF", "MS", "TB"] as const).map((v) => (
         <li key={v} className="flex items-center gap-1.5">
           <span aria-hidden="true" className="pastille-dot shrink-0 rounded-full" style={{ width: size, height: size, background: EVAL_META[v].color ?? undefined }} />
           <span>
-            {EVAL_META[v].legend}
-            <span className="sr-only"> ({EVAL_META[v].label})</span>
+            {evalText(v, scale).legend}
+            <span className="sr-only"> ({evalText(v, scale).label})</span>
           </span>
         </li>
       ))}
@@ -88,13 +89,15 @@ export function DistributionBar({
   counts,
   height = 10,
   className,
+  scale,
 }: {
   counts: { level: "MI" | "MF" | "MS" | "TB"; count: number }[];
   height?: number;
   className?: string;
+  scale?: EvalScale;
 }) {
   const parts = counts.filter((c) => c.count > 0);
-  const summary = parts.map((c) => `${c.count} ${EVAL_META[c.level].label.toLowerCase()}`).join(", ");
+  const summary = parts.map((c) => `${c.count} ${evalText(c.level, scale).label.toLowerCase()}`).join(", ");
   return (
     <div role="img" aria-label={`Répartition : ${summary || "aucune évaluation"}`} className={cn("flex gap-0.5", className)} style={{ height }}>
       {parts.map((c) => (
