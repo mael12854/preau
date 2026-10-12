@@ -52,9 +52,11 @@ create or replace function public.delete_document(p_document uuid)
 returns text language plpgsql security definer set search_path = '' as $$
 declare v_d public.documents;
 begin
+  if private.me() is null then raise exception 'Compte non rattaché à un établissement' using errcode = '42501'; end if;
   select * into v_d from public.documents where id = p_document;
-  if v_d.id is null or v_d.school_id <> private.my_school()
-     or not (v_d.created_by = private.me() or private.my_kind() in ('direction', 'secretariat')) then
+  -- « is distinct from » et coalesce : une valeur nulle ne doit jamais laisser passer.
+  if v_d.id is null or v_d.school_id is distinct from private.my_school()
+     or not coalesce(v_d.created_by = private.me() or private.my_kind() in ('direction', 'secretariat'), false) then
     raise exception 'Document introuvable' using errcode = '42501';
   end if;
   delete from public.documents where id = p_document;
