@@ -1,14 +1,14 @@
 "use client";
 
 import { useTransition } from "react";
-import { payInvoice, topUpCanteen } from "@/app/(app)/actions";
+import { cancelPayment, payInvoice, topUpCanteen, type PaymentResult } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
-import type { BillView } from "@/lib/data/types";
-import { formatCents, formatEuro } from "@/lib/format";
+import type { BillView, PendingTopUpView } from "@/lib/data/types";
+import { formatCents } from "@/lib/format";
 
 const TOP_UPS = [20, 40, 60];
 const SUGGESTED = 40;
@@ -19,18 +19,31 @@ type Props = {
   menu: string[] | null;
   menuDay: string;
   bills: BillView[];
+  pendingTopUps: PendingTopUpView[];
   /** Seuls les responsables paient ; le secrétariat consulte. */
   canPay: boolean;
 };
 
-/** Paiements & cantine : solde et recharge, menu du jour, factures. Paiement simulé (aucun prestataire branché). */
-export function PaiementsScreen({ student, balance, menu, menuDay, bills, canPay }: Props) {
+const WAITING = "Paiement en attente de confirmation par Crédit Domestique";
+
+/**
+ * Paiements & cantine : solde et recharge, menu du jour, factures.
+ * Un paiement n'est jamais crédité par le navigateur : il reste en attente jusqu'à la confirmation du prestataire.
+ */
+export function PaiementsScreen({ student, balance, menu, menuDay, bills, pendingTopUps, canPay }: Props) {
   const toast = useToast();
   const [pending, start] = useTransition();
-  const act = (fn: () => Promise<{ ok: boolean; error?: string }>, success: string) =>
+  const pay = (fn: () => Promise<PaymentResult>) =>
     start(async () => {
       const r = await fn();
-      toast({ title: r.ok ? success : (r.error ?? "") });
+      if (!r.ok) return toast({ title: r.error });
+      if (r.checkoutUrl) window.location.assign(r.checkoutUrl);
+      else toast({ title: WAITING });
+    });
+  const cancel = (id: string) =>
+    start(async () => {
+      const r = await cancelPayment(id);
+      toast({ title: r.ok ? "Paiement annulé" : r.error });
     });
 
   return (
@@ -59,7 +72,7 @@ export function PaiementsScreen({ student, balance, menu, menuDay, bills, canPay
                       type="button"
                       disabled={pending}
                       aria-label={`Recharger de ${v} euros`}
-                      onClick={() => act(() => topUpCanteen(student.id, v), `Compte cantine rechargé de ${formatEuro(v)}`)}
+                      onClick={() => pay(() => topUpCanteen(student.id, v))}
                       className={cn(
                         "h-[2.625rem] rounded-[9px] text-label font-bold disabled:opacity-60",
                         v === SUGGESTED ? "bg-bg text-brand" : "border-[1.5px] border-hero-ink/40 bg-transparent text-hero-ink hover:bg-hero-ink/10",
@@ -69,6 +82,22 @@ export function PaiementsScreen({ student, balance, menu, menuDay, bills, canPay
                     </button>
                   ))}
                 </div>
+              )}
+              {pendingTopUps.length > 0 && (
+                <ul className="m-0 flex list-none flex-col gap-1.5 border-t border-hero-ink/20 p-0 pt-3 text-label text-hero-soft">
+                  {pendingTopUps.map((t) => (
+                    <li key={t.id} className="flex items-center justify-between gap-3">
+                      <span>
+                        Recharge de {t.amount} en attente · {t.date}
+                      </span>
+                      {canPay && (
+                        <button type="button" disabled={pending} onClick={() => cancel(t.id)} className="relative font-bold text-hero-ink underline-offset-2 hover:underline after:absolute after:-inset-3 after:content-['']">
+                          Annuler
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
               )}
             </section>
           )}
@@ -104,15 +133,20 @@ export function PaiementsScreen({ student, balance, menu, menuDay, bills, canPay
               <b className="tabular text-right text-md">{b.amount}</b>
               <Badge tone={b.tone}>{b.status}</Badge>
               <div className="justify-self-end @xl:justify-self-stretch">
-                {b.payable && canPay && (
+                {b.payable && canPay && student && (
                   <Button
                     size="sm"
                     className="w-full"
                     disabled={pending}
                     aria-label={`Payer ${b.label}, ${b.amount}`}
-                    onClick={() => act(() => payInvoice(b.id), `Paiement de ${b.amount} effectué`)}
+                    onClick={() => pay(() => payInvoice(student.id, b.id, b.label))}
                   >
                     Payer
+                  </Button>
+                )}
+                {b.pendingPaymentId && canPay && (
+                  <Button size="sm" variant="secondary" className="w-full" disabled={pending} aria-label={`Annuler le paiement de ${b.label}`} onClick={() => cancel(b.pendingPaymentId!)}>
+                    Annuler
                   </Button>
                 )}
               </div>

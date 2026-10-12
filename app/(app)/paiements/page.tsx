@@ -21,6 +21,7 @@ export default async function Page() {
         menu={data.menu}
         menuDay={formatWeekday(reference)}
         bills={data.bills}
+        pendingTopUps={data.pendingTopUps}
         canPay={profile.id === "parent"}
       />
     </AppShell>

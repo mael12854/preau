@@ -763,6 +763,70 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          amount_cents: number
+          confirmed_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          invoice_id: string | null
+          kind: Database["public"]["Enums"]["payment_kind"]
+          provider: string
+          provider_reference: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          student_id: string
+        }
+        Insert: {
+          amount_cents: number
+          confirmed_at?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          invoice_id?: string | null
+          kind: Database["public"]["Enums"]["payment_kind"]
+          provider?: string
+          provider_reference?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          student_id: string
+        }
+        Update: {
+          amount_cents?: number
+          confirmed_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          invoice_id?: string | null
+          kind?: Database["public"]["Enums"]["payment_kind"]
+          provider?: string
+          provider_reference?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payments_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       profile_private: {
         Row: {
           email: string | null
@@ -1058,7 +1122,15 @@ export type Database = {
         Args: { p_comment?: string; p_event: string; p_reason: string }
         Returns: undefined
       }
-      pay_invoice: { Args: { p_invoice: string }; Returns: undefined }
+      cancel_payment: { Args: { p_payment: string }; Returns: undefined }
+      confirm_payment: {
+        Args: {
+          p_payment: string
+          p_reference?: string
+          p_status: Database["public"]["Enums"]["payment_status"]
+        }
+        Returns: Database["public"]["Enums"]["payment_status"]
+      }
       publish_assessment: { Args: { p_assessment: string }; Returns: undefined }
       send_message: {
         Args: {
@@ -1079,9 +1151,14 @@ export type Database = {
         Returns: undefined
       }
       sign_document: { Args: { p_document: string }; Returns: undefined }
-      top_up_canteen: {
-        Args: { p_amount_cents: number; p_student: string }
-        Returns: number
+      start_payment: {
+        Args: {
+          p_amount_cents?: number
+          p_invoice?: string
+          p_kind: Database["public"]["Enums"]["payment_kind"]
+          p_student: string
+        }
+        Returns: string
       }
       validate_attendance: {
         Args: { p_lesson: string; p_statuses: Json }
@@ -1094,6 +1171,8 @@ export type Database = {
       doc_category: "administratif" | "pedagogique" | "cantine"
       eval_value: "MI" | "MF" | "MS" | "TB" | "NE" | "ABS" | "DISP"
       invoice_status: "a_payer" | "payee" | "creditee"
+      payment_kind: "facture" | "recharge_cantine"
+      payment_status: "en_attente" | "reussi" | "echoue" | "annule"
       life_event_kind:
         | "absence"
         | "retard"

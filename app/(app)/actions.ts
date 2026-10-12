@@ -1,6 +1,8 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
+import { createCheckout } from "@/lib/payments";
 import type { EvalValue } from "@/lib/evaluation";
 import { getViewer } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
@@ -73,12 +75,36 @@ export async function archiveMessage(messageId: string): Promise<ActionResult> {
   );
 }
 
-export async function topUpCanteen(studentId: string, euros: number): Promise<ActionResult> {
-  return run((s) => s.rpc("top_up_canteen", { p_student: studentId, p_amount_cents: Math.round(euros * 100) }), ["/paiements"]);
+/** Résultat d'un paiement lancé : adresse du prestataire, ou paiement en attente de confirmation. */
+export type PaymentResult = { ok: true; checkoutUrl: string | null } | { ok: false; error: string };
+
+async function startPayment(args: { p_kind: "facture" | "recharge_cantine"; p_student: string; p_invoice?: string; p_amount_cents?: number }, label: string): Promise<PaymentResult> {
+  const supabase = await createClient();
+  const { data: id, error } = await supabase.rpc("start_payment", args);
+  if (error || !id) {
+    const readable = error && /^[A-ZÉÈ][^:]*\.?$/.test(error.message) && !/permission|violates/i.test(error.message);
+    return { ok: false, error: readable ? error!.message : FAILED };
+  }
+  const { data: payment } = await supabase.from("payments").select("amount_cents").eq("id", id).single();
+  const h = await headers();
+  const origin = `${h.get("x-forwarded-proto") ?? "https"}://${h.get("host")}`;
+  const checkoutUrl = await createCheckout({ paymentId: id, amountCents: payment?.amount_cents ?? 0, label, returnUrl: `${origin}/paiements` });
+  revalidatePath("/paiements");
+  return { ok: true, checkoutUrl };
 }
 
-export async function payInvoice(invoiceId: string): Promise<ActionResult> {
-  return run((s) => s.rpc("pay_invoice", { p_invoice: invoiceId }), ["/paiements"]);
+/** Recharger le compte cantine : crée un paiement en attente chez Crédit Domestique. */
+export async function topUpCanteen(studentId: string, euros: number): Promise<PaymentResult> {
+  return startPayment({ p_kind: "recharge_cantine", p_student: studentId, p_amount_cents: Math.round(euros * 100) }, "Rechargement cantine");
+}
+
+/** Payer une facture : crée un paiement en attente chez Crédit Domestique. */
+export async function payInvoice(studentId: string, invoiceId: string, label: string): Promise<PaymentResult> {
+  return startPayment({ p_kind: "facture", p_student: studentId, p_invoice: invoiceId }, label);
+}
+
+export async function cancelPayment(paymentId: string): Promise<ActionResult> {
+  return run((s) => s.rpc("cancel_payment", { p_payment: paymentId }), ["/paiements"]);
 }
 
 export async function signDocument(documentId: string): Promise<ActionResult> {

@@ -53,14 +53,24 @@ La démo est figée au **mardi 13 octobre 2026, 10 h 30** (`PREAU_NOW`), car les
 - l'argent (solde, factures) est visible de la famille, du secrétariat et de la direction, pas des professeurs ;
 - les coordonnées (e-mail, téléphone) ne sont visibles que de la personne et de l'administration.
 
-Les écritures sensibles passent par des fonctions SQL qui vérifient les droits : `validate_attendance`, `set_assessment_result`, `publish_assessment`, `justify_life_event`, `send_message`, `top_up_canteen`, `pay_invoice`, `sign_document`.
+Les écritures sensibles passent par des fonctions SQL qui vérifient les droits : `validate_attendance`, `set_assessment_result`, `publish_assessment`, `justify_life_event`, `send_message`, `start_payment`, `cancel_payment`, `sign_document`.
+
+### Paiements (Crédit Domestique)
+
+Le navigateur ne crédite jamais rien : seul le serveur du prestataire confirme un paiement.
+
+1. Le responsable clique sur « Payer » ou « + 20 € ». L'action serveur appelle `start_payment`, qui crée une ligne `payments` en attente (un seul paiement en attente par facture).
+2. `createCheckout` (`lib/payments.ts`) ouvre la session de paiement chez Crédit Domestique et renvoie l'adresse de sa page de paiement, vers laquelle la famille est redirigée. **À brancher** : tant que la fonction renvoie `null`, le paiement reste « en attente de confirmation » et la famille peut l'annuler.
+3. Le webhook du prestataire, reçu par une Supabase Edge Function ou une route API, appelle `confirm_payment(id, 'reussi' | 'echoue', référence)` avec la clé `service_role`. Cette fonction n'est exécutable par aucun utilisateur connecté. Elle est idempotente : un paiement déjà traité n'est pas modifié. En cas de succès, elle règle la facture ou crédite le solde cantine.
+
+Pensez à vérifier la signature du webhook avant d'appeler `confirm_payment`.
 
 Les comptes sont créés par l'établissement, pas par inscription libre. Un compte sans fiche dans un établissement ne voit rien et tombe sur la page « compte non rattaché ».
 
 ### Encore sur données du prototype
 
 - **Tableaux de bord de la vie scolaire, de la direction et du secrétariat** (`lib/mock/staff.ts`) : il manque les tables des demandes administratives et des conseils de classe. Le tableau de bord du professeur, lui, est calculé depuis la base.
-- **Paiements** : ils sont simulés, aucun prestataire de paiement n'est branché.
+- **Paiements** : le parcours est prêt côté base ; il reste à brancher l'API Crédit Domestique dans `lib/payments.ts` et le webhook de confirmation.
 - **Documents** : il n'y a pas encore de fichiers dans Supabase Storage (le téléchargement est factice).
 
 ## Stack

@@ -86,7 +86,20 @@ export type DocumentView = {
 
 export type AgendaEventView = { title: string; tone: Tone; startsOn: string; endsOn: string | null; holiday: boolean };
 
-export type BillView = { id: string; label: string; date: string; amount: string; status: string; tone: Tone; payable: boolean; student?: string };
+export type BillView = {
+  id: string;
+  label: string;
+  date: string;
+  amount: string;
+  status: string;
+  tone: Tone;
+  payable: boolean;
+  student?: string;
+  /** Paiement lancé, en attente de confirmation du prestataire. */
+  pendingPaymentId?: string;
+};
+
+export type PendingTopUpView = { id: string; amount: string; date: string };
 
 export type ReportPeriodView = {
   id: string;

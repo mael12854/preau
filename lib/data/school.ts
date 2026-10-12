@@ -3,7 +3,7 @@ import { formatCents, formatDayMonth, formatSize, isoDay } from "@/lib/format";
 import type { SupabaseServer } from "@/lib/supabase/server";
 import type { Tone } from "@/lib/tone";
 import { iconName } from "./common";
-import type { AgendaEventView, BillView, DocumentView, ReportPeriodView } from "./types";
+import type { AgendaEventView, BillView, DocumentView, PendingTopUpView, ReportPeriodView } from "./types";
 
 const CATEGORY = { administratif: "Administratif", pedagogique: "Pédagogique", cantine: "Cantine" } as const;
 
@@ -45,13 +45,17 @@ export async function getPayments(supabase: SupabaseServer, studentId: string | 
     .select("id, label, amount_cents, status, due_on, paid_on, method, created_at, students(profiles(display_name))")
     .order("created_at", { ascending: false });
   if (studentId) invoices = invoices.eq("student_id", studentId);
-  const [{ data: bills }, account, { data: menu }] = await Promise.all([
+  let payments = supabase.from("payments").select("id, kind, invoice_id, amount_cents, created_at").eq("status", "en_attente");
+  if (studentId) payments = payments.eq("student_id", studentId);
+  const [{ data: bills }, account, { data: menu }, { data: pending }] = await Promise.all([
     invoices,
     studentId
       ? supabase.from("canteen_accounts").select("balance_cents, meal_price_cents").eq("student_id", studentId).maybeSingle()
       : Promise.resolve({ data: null }),
     supabase.from("menus").select("items").eq("served_on", today).maybeSingle(),
+    payments,
   ]);
+  const pendingByInvoice = new Map((pending ?? []).filter((p) => p.invoice_id).map((p) => [p.invoice_id!, p.id]));
 
   const view: BillView[] = (bills ?? []).map((b) => {
     const s: { status: string; tone: Tone; date: string } =
@@ -60,14 +64,21 @@ export async function getPayments(supabase: SupabaseServer, studentId: string | 
         : b.status === "creditee"
           ? { status: "Crédité", tone: "info", date: [b.paid_on && formatDayMonth(b.paid_on), b.method].filter(Boolean).join(" · ") }
           : { status: "Payée", tone: "ok", date: b.paid_on ? `payée le ${formatDayMonth(b.paid_on)}` : "payée" };
+    const pendingPaymentId = b.status === "a_payer" ? pendingByInvoice.get(b.id) : undefined;
     return {
-      id: b.id, label: b.label, amount: formatCents(b.amount_cents), payable: b.status === "a_payer", ...s,
+      id: b.id, label: b.label, amount: formatCents(b.amount_cents), ...s,
+      payable: b.status === "a_payer" && !pendingPaymentId,
+      ...(pendingPaymentId ? { status: "Paiement en cours", tone: "info" as const, pendingPaymentId } : {}),
       student: studentId ? undefined : b.students?.profiles?.display_name,
     };
   });
   const a = account.data;
+  const pendingTopUps: PendingTopUpView[] = (pending ?? [])
+    .filter((p) => p.kind === "recharge_cantine")
+    .map((p) => ({ id: p.id, amount: formatCents(p.amount_cents), date: formatDayMonth(p.created_at) }));
   return {
     bills: view,
+    pendingTopUps,
     balance: a ? { cents: a.balance_cents, meals: Math.floor(a.balance_cents / a.meal_price_cents) } : null,
     menu: menu?.items ?? null,
   };
