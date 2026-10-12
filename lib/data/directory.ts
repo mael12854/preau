@@ -35,7 +35,7 @@ export async function getDirectory(
       .order("last_name")
       .order("display_name"),
     supabase.from("profile_private").select("profile_id, email"),
-    supabase.from("students").select("profile_id, class_id, classes(name)"),
+    supabase.from("students").select("profile_id, class_id, classes!students_class_id_fkey(name)"),
     supabase
       .from("guardians")
       .select("guardian_id, students(profiles(display_name))"),

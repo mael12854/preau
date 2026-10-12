@@ -68,7 +68,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   let children: FollowedStudent[] = [];
   if (ids.length) {
     const [{ data: rows }, { data: extra }] = await Promise.all([
-      supabase.from("students").select("profile_id, class_id, classes(name, level), profiles(first_name, display_name)").in("profile_id", ids),
+      supabase.from("students").select("profile_id, class_id, classes!students_class_id_fkey(name, level), profiles(first_name, display_name)").in("profile_id", ids),
       supabase.from("class_members").select("student_id, class_id, classes(name)").in("student_id", ids),
     ]);
     children = (rows ?? [])
