@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;500;700&family=Schibsted+Grotesk:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+<style>
+html{scroll-behavior:smooth}
+html,body{overflow-x:clip}
+body{margin:0;background:#F5F3EC;color:#1B2421;font-family:'Atkinson Hyperlegible Next','Atkinson Hyperlegible',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#1F5546;text-decoration-thickness:1px;text-underline-offset:3px}
+a:hover{color:#E8673A}
+*{box-sizing:border-box}
+button{font-family:inherit}
+</style>
+</helmet>
+
+<header style="position:sticky;top:0;z-index:20;background:rgba(245,243,236,0.92);backdrop-filter:blur(10px);border-bottom:1px solid #E2DED3">
+<div style="max-width:1264px;margin:0 auto;padding:14px 32px;display:flex;align-items:center;gap:32px;flex-wrap:wrap">
+<a href="#top" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#1B2421">
+<div style="width:28px;height:28px;border-radius:7px;background:#1F5546;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="width:14px;height:11px;border:2.5px solid #F5F3EC;border-bottom:none;border-radius:8px 8px 0 0"></div></div>
+<span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:19px;letter-spacing:-0.03em">préau</span>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">Brand guidelines v1.0</span>
+</a>
+<nav style="display:flex;gap:20px;flex-wrap:wrap;font-size:14px;margin-left:auto">
+<a href="#principes" style="color:#3D4945;text-decoration:none">Principes</a>
+<a href="#logo" style="color:#3D4945;text-decoration:none">Logo</a>
+<a href="#couleurs" style="color:#3D4945;text-decoration:none">Couleurs</a>
+<a href="#typo" style="color:#3D4945;text-decoration:none">Typographie</a>
+<a href="#icones" style="color:#3D4945;text-decoration:none">Icônes</a>
+<a href="#composants" style="color:#3D4945;text-decoration:none">Composants</a>
+<a href="#dataviz" style="color:#3D4945;text-decoration:none">Data viz</a>
+<a href="#sombre" style="color:#3D4945;text-decoration:none">Mode sombre</a>
+<a href="#a11y" style="color:#3D4945;text-decoration:none">Accessibilité</a>
+<a href="#ton" style="color:#3D4945;text-decoration:none">Rédaction</a>
+<a href="#ecrans" style="color:#1F5546;font-weight:700;text-decoration:none">Écrans</a>
+</nav>
+</div>
+</header>
+
+<section id="top" data-screen-label="00 Couverture" style="padding:96px 32px 80px">
+<div style="max-width:1200px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:64px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#5F6B66;letter-spacing:0.04em">ESPACE NUMÉRIQUE DE L'ÉTABLISSEMENT · GUIDE DE MARQUE</div>
+<div style="display:flex;align-items:center;gap:clamp(16px,4vw,28px);flex-wrap:wrap">
+<div style="width:clamp(72px,18vw,120px);height:clamp(72px,18vw,120px);border-radius:25%;background:#1F5546;display:flex;align-items:flex-end;justify-content:center;flex-shrink:0;position:relative"><div style="position:absolute;left:25%;right:25%;top:40.8%;bottom:21.7%;border:solid #F5F3EC;border-width:clamp(6px,1.5vw,10px) clamp(6px,1.5vw,10px) 0;border-radius:999px 999px 0 0"></div></div>
+<h1 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:clamp(64px,13vw,168px);line-height:0.85;letter-spacing:-0.055em">préau</h1>
+</div>
+<p style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:clamp(26px,3vw,36px);line-height:1.15;font-weight:600;letter-spacing:-0.02em;max-width:620px;text-wrap:pretty">Notes, devoirs, absences, messages. Tout ce qui fait la vie de l'établissement, enfin lisible par chacun.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;font-size:16px;line-height:1.6;color:#3D4945;max-width:480px">
+<p style="margin:0;text-wrap:pretty">Ce document fixe l'identité et le langage d'interface de Préau, alternative complète à École Directe. Il sert de référence unique au développement : chaque valeur (couleur, taille, rayon, espacement) est donnée sous forme de jeton réutilisable.</p>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:6px 20px;font-size:14px;padding-top:16px;border-top:1px solid #E2DED3">
+<span style="color:#5F6B66">Profils</span><span>Élèves (collège, lycée), parents, professeurs, vie scolaire, direction, secrétariat</span>
+<span style="color:#5F6B66">Plateforme</span><span>Desktop d'abord (≥ 1280 px), responsive jusqu'à 360 px</span>
+<span style="color:#5F6B66">Conformité</span><span>RGAA 4.1, niveau AA visé</span>
+</div>
+</div>
+</div>
+</section>
+
+<section id="principes" data-screen-label="01 Principes" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">01</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Principes</h2>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:1px;background:#E2DED3;border:1px solid #E2DED3;border-radius:16px;overflow:hidden">
+<div style="background:#FFFFFF;padding:32px;display:flex;flex-direction:column;gap:14px">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-size:56px;font-weight:800;color:#1F5546;line-height:1;letter-spacing:-0.04em">1.</div>
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.01em">L'essentiel d'abord</h3>
+<p style="margin:0;color:#3D4945;line-height:1.55;text-wrap:pretty">Chaque écran répond à une question : « Qu'est-ce que j'ai demain ? », « Mon enfant est-il en cours ? ». La réponse est visible sans clic.</p>
+</div>
+<div style="background:#FFFFFF;padding:32px;display:flex;flex-direction:column;gap:14px">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-size:56px;font-weight:800;color:#1F5546;line-height:1;letter-spacing:-0.04em">2.</div>
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.01em">Lisible d'un coup d'œil</h3>
+<p style="margin:0;color:#3D4945;line-height:1.55;text-wrap:pretty">Pas de note sur 20 : chaque compétence reçoit une pastille — rouge, orange, bleu, vert. On repère une difficulté avant de lire.</p>
+</div>
+<div style="background:#FFFFFF;padding:32px;display:flex;flex-direction:column;gap:14px">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-size:56px;font-weight:800;color:#1F5546;line-height:1;letter-spacing:-0.04em">3.</div>
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.01em">Un seul langage</h3>
+<p style="margin:0;color:#3D4945;line-height:1.55;text-wrap:pretty">Mêmes composants, mêmes mots pour tous les profils. Un parent et un professeur parlent de la même « absence ».</p>
+</div>
+<div style="background:#FFFFFF;padding:32px;display:flex;flex-direction:column;gap:14px">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-size:56px;font-weight:800;color:#1F5546;line-height:1;letter-spacing:-0.04em">4.</div>
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.01em">Accessible par défaut</h3>
+<p style="margin:0;color:#3D4945;line-height:1.55;text-wrap:pretty">Police conçue pour la basse vision, contrastes AA, navigation clavier complète. Aucune exception pour « les écrans internes ».</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="logo" data-screen-label="02 Logo" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">02</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Logo &amp; usages</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Le symbole est une arche : le préau, l'abri commun de la cour où tout le monde se croise. Le logotype s'écrit toujours en minuscules, en Schibsted Grotesk ExtraBold, approche −3 %.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr));gap:16px">
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="height:220px;background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:14px">
+<div style="width:52px;height:52px;border-radius:13px;background:#1F5546;display:flex;align-items:flex-end;justify-content:center;padding-bottom:11px"><div style="width:26px;height:20px;border:4.5px solid #F5F3EC;border-bottom:none;border-radius:18px 18px 0 0"></div></div>
+<span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:44px;letter-spacing:-0.035em">préau</span>
+</div>
+<div style="font-size:14px;color:#5F6B66">Version principale, fond clair</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="height:220px;background:#1F5546;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:14px">
+<div style="width:52px;height:52px;border-radius:13px;background:#F5F3EC;display:flex;align-items:flex-end;justify-content:center;padding-bottom:11px"><div style="width:26px;height:20px;border:4.5px solid #1F5546;border-bottom:none;border-radius:18px 18px 0 0"></div></div>
+<span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:44px;letter-spacing:-0.035em;color:#F5F3EC">préau</span>
+</div>
+<div style="font-size:14px;color:#5F6B66">Inversée, fond Tableau</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="height:220px;background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;display:flex;align-items:center;justify-content:center;gap:28px">
+<div style="width:96px;height:96px;border-radius:24px;background:#1F5546;display:flex;align-items:flex-end;justify-content:center;padding-bottom:21px"><div style="width:48px;height:37px;border:8px solid #F5F3EC;border-bottom:none;border-radius:32px 32px 0 0"></div></div>
+<div style="width:48px;height:48px;border-radius:12px;background:#1F5546;display:flex;align-items:flex-end;justify-content:center;padding-bottom:10px"><div style="width:24px;height:19px;border:4px solid #F5F3EC;border-bottom:none;border-radius:16px 16px 0 0"></div></div>
+<div style="width:24px;height:24px;border-radius:6px;background:#1F5546;display:flex;align-items:flex-end;justify-content:center;padding-bottom:5px"><div style="width:12px;height:10px;border:2px solid #F5F3EC;border-bottom:none;border-radius:8px 8px 0 0"></div></div>
+</div>
+<div style="font-size:14px;color:#5F6B66">Symbole seul : icône d'app, favicon (min. 16 px)</div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:20px;font-weight:700">Zone de protection</h3>
+<div style="display:flex;justify-content:center;padding:12px 0">
+<div style="padding:26px;border:1.5px dashed #E8673A;border-radius:6px;display:flex;align-items:center;gap:10px;position:relative">
+<div style="width:38px;height:38px;border-radius:9px;background:#1F5546;display:flex;align-items:flex-end;justify-content:center;padding-bottom:8px"><div style="width:19px;height:15px;border:3.5px solid #F5F3EC;border-bottom:none;border-radius:12px 12px 0 0"></div></div>
+<span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:32px;letter-spacing:-0.035em">préau</span>
+</div>
+</div>
+<p style="margin:0;font-size:14px;color:#3D4945;line-height:1.55">Marge minimale autour du logo = hauteur de l'arche (x). Taille minimale du logo complet : 80 px de large à l'écran.</p>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:20px;font-weight:700">À éviter</h3>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="height:88px;background:#F5F3EC;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden"><span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.03em;transform:scaleX(1.6);display:inline-block">préau</span></div>
+<div style="font-size:13px;color:#B83A26;display:flex;gap:4px;align-items:center"><span style="font-family:'Material Symbols Rounded';font-size:16px">close</span>Déformer</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="height:88px;background:#F5F3EC;border-radius:10px;display:flex;align-items:center;justify-content:center"><span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.03em;color:#C44FD6">PRÉAU</span></div>
+<div style="font-size:13px;color:#B83A26;display:flex;gap:4px;align-items:center"><span style="font-family:'Material Symbols Rounded';font-size:16px">close</span>Recolorer, capitaliser</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="height:88px;background:#E8673A;border-radius:10px;display:flex;align-items:center;justify-content:center"><span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:26px;letter-spacing:-0.03em;color:#1F5546">préau</span></div>
+<div style="font-size:13px;color:#B83A26;display:flex;gap:4px;align-items:center"><span style="font-family:'Material Symbols Rounded';font-size:16px">close</span>Fond non prévu</div>
+</div>
+</div>
+<p style="margin:0;font-size:14px;color:#3D4945;line-height:1.55">Le nom de l'établissement ne fusionne jamais avec le logo : il s'affiche à côté, séparé par un filet, en Atkinson 500.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section id="couleurs" data-screen-label="03 Couleurs" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:56px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">03</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Couleurs</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Un vert tableau pour l'identité, une craie chaude pour le fond, un orange crayon pour le focus et les rares appels à l'attention. Les couleurs de matière sont générées sur une même luminosité OKLCH : aucune ne domine.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:16px;grid-auto-rows:minmax(220px,auto)">
+<div style="background:#1F5546;border-radius:16px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;color:#F5F3EC">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:30px;letter-spacing:-0.02em">Tableau</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:4px 16px;font-family:'IBM Plex Mono',monospace;font-size:13px"><span style="opacity:0.7">--brand</span><span>#1F5546</span><span style="opacity:0.7">hover</span><span>#17463A</span><span style="opacity:0.7">usage</span><span style="font-family:'Atkinson Hyperlegible Next',sans-serif">actions principales, navigation</span></div>
+</div>
+<div style="background:#F5F3EC;border:1px solid #CFC9BB;border-radius:16px;padding:28px;display:flex;flex-direction:column;justify-content:space-between">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:30px;letter-spacing:-0.02em">Craie</div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;display:flex;flex-direction:column;gap:4px"><span style="color:#5F6B66">--bg</span><span>#F5F3EC</span></div>
+</div>
+<div style="background:#E8673A;border-radius:16px;padding:28px;display:flex;flex-direction:column;justify-content:space-between;color:#1B2421">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:30px;letter-spacing:-0.02em">Crayon</div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;display:flex;flex-direction:column;gap:4px"><span>--accent</span><span>#E8673A</span><span style="font-family:'Atkinson Hyperlegible Next',sans-serif">focus, nouveauté. Jamais en texte.</span></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700">Neutres — Ardoise</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));border-radius:14px;overflow:hidden;border:1px solid #E2DED3">
+<div style="background:#FFFFFF;padding:16px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'IBM Plex Mono',monospace;font-size:12px;gap:2px"><b style="font-family:'Atkinson Hyperlegible Next',sans-serif;font-size:14px">surface</b>#FFFFFF</div>
+<div style="background:#FAF9F5;padding:16px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'IBM Plex Mono',monospace;font-size:12px;gap:2px"><b style="font-family:'Atkinson Hyperlegible Next',sans-serif;font-size:14px">surface-2</b>#FAF9F5</div>
+<div style="background:#E2DED3;padding:16px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'IBM Plex Mono',monospace;font-size:12px;gap:2px"><b style="font-family:'Atkinson Hyperlegible Next',sans-serif;font-size:14px">line</b>#E2DED3</div>
+<div style="background:#CFC9BB;padding:16px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'IBM Plex Mono',monospace;font-size:12px;gap:2px"><b style="font-family:'Atkinson Hyperlegible Next',sans-serif;font-size:14px">line-strong</b>#CFC9BB</div>
+<div style="background:#5F6B66;color:#FFFFFF;padding:16px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'IBM Plex Mono',monospace;font-size:12px;gap:2px"><b style="font-family:'Atkinson Hyperlegible Next',sans-serif;font-size:14px">ink-muted</b>#5F6B66</div>
+<div style="background:#3D4945;color:#FFFFFF;padding:16px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'IBM Plex Mono',monospace;font-size:12px;gap:2px"><b style="font-family:'Atkinson Hyperlegible Next',sans-serif;font-size:14px">ink-2</b>#3D4945</div>
+<div style="background:#1B2421;color:#FFFFFF;padding:16px;height:120px;display:flex;flex-direction:column;justify-content:flex-end;font-family:'IBM Plex Mono',monospace;font-size:12px;gap:2px"><b style="font-family:'Atkinson Hyperlegible Next',sans-serif;font-size:14px">ink</b>#1B2421</div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700">Sémantiques</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px">
+<div style="border:1px solid #E2DED3;border-radius:14px;overflow:hidden;background:#FFFFFF"><div style="height:64px;background:#2F7D4F"></div><div style="padding:16px;display:flex;flex-direction:column;gap:6px"><b>Succès</b><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">#2F7D4F · fond #E4F2E8</span><span style="font-size:14px;color:#3D4945">Justifié, payé, enregistré</span></div></div>
+<div style="border:1px solid #E2DED3;border-radius:14px;overflow:hidden;background:#FFFFFF"><div style="height:64px;background:#9A6512"></div><div style="padding:16px;display:flex;flex-direction:column;gap:6px"><b>Attention</b><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">#9A6512 · fond #FBF0D9</span><span style="font-size:14px;color:#3D4945">Retard, échéance proche</span></div></div>
+<div style="border:1px solid #E2DED3;border-radius:14px;overflow:hidden;background:#FFFFFF"><div style="height:64px;background:#B83A26"></div><div style="padding:16px;display:flex;flex-direction:column;gap:6px"><b>Action requise</b><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">#B83A26 · fond #FBE6E1</span><span style="font-size:14px;color:#3D4945">À justifier, impayé, erreur</span></div></div>
+<div style="border:1px solid #E2DED3;border-radius:14px;overflow:hidden;background:#FFFFFF"><div style="height:64px;background:#2D63A8"></div><div style="padding:16px;display:flex;flex-direction:column;gap:6px"><b>Information</b><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">#2D63A8 · fond #E3ECF8</span><span style="font-size:14px;color:#3D4945">Cours modifié, nouvelle info</span></div></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700">Couleurs de matière</h3>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">pastille oklch(0.6 0.13 h) · fond oklch(0.95 0.035 h) · texte oklch(0.38 0.09 h)</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:10px">
+<div style="background:oklch(0.95 0.035 30);color:oklch(0.38 0.09 30);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 30);flex-shrink:0"></span><b style="flex:1">Français</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 30</span></div>
+<div style="background:oklch(0.95 0.035 60);color:oklch(0.38 0.09 60);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 60);flex-shrink:0"></span><b style="flex:1">Histoire-Géo</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 60</span></div>
+<div style="background:oklch(0.95 0.035 90);color:oklch(0.38 0.09 90);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 90);flex-shrink:0"></span><b style="flex:1">SES / Philo</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 90</span></div>
+<div style="background:oklch(0.95 0.035 120);color:oklch(0.38 0.09 120);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 120);flex-shrink:0"></span><b style="flex:1">EPS</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 120</span></div>
+<div style="background:oklch(0.95 0.035 150);color:oklch(0.38 0.09 150);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 150);flex-shrink:0"></span><b style="flex:1">SVT</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 150</span></div>
+<div style="background:oklch(0.95 0.035 180);color:oklch(0.38 0.09 180);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 180);flex-shrink:0"></span><b style="flex:1">Physique-Chimie</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 180</span></div>
+<div style="background:oklch(0.95 0.035 210);color:oklch(0.38 0.09 210);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 210);flex-shrink:0"></span><b style="flex:1">Technologie</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 210</span></div>
+<div style="background:oklch(0.95 0.035 240);color:oklch(0.38 0.09 240);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 240);flex-shrink:0"></span><b style="flex:1">Mathématiques</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 240</span></div>
+<div style="background:oklch(0.95 0.035 270);color:oklch(0.38 0.09 270);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 270);flex-shrink:0"></span><b style="flex:1">Espagnol / LV2</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 270</span></div>
+<div style="background:oklch(0.95 0.035 300);color:oklch(0.38 0.09 300);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 300);flex-shrink:0"></span><b style="flex:1">Anglais</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 300</span></div>
+<div style="background:oklch(0.95 0.035 330);color:oklch(0.38 0.09 330);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 330);flex-shrink:0"></span><b style="flex:1">Musique</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 330</span></div>
+<div style="background:oklch(0.95 0.035 0);color:oklch(0.38 0.09 0);border-radius:12px;padding:14px;display:flex;gap:10px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:oklch(0.6 0.13 0);flex-shrink:0"></span><b style="flex:1">Arts plastiques</b><span style="font-family:'IBM Plex Mono',monospace;font-size:11px">h 0</span></div>
+</div>
+<p style="margin:0;font-size:14px;color:#5F6B66;line-height:1.55;max-width:760px">Matière supplémentaire (option, spécialité) : teinte libre à ±15° d'une teinte existante, l'établissement peut la redéfinir. La couleur accompagne toujours le nom de la matière, jamais seule.</p>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:16px;flex-wrap:wrap">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700">Pastilles d'évaluation</h3>
+<span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">évaluation par compétences · aucune note chiffrée</span>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:28px;height:28px;border-radius:50%;background:#C8402B;flex-shrink:0"></span><b style="font-size:17px">Rouge</b></div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">--eval-mi · #C8402B</div>
+<div style="font-size:14px;color:#3D4945">Maîtrise insuffisante</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:28px;height:28px;border-radius:50%;background:#E8892B;flex-shrink:0"></span><b style="font-size:17px">Orange</b></div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">--eval-mf · #E8892B</div>
+<div style="font-size:14px;color:#3D4945">Maîtrise fragile</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:28px;height:28px;border-radius:50%;background:#2F6FC0;flex-shrink:0"></span><b style="font-size:17px">Bleu</b></div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">--eval-ms · #2F6FC0</div>
+<div style="font-size:14px;color:#3D4945">Maîtrise satisfaisante</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="width:28px;height:28px;border-radius:50%;background:#2E8B57;flex-shrink:0"></span><b style="font-size:17px">Vert</b></div>
+<div style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">--eval-tb · #2E8B57</div>
+<div style="font-size:14px;color:#3D4945">Très bonne maîtrise</div>
+</div>
+</div>
+<p style="margin:0;font-size:14px;color:#5F6B66;line-height:1.55;max-width:760px">Les pastilles remplacent toute note sur 20, du collège au lycée. Une pastille n'est jamais seule : son libellé est affiché à côté, au survol et dans l'aria-label. Non évalué, absent, dispensé : cercle vide gris (#CFC9BB), sigles NE, Abs., Disp.</p>
+</div>
+</div>
+</section>
+
+<section id="typo" data-screen-label="04 Typographie" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">04</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Typographie</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Deux familles gratuites et open source. Schibsted Grotesk pour les titres ; Atkinson Hyperlegible Next — dessinée par le Braille Institute pour la basse vision — pour tout le texte d'interface.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:20px">
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:112px;line-height:0.9;letter-spacing:-0.05em">Aa</div>
+<div><div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:22px">Schibsted Grotesk</div><div style="font-size:14px;color:#5F6B66;margin-top:4px">Titres et chiffres clés · 600 / 700 / 800 · approche −1 à −4 %</div></div>
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-size:20px;color:#3D4945;line-height:1.4">ABCDEFGHIJKLM<wbr>NOPQRSTUVWXYZ<br>àâéèêëïîôùûç — 0123456789</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:32px;display:flex;flex-direction:column;gap:20px">
+<div style="font-weight:700;font-size:112px;line-height:0.9;letter-spacing:-0.03em">Aa</div>
+<div><div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:22px">Atkinson Hyperlegible Next</div><div style="font-size:14px;color:#5F6B66;margin-top:4px">Interface, texte courant · 400 / 500 / 700 · chiffres tabulaires</div></div>
+<div style="font-size:20px;color:#3D4945;line-height:1.4">Il l1 I | O0 o — <wbr>rn m — 6b 9g<br>Lettres distinctes, sans ambiguïté</div>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;overflow:hidden">
+<div style="display:flex;flex-wrap:wrap;column-gap:24px;row-gap:8px;padding:20px 24px;border-bottom:1px solid #E2DED3;align-items:baseline"><span style="flex:0 0 150px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">display</span><span style="flex:1 1 260px;font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:56px;letter-spacing:-0.04em;line-height:1">Bonjour Léa</span><span style="flex:0 0 auto;margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">56 / 56 · 800 · −4 %</span></div>
+<div style="display:flex;flex-wrap:wrap;column-gap:24px;row-gap:8px;padding:20px 24px;border-bottom:1px solid #E2DED3;align-items:baseline"><span style="flex:0 0 150px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">h1 · titre de page</span><span style="flex:1 1 260px;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:32px;letter-spacing:-0.025em;line-height:1.1">Emploi du temps</span><span style="flex:0 0 auto;margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">32 / 36 · 700 · −2,5 %</span></div>
+<div style="display:flex;flex-wrap:wrap;column-gap:24px;row-gap:8px;padding:20px 24px;border-bottom:1px solid #E2DED3;align-items:baseline"><span style="flex:0 0 150px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">h2 · titre de carte</span><span style="flex:1 1 260px;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:20px;letter-spacing:-0.01em">À faire pour demain</span><span style="flex:0 0 auto;margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">20 / 26 · 700 · −1 %</span></div>
+<div style="display:flex;flex-wrap:wrap;column-gap:24px;row-gap:8px;padding:20px 24px;border-bottom:1px solid #E2DED3;align-items:baseline"><span style="flex:0 0 150px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">body</span><span style="flex:1 1 260px;font-size:16px;line-height:1.55">Exercices 12 à 15 page 84, à rendre sur feuille double.</span><span style="flex:0 0 auto;margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">16 / 25 · 400</span></div>
+<div style="display:flex;flex-wrap:wrap;column-gap:24px;row-gap:8px;padding:20px 24px;border-bottom:1px solid #E2DED3;align-items:baseline"><span style="flex:0 0 150px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">label</span><span style="flex:1 1 260px;font-size:14px;font-weight:700">Salle B12 · M. Durand</span><span style="flex:0 0 auto;margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">14 / 20 · 700</span></div>
+<div style="display:flex;flex-wrap:wrap;column-gap:24px;row-gap:8px;padding:20px 24px;align-items:baseline"><span style="flex:0 0 150px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">caption</span><span style="flex:1 1 260px;font-size:13px;color:#5F6B66">Modifié le mar. 13 oct. à 8 h 42</span><span style="flex:0 0 auto;margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">13 / 18 · 400 · min.</span></div>
+</div>
+</div>
+</section>
+
+<section id="icones" data-screen-label="05 Icônes" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">05</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Iconographie</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Material Symbols Rounded, graisse 400, taille optique 24. Contour par défaut, plein (FILL 1) uniquement pour l'élément actif de la navigation. Une icône accompagne un libellé ; seule, elle porte un aria-label.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:1px;background:#E2DED3;border:1px solid #E2DED3;border-radius:16px;overflow:hidden">
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">space_dashboard</span><span style="font-size:13px">Tableau de bord</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">calendar_view_week</span><span style="font-size:13px">Emploi du temps</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">menu_book</span><span style="font-size:13px">Devoirs</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">donut_large</span><span style="font-size:13px">Évaluations</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">how_to_reg</span><span style="font-size:13px">Vie scolaire</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">mail</span><span style="font-size:13px">Messagerie</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">folder</span><span style="font-size:13px">Documents</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">event</span><span style="font-size:13px">Agenda</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">payments</span><span style="font-size:13px">Paiements</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">restaurant</span><span style="font-size:13px">Cantine</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">article</span><span style="font-size:13px">Bulletins</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">fact_check</span><span style="font-size:13px">Appel &amp; évaluation</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">settings</span><span style="font-size:13px">Compte</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">event_busy</span><span style="font-size:13px">Absence</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">schedule</span><span style="font-size:13px">Retard</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">group</span><span style="font-size:13px">Classe</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">attach_file</span><span style="font-size:13px">Pièce jointe</span></div>
+<div style="background:#FFFFFF;padding:22px 16px;display:flex;flex-direction:column;gap:12px"><span style="font-family:'Material Symbols Rounded';font-size:28px;color:#1F5546">notifications</span><span style="font-size:13px">Notifications</span></div>
+</div>
+</div>
+</section>
+
+<section id="composants" data-screen-label="06 Composants" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">06</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Composants UI</h2>
+</div>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:6px 20px;font-size:14px;color:#3D4945">
+<span style="font-family:'IBM Plex Mono',monospace;color:#5F6B66">rayons</span><span>6 (badge) · 10 (bouton, champ) · 14 (carte) · 999 (pastille)</span>
+<span style="font-family:'IBM Plex Mono',monospace;color:#5F6B66">espaces</span><span>4 · 8 · 12 · 16 · 24 · 32 · 48 · 64</span>
+<span style="font-family:'IBM Plex Mono',monospace;color:#5F6B66">hauteurs</span><span>36 (compact) · 44 (défaut, cible tactile min.) · 52</span>
+<span style="font-family:'IBM Plex Mono',monospace;color:#5F6B66">ombres</span><span>aucune sur les cartes ; 0 12px 32px rgba(27,36,33,.14) pour menus et modales</span>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Boutons</h3>
+<div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center">
+<button style="height:44px;padding:0 18px;border-radius:10px;border:none;background:#1F5546;color:#FFFFFF;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px;cursor:pointer" style-hover="background:#17463A"><span style="font-family:'Material Symbols Rounded';font-size:20px">send</span>Envoyer</button>
+<button style="height:44px;padding:0 18px;border-radius:10px;border:1.5px solid #CFC9BB;background:#FFFFFF;color:#1B2421;font-size:15px;font-weight:700;cursor:pointer" style-hover="border-color:#1F5546">Annuler</button>
+<button style="height:44px;padding:0 14px;border-radius:10px;border:none;background:transparent;color:#1F5546;font-size:15px;font-weight:700;cursor:pointer" style-hover="background:#E3EEE9">Voir tout</button>
+<button style="height:44px;padding:0 18px;border-radius:10px;border:none;background:#B83A26;color:#FFFFFF;font-size:15px;font-weight:700;cursor:pointer">Supprimer</button>
+<button style="height:44px;padding:0 18px;border-radius:10px;border:none;background:#E2DED3;color:#5F6B66;font-size:15px;font-weight:700">Désactivé</button>
+<button style="height:44px;padding:0 18px;border-radius:10px;border:none;background:#1F5546;color:#FFFFFF;font-size:15px;font-weight:700;outline:3px solid #E8673A;outline-offset:2px">Focus clavier</button>
+</div>
+<p style="margin:0;font-size:13px;color:#5F6B66">Un seul bouton principal par zone. Libellé = verbe à l'infinitif.</p>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Champs</h3>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Objet du message<input value="Absence de Léa jeudi" style="height:44px;border:1.5px solid #CFC9BB;border-radius:10px;padding:0 12px;font-size:15px;font-family:inherit;color:#1B2421;outline:none" style-focus="border-color:#1F5546;box-shadow:0 0 0 3px #E3EEE9"><span style="font-weight:400;font-size:13px;color:#5F6B66">Visible par le destinataire</span></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Motif d'absence<div style="height:44px;border:1.5px solid #B83A26;border-radius:10px;padding:0 12px;font-size:15px;font-weight:400;display:flex;align-items:center;justify-content:space-between;color:#5F6B66">Choisir un motif<span style="font-family:'Material Symbols Rounded';font-size:20px;color:#3D4945">expand_more</span></div><span style="font-weight:400;font-size:13px;color:#B83A26;display:flex;gap:4px;align-items:center"><span style="font-family:'Material Symbols Rounded';font-size:16px">error</span>Indiquez un motif pour justifier.</span></label>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:24px;align-items:center;font-size:15px">
+<span style="display:flex;gap:8px;align-items:center"><span style="width:22px;height:22px;border-radius:6px;background:#1F5546;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:18px">check</span>Fait</span>
+<span style="display:flex;gap:8px;align-items:center"><span style="width:22px;height:22px;border-radius:6px;border:1.5px solid #CFC9BB"></span>À faire</span>
+<span style="display:flex;gap:8px;align-items:center"><span style="width:22px;height:22px;border-radius:50%;border:6px solid #1F5546"></span>Trimestre 1</span>
+<span style="display:flex;gap:8px;align-items:center"><span style="width:40px;height:24px;border-radius:999px;background:#1F5546;padding:3px;display:flex;justify-content:flex-end"><span style="width:18px;height:18px;border-radius:50%;background:#FFFFFF"></span></span>Notifications</span>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:20px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Badges, étiquettes, pastilles</h3>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<span style="background:#E4F2E8;color:#2F7D4F;border-radius:6px;padding:4px 8px;font-size:13px;font-weight:700">Justifiée</span>
+<span style="background:#FBE6E1;color:#B83A26;border-radius:6px;padding:4px 8px;font-size:13px;font-weight:700">À justifier</span>
+<span style="background:#FBF0D9;color:#9A6512;border-radius:6px;padding:4px 8px;font-size:13px;font-weight:700">Retard</span>
+<span style="background:#E3ECF8;color:#2D63A8;border-radius:6px;padding:4px 8px;font-size:13px;font-weight:700">Cours déplacé</span>
+<span style="background:#EEEBE3;color:#3D4945;border-radius:6px;padding:4px 8px;font-size:13px;font-weight:700">Brouillon</span>
+<span style="background:#1B2421;color:#FFFFFF;border-radius:6px;padding:4px 8px;font-size:13px;font-weight:700">Contrôle</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<span style="background:oklch(0.95 0.035 240);color:oklch(0.38 0.09 240);border-radius:999px;padding:5px 12px 5px 8px;font-size:13px;font-weight:700;display:flex;gap:6px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.6 0.13 240)"></span>Mathématiques</span>
+<span style="background:oklch(0.95 0.035 30);color:oklch(0.38 0.09 30);border-radius:999px;padding:5px 12px 5px 8px;font-size:13px;font-weight:700;display:flex;gap:6px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.6 0.13 30)"></span>Français</span>
+<span style="background:oklch(0.95 0.035 150);color:oklch(0.38 0.09 150);border-radius:999px;padding:5px 12px 5px 8px;font-size:13px;font-weight:700;display:flex;gap:6px;align-items:center"><span style="width:8px;height:8px;border-radius:50%;background:oklch(0.6 0.13 150)"></span>SVT</span>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:center;font-size:14px">
+<span style="display:flex;gap:6px;align-items:center"><span style="width:16px;height:16px;border-radius:50%;background:#C8402B"></span>MI</span>
+<span style="display:flex;gap:6px;align-items:center"><span style="width:16px;height:16px;border-radius:50%;background:#E8892B"></span>MF</span>
+<span style="display:flex;gap:6px;align-items:center"><span style="width:16px;height:16px;border-radius:50%;background:#2F6FC0"></span>MS</span>
+<span style="display:flex;gap:6px;align-items:center"><span style="width:16px;height:16px;border-radius:50%;background:#2E8B57"></span>TB</span>
+<span style="display:flex;gap:6px;align-items:center"><span style="width:16px;height:16px;border-radius:50%;border:2px solid #CFC9BB"></span>NE</span>
+</div>
+<p style="margin:0;font-size:13px;color:#5F6B66">Pastille : 16 px en liste, 20 px en tableau de saisie, 28 px en détail.</p>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:16px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Onglets, alertes, notifications</h3>
+<div style="display:flex;gap:4px;background:#F5F3EC;border-radius:10px;padding:4px;width:fit-content">
+<span style="padding:8px 14px;border-radius:7px;background:#FFFFFF;font-weight:700;font-size:14px;box-shadow:0 1px 2px rgba(27,36,33,.12)">Trimestre 1</span>
+<span style="padding:8px 14px;border-radius:7px;font-size:14px;color:#3D4945">Trimestre 2</span>
+<span style="padding:8px 14px;border-radius:7px;font-size:14px;color:#3D4945">Trimestre 3</span>
+</div>
+<div style="background:#E3ECF8;color:#1B2421;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.45"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#2D63A8">info</span><div><b>Cours déplacé.</b> Physique-Chimie de jeudi a lieu en salle Labo 2.</div></div>
+<div style="background:#FBE6E1;color:#1B2421;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:center;font-size:14px;line-height:1.45"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#B83A26">error</span><div style="flex:1"><b>1 absence à justifier</b> depuis le jeu. 1 oct.</div><span style="font-weight:700;color:#B83A26">Justifier</span></div>
+<div style="background:#1B2421;color:#F5F3EC;border-radius:12px;padding:12px 16px;display:flex;gap:12px;align-items:center;font-size:14px;width:fit-content;box-shadow:0 12px 32px rgba(27,36,33,.2)"><span style="font-family:'Material Symbols Rounded';font-size:20px;color:#7FC4AE">check_circle</span>Message envoyé<span style="font-weight:700;color:#7FC4AE;margin-left:12px">Annuler</span></div>
+</div>
+</div>
+</div>
+</section>
+
+
+<section id="dataviz" data-screen-label="07 Data viz" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">07</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Visualiser les évaluations</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Aucune moyenne, aucun classement. On montre la répartition des pastilles et leur évolution dans le temps. Les quatre couleurs d'évaluation ne servent qu'à ça.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:18px">
+<div><h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Répartition par matière</h3><div style="font-size:13px;color:#5F6B66;margin-top:4px">Barre empilée, ordre fixe MI → TB, segments séparés de 2 px</div></div>
+<div style="display:grid;grid-template-columns:130px 1fr 28px;gap:12px 14px;align-items:center;font-size:14px">
+<span>Français</span><div style="display:flex;gap:2px;height:14px"><div style="flex:1;background:#C8402B;border-radius:3px"></div><div style="flex:2;background:#E8892B;border-radius:3px"></div><div style="flex:5;background:#2F6FC0;border-radius:3px"></div><div style="flex:3;background:#2E8B57;border-radius:3px"></div></div><span style="color:#5F6B66;font-variant-numeric:tabular-nums">11</span>
+<span>Mathématiques</span><div style="display:flex;gap:2px;height:14px"><div style="flex:1;background:#E8892B;border-radius:3px"></div><div style="flex:3;background:#2F6FC0;border-radius:3px"></div><div style="flex:6;background:#2E8B57;border-radius:3px"></div></div><span style="color:#5F6B66">10</span>
+<span>Histoire-Géo</span><div style="display:flex;gap:2px;height:14px"><div style="flex:2;background:#C8402B;border-radius:3px"></div><div style="flex:3;background:#E8892B;border-radius:3px"></div><div style="flex:3;background:#2F6FC0;border-radius:3px"></div></div><span style="color:#5F6B66">8</span>
+<span>Anglais</span><div style="display:flex;gap:2px;height:14px"><div style="flex:1;background:#E8892B;border-radius:3px"></div><div style="flex:4;background:#2F6FC0;border-radius:3px"></div><div style="flex:4;background:#2E8B57;border-radius:3px"></div></div><span style="color:#5F6B66">9</span>
+<span>SVT</span><div style="display:flex;gap:2px;height:14px"><div style="flex:1;background:#C8402B;border-radius:3px"></div><div style="flex:2;background:#E8892B;border-radius:3px"></div><div style="flex:3;background:#2F6FC0;border-radius:3px"></div><div style="flex:1;background:#2E8B57;border-radius:3px"></div></div><span style="color:#5F6B66">7</span>
+</div>
+<div style="display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:#3D4945;padding-top:6px;border-top:1px solid #E2DED3"><span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:#C8402B"></span>Insuffisante</span><span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:#E8892B"></span>Fragile</span><span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:#2F6FC0"></span>Satisfaisante</span><span style="display:flex;gap:6px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:#2E8B57"></span>Très bonne</span></div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:18px">
+<div><h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Évolution d'une compétence</h3><div style="font-size:13px;color:#5F6B66;margin-top:4px">Frise chronologique, une pastille par évaluation, la plus récente à droite</div></div>
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:700">Écrire — rédiger un texte cohérent</span><div style="display:flex;align-items:center;gap:0"><span style="width:20px;height:20px;border-radius:50%;background:#C8402B"></span><span style="flex:1;height:2px;background:#E2DED3"></span><span style="width:20px;height:20px;border-radius:50%;background:#E8892B"></span><span style="flex:1;height:2px;background:#E2DED3"></span><span style="width:20px;height:20px;border-radius:50%;background:#E8892B"></span><span style="flex:1;height:2px;background:#E2DED3"></span><span style="width:20px;height:20px;border-radius:50%;background:#2F6FC0"></span><span style="flex:1;height:2px;background:#E2DED3"></span><span style="width:26px;height:26px;border-radius:50%;background:#2F6FC0;box-shadow:0 0 0 3px #FFFFFF,0 0 0 5px #2F6FC0"></span></div><div style="display:flex;justify-content:space-between;font-size:12px;color:#5F6B66"><span>15 sept.</span><span>9 oct.</span></div></div>
+<div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:14px;font-weight:700">Raisonner — résoudre un problème</span><div style="display:flex;align-items:center;gap:0"><span style="width:20px;height:20px;border-radius:50%;background:#2F6FC0"></span><span style="flex:1;height:2px;background:#E2DED3"></span><span style="width:20px;height:20px;border-radius:50%;background:#2E8B57"></span><span style="flex:1;height:2px;background:#E2DED3"></span><span style="width:20px;height:20px;border-radius:50%;border:2px solid #CFC9BB"></span><span style="flex:1;height:2px;background:#E2DED3"></span><span style="width:26px;height:26px;border-radius:50%;background:#2E8B57;box-shadow:0 0 0 3px #FFFFFF,0 0 0 5px #2E8B57"></span></div><div style="display:flex;justify-content:space-between;font-size:12px;color:#5F6B66"><span>18 sept.</span><span>12 oct.</span></div></div>
+</div>
+<p style="margin:0;font-size:13px;color:#5F6B66">La dernière pastille est agrandie et cerclée : c'est le niveau actuel.</p>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:18px">
+<div><h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Positionnement sur le socle</h3><div style="font-size:13px;color:#5F6B66;margin-top:4px">Échelle à 4 cases, seule la case atteinte est colorée</div></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) repeat(4,44px);gap:6px;align-items:center;font-size:14px">
+<span style="font-size:12px;color:#5F6B66">Composante</span><span style="font-size:12px;color:#5F6B66;text-align:center">MI</span><span style="font-size:12px;color:#5F6B66;text-align:center">MF</span><span style="font-size:12px;color:#5F6B66;text-align:center">MS</span><span style="font-size:12px;color:#5F6B66;text-align:center">TB</span>
+<span>Comprendre, s'exprimer en français</span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#2F6FC0"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span>
+<span>Langages mathématiques</span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#2E8B57"></span>
+<span>Langues étrangères</span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#2F6FC0"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span>
+<span>Méthodes et outils pour apprendre</span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#E8892B"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span><span style="height:28px;border-radius:6px;background:#F5F3EC"></span>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:18px">
+<div><h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Vue classe (professeurs)</h3><div style="font-size:13px;color:#5F6B66;margin-top:4px">Matrice élèves × compétences, pastilles 14 px, pas de tri par niveau</div></div>
+<div style="display:grid;grid-template-columns:120px repeat(6,1fr);gap:8px;align-items:center;font-size:13px">
+<span></span><span style="color:#5F6B66;text-align:center">C1</span><span style="color:#5F6B66;text-align:center">C2</span><span style="color:#5F6B66;text-align:center">C3</span><span style="color:#5F6B66;text-align:center">C4</span><span style="color:#5F6B66;text-align:center">C5</span><span style="color:#5F6B66;text-align:center">C6</span>
+<span>Adam B.</span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#E8892B"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2E8B57"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;border:2px solid #CFC9BB"></span>
+<span>Inès C.</span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2E8B57"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2E8B57"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2E8B57"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2E8B57"></span>
+<span>Noah D.</span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#E8892B"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#C8402B"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#E8892B"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#E8892B"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span>
+<span>Léa M.</span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2E8B57"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2E8B57"></span><span style="justify-self:center;width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="sombre" data-screen-label="08 Mode sombre" style="padding:96px 32px;background:#111816;color:#E9E6DD">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#F08A62">08</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Mode sombre</h2>
+</div>
+<p style="margin:0;color:#B5BDB8;line-height:1.6;text-wrap:pretty">Le soir, on consulte les devoirs au lit. Le mode sombre suit le réglage du système et se force dans Mon compte. Fond ardoise légèrement verte, jamais noir pur ; pastilles éclaircies pour garder leur contraste.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:16px">
+<div style="border:1px solid #2A3633;border-radius:16px;overflow:hidden">
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;background:#18201E;color:#8F9A95;font-family:'IBM Plex Mono',monospace"><span>jeton</span><span>clair</span><span>sombre</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--bg</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#F5F3EC"></span>#F5F3EC</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#111816;border:1px solid #3A4744"></span>#111816</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--surface</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#FFFFFF"></span>#FFFFFF</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#1A2321"></span>#1A2321</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--line</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#E2DED3"></span>#E2DED3</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#2A3633"></span>#2A3633</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--ink</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#1B2421;border:1px solid #3A4744"></span>#1B2421</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#E9E6DD"></span>#E9E6DD</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--ink-muted</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#5F6B66"></span>#5F6B66</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#9AA59F"></span>#9AA59F</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--brand</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#1F5546"></span>#1F5546</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#7FC4AE"></span>#7FC4AE</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--accent</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#E8673A"></span>#E8673A</span><span style="display:flex;gap:8px;align-items:center"><span style="width:14px;height:14px;border-radius:4px;background:#F08A62"></span>#F08A62</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr 1fr;font-size:13px;padding:12px 20px;border-top:1px solid #2A3633;font-family:'IBM Plex Mono',monospace;align-items:center"><span>--eval-*</span><span style="display:flex;gap:4px;align-items:center"><span style="width:14px;height:14px;border-radius:50%;background:#C8402B"></span><span style="width:14px;height:14px;border-radius:50%;background:#E8892B"></span><span style="width:14px;height:14px;border-radius:50%;background:#2F6FC0"></span><span style="width:14px;height:14px;border-radius:50%;background:#2E8B57"></span></span><span style="display:flex;gap:4px;align-items:center"><span style="width:14px;height:14px;border-radius:50%;background:#EC6A55"></span><span style="width:14px;height:14px;border-radius:50%;background:#F2A35A"></span><span style="width:14px;height:14px;border-radius:50%;background:#5C95E0"></span><span style="width:14px;height:14px;border-radius:50%;background:#4DB37C"></span></span></div>
+</div>
+<div style="background:#1A2321;border:1px solid #2A3633;border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-family:'Schibsted Grotesk',sans-serif;font-size:20px;font-weight:700">À faire pour demain</span><span style="color:#7FC4AE;font-weight:700;font-size:14px">Voir tout</span></div>
+<div style="display:flex;gap:14px;padding:14px;border-radius:12px;background:#111816;align-items:flex-start"><span style="width:22px;height:22px;border-radius:6px;background:#7FC4AE;color:#111816;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:18px;flex-shrink:0">check</span><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:700;color:oklch(0.8 0.1 240)">Mathématiques</span><span style="text-decoration:line-through;color:#9AA59F">Exercices 12 à 15 page 84</span></div></div>
+<div style="display:flex;gap:14px;padding:14px;border-radius:12px;background:#111816;align-items:flex-start"><span style="width:22px;height:22px;border-radius:6px;border:1.5px solid #4A5753;flex-shrink:0"></span><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:700;color:oklch(0.8 0.1 300)">Anglais</span><span>Apprendre le vocabulaire de l'unité 3</span></div></div>
+<div style="display:flex;gap:14px;align-items:center;padding-top:8px;border-top:1px solid #2A3633;font-size:14px"><span style="color:#9AA59F;flex:1">Dernière évaluation · Français</span><span style="width:16px;height:16px;border-radius:50%;background:#5C95E0"></span><span>Satisfaisante</span></div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="a11y" data-screen-label="09 Accessibilité" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">09</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Accessibilité</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Les établissements publics sont soumis au RGAA. Préau vise le niveau AA sur toutes les interfaces, y compris celles des personnels.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Contrastes vérifiés</h3>
+<div style="display:grid;grid-template-columns:1fr auto auto;gap:10px 14px;font-size:14px;align-items:center">
+<span style="background:#F5F3EC;color:#1B2421;padding:6px 10px;border-radius:6px">Ink sur Craie</span><span style="font-family:'IBM Plex Mono',monospace">14,9:1</span><span style="color:#2F7D4F;font-weight:700">AAA</span>
+<span style="background:#F5F3EC;color:#5F6B66;padding:6px 10px;border-radius:6px">Ink-muted sur Craie</span><span style="font-family:'IBM Plex Mono',monospace">5,0:1</span><span style="color:#2F7D4F;font-weight:700">AA</span>
+<span style="background:#1F5546;color:#FFFFFF;padding:6px 10px;border-radius:6px">Blanc sur Tableau</span><span style="font-family:'IBM Plex Mono',monospace">8,6:1</span><span style="color:#2F7D4F;font-weight:700">AAA</span>
+<span style="background:#FBE6E1;color:#B83A26;padding:6px 10px;border-radius:6px">Danger sur fond</span><span style="font-family:'IBM Plex Mono',monospace">4,9:1</span><span style="color:#2F7D4F;font-weight:700">AA</span>
+<span style="background:#E8673A;color:#1B2421;padding:6px 10px;border-radius:6px">Ink sur Crayon</span><span style="font-family:'IBM Plex Mono',monospace">5,6:1</span><span style="color:#2F7D4F;font-weight:700">AA</span>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Règles</h3>
+<div style="display:flex;flex-direction:column;gap:12px;font-size:15px;line-height:1.45">
+<div style="display:flex;gap:10px"><span style="font-family:'Material Symbols Rounded';color:#1F5546;font-size:20px">check</span>La couleur ne porte jamais seule l'information : pastille + libellé, matière + nom.</div>
+<div style="display:flex;gap:10px"><span style="font-family:'Material Symbols Rounded';color:#1F5546;font-size:20px">check</span>Focus visible partout : contour Crayon 3 px, décalage 2 px.</div>
+<div style="display:flex;gap:10px"><span style="font-family:'Material Symbols Rounded';color:#1F5546;font-size:20px">check</span>Cibles cliquables ≥ 44 × 44 px, y compris les pastilles de saisie.</div>
+<div style="display:flex;gap:10px"><span style="font-family:'Material Symbols Rounded';color:#1F5546;font-size:20px">check</span>Lien d'évitement « Aller au contenu », titres hiérarchisés h1 → h3.</div>
+<div style="display:flex;gap:10px"><span style="font-family:'Material Symbols Rounded';color:#1F5546;font-size:20px">check</span>Texte agrandissable à 200 % sans perte ; animations coupées si prefers-reduced-motion.</div>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Options utilisateur</h3>
+<div style="display:flex;flex-direction:column;gap:12px;font-size:15px;line-height:1.45;color:#3D4945">
+<div><b style="color:#1B2421">Taille du texte</b> — 100 %, 115 %, 130 %, appliquée à toute l'interface.</div>
+<div><b style="color:#1B2421">Contraste renforcé</b> — lignes en Ink, fonds de carte blancs, pastilles cerclées.</div>
+<div><b style="color:#1B2421">Sigles sur pastilles</b> — affiche MI / MF / MS / TB dans chaque pastille, pour les daltoniens.</div>
+<div><b style="color:#1B2421">Lecture vocale</b> — compatible NVDA, VoiceOver, TalkBack ; chaque pastille annonce son libellé.</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="ton" data-screen-label="10 Rédaction" style="padding:96px 32px;border-top:1px solid #E2DED3">
+<div style="max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:48px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">10</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Ton &amp; rédaction</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Vouvoiement pour tous, élèves compris. Le prénom suffit pour saluer un élève. Phrases courtes, verbe d'action, aucun jargon administratif quand un mot courant existe.</p>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,360px),1fr));gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;overflow:hidden">
+<div style="display:grid;grid-template-columns:1fr 1fr;font-size:13px;font-weight:700"><span style="padding:12px 20px;background:#E4F2E8;color:#2F7D4F">Écrire</span><span style="padding:12px 20px;background:#FBE6E1;color:#B83A26">Éviter</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;font-size:15px;border-top:1px solid #E2DED3"><span style="padding:14px 20px">Justifier l'absence</span><span style="padding:14px 20px;color:#5F6B66;border-left:1px solid #E2DED3">Procéder à la régularisation</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;font-size:15px;border-top:1px solid #E2DED3"><span style="padding:14px 20px">Aucun devoir pour demain</span><span style="padding:14px 20px;color:#5F6B66;border-left:1px solid #E2DED3">Aucune donnée disponible</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;font-size:15px;border-top:1px solid #E2DED3"><span style="padding:14px 20px">Le serveur ne répond pas. Réessayez dans un instant.</span><span style="padding:14px 20px;color:#5F6B66;border-left:1px solid #E2DED3">Erreur 503</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;font-size:15px;border-top:1px solid #E2DED3"><span style="padding:14px 20px">Maîtrise fragile</span><span style="padding:14px 20px;color:#5F6B66;border-left:1px solid #E2DED3">Insuffisant, en échec</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;font-size:15px;border-top:1px solid #E2DED3"><span style="padding:14px 20px">Devoirs</span><span style="padding:14px 20px;color:#5F6B66;border-left:1px solid #E2DED3">Travail à faire (TAF)</span></div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:16px;padding:28px;display:flex;flex-direction:column;gap:14px">
+<h3 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Formats</h3>
+<div style="display:grid;grid-template-columns:auto 1fr;gap:10px 20px;font-size:15px">
+<span style="color:#5F6B66">Date courte</span><span>mar. 13 oct.</span>
+<span style="color:#5F6B66">Date longue</span><span>mardi 13 octobre 2026</span>
+<span style="color:#5F6B66">Heure (texte)</span><span>8 h 30</span>
+<span style="color:#5F6B66">Heure (grille)</span><span style="font-variant-numeric:tabular-nums">08:30</span>
+<span style="color:#5F6B66">Montant</span><span>23,40 €</span>
+<span style="color:#5F6B66">Classe</span><span>4e B · 1re 3 · Tle 2</span>
+<span style="color:#5F6B66">Personnel</span><span>M. Durand · Mme Petit</span>
+<span style="color:#5F6B66">Relatif</span><span>il y a 5 min · hier · lun. 12 oct.</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="ecrans" data-screen-label="11 Écrans" style="padding:96px 32px;border-top:1px solid #E2DED3;background:#ECE9E0">
+<div style="max-width:1264px;margin:0 auto;display:flex;flex-direction:column;gap:32px">
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:32px;align-items:end">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-family:'IBM Plex Mono',monospace;font-size:13px;color:#E8673A">11</div>
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:52px;letter-spacing:-0.035em;line-height:1">Écrans</h2>
+</div>
+<p style="margin:0;color:#3D4945;line-height:1.6;text-wrap:pretty">Prototype interactif. Choisissez un profil, puis naviguez dans le menu latéral : chaque profil ne voit que ses modules. Format de référence : 1280 × 800.</p>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ profileTabs }}" as="p" hint-placeholder-count="7">
+<sc-if value="{{ p.active }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ p.select }}" style="height:40px;padding:0 16px;border-radius:999px;border:1.5px solid #1F5546;background:#1F5546;color:#FFFFFF;font-size:14px;font-weight:700;cursor:pointer">{{ p.label }}</button>
+</sc-if>
+<sc-if value="{{ p.inactive }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ p.select }}" style="height:40px;padding:0 16px;border-radius:999px;border:1.5px solid #CFC9BB;background:#FFFFFF;color:#1B2421;font-size:14px;font-weight:700;cursor:pointer" style-hover="border-color:#1F5546">{{ p.label }}</button>
+</sc-if>
+</sc-for>
+</div>
+<div style="overflow-x:auto;border-radius:18px;box-shadow:0 30px 60px -20px rgba(27,36,33,.35);border:1px solid #CFC9BB">
+<div style="min-width:1240px;background:#F5F3EC">
+<div style="height:40px;background:#FFFFFF;border-bottom:1px solid #E2DED3;display:flex;align-items:center;gap:8px;padding:0 16px">
+<span style="width:11px;height:11px;border-radius:50%;background:#E2DED3"></span><span style="width:11px;height:11px;border-radius:50%;background:#E2DED3"></span><span style="width:11px;height:11px;border-radius:50%;background:#E2DED3"></span>
+<div style="margin:0 auto;background:#F5F3EC;border-radius:6px;padding:4px 16px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:#5F6B66">jean-moulin.preau.fr/{{ screenSlug }}</div>
+</div>
+<div style="display:grid;grid-template-columns:240px minmax(0,1fr);height:800px">
+<aside style="background:#173F35;color:#F5F3EC;display:flex;flex-direction:column;padding:20px 14px;gap:20px">
+<div style="display:flex;align-items:center;gap:10px;padding:0 8px">
+<div style="width:30px;height:30px;border-radius:8px;background:#F5F3EC;display:flex;align-items:flex-end;justify-content:center;padding-bottom:6px"><div style="width:15px;height:12px;border:2.5px solid #173F35;border-bottom:none;border-radius:9px 9px 0 0"></div></div>
+<span style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:20px;letter-spacing:-0.03em">préau</span>
+</div>
+<div style="padding:10px 8px;border-top:1px solid rgba(245,243,236,.14);border-bottom:1px solid rgba(245,243,236,.14);font-size:13px;color:#A9C2B9">Collège Jean-Moulin<br><span style="color:#F5F3EC">Année 2026–2027</span></div>
+<nav style="display:flex;flex-direction:column;gap:2px;flex:1">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="9">
+<sc-if value="{{ n.active }}" hint-placeholder-val="{{ false }}">
+<button onClick="{{ n.go }}" style="display:flex;align-items:center;gap:12px;height:42px;padding:0 10px;border-radius:9px;border:none;background:#F5F3EC;color:#173F35;font-size:14.5px;font-weight:700;cursor:pointer;text-align:left"><span style="font-family:'Material Symbols Rounded';font-size:21px;font-variation-settings:'FILL' 1">{{ n.icon }}</span><span style="flex:1">{{ n.label }}</span></button>
+</sc-if>
+<sc-if value="{{ n.inactive }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ n.go }}" style="display:flex;align-items:center;gap:12px;height:42px;padding:0 10px;border-radius:9px;border:none;background:transparent;color:#DCE7E2;font-size:14.5px;cursor:pointer;text-align:left" style-hover="background:rgba(245,243,236,.08)"><span style="font-family:'Material Symbols Rounded';font-size:21px">{{ n.icon }}</span><span style="flex:1">{{ n.label }}</span><sc-if value="{{ n.count }}" hint-placeholder-val="{{ false }}"><span style="background:#E8673A;color:#1B2421;border-radius:999px;font-size:12px;font-weight:700;padding:1px 7px">{{ n.count }}</span></sc-if></button>
+</sc-if>
+</sc-for>
+</nav>
+<div style="display:flex;gap:10px;align-items:center;padding:10px 8px;border-top:1px solid rgba(245,243,236,.14)">
+<span style="width:36px;height:36px;border-radius:50%;background:#7FC4AE;color:#173F35;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0">{{ user.ini }}</span>
+<div style="display:flex;flex-direction:column;min-width:0;font-size:13px"><b style="font-size:14px">{{ user.name }}</b><span style="color:#A9C2B9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ user.role }}</span></div>
+</div>
+</aside>
+<main style="display:flex;flex-direction:column;min-width:0;overflow:hidden">
+<div style="height:72px;flex-shrink:0;display:flex;align-items:center;gap:16px;padding:0 32px;border-bottom:1px solid #E2DED3;background:#F5F3EC">
+<h1 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-weight:700;font-size:26px;letter-spacing:-0.025em;flex:1">{{ screenTitle }}</h1>
+<div style="width:280px;height:40px;border-radius:10px;background:#FFFFFF;border:1px solid #E2DED3;display:flex;align-items:center;gap:8px;padding:0 12px;color:#5F6B66;font-size:14px"><span style="font-family:'Material Symbols Rounded';font-size:20px">search</span>Rechercher</div>
+<span style="width:40px;height:40px;border-radius:10px;background:#FFFFFF;border:1px solid #E2DED3;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:21px;position:relative">notifications<span style="position:absolute;top:8px;right:9px;width:8px;height:8px;border-radius:50%;background:#E8673A"></span></span>
+</div>
+<div style="flex:1;overflow:auto;padding:28px 32px">
+
+<sc-if value="{{ is.dashStudent }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;align-items:flex-end;justify-content:space-between;gap:16px">
+<div><div style="font-size:14px;color:#5F6B66">Mardi 13 octobre 2026</div><div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:40px;letter-spacing:-0.04em;line-height:1.1">{{ user.hello }}</div></div>
+<sc-if value="{{ isParent }}" hint-placeholder-val="{{ false }}"><div style="height:44px;border-radius:10px;background:#FFFFFF;border:1px solid #CFC9BB;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:14px"><span style="width:26px;height:26px;border-radius:50%;background:#E3EEE9;color:#1F5546;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">LM</span><b>Léa Martin · 4e B</b><span style="font-family:'Material Symbols Rounded';font-size:20px">expand_more</span></div></sc-if>
+</div>
+<div style="background:#FBE6E1;border-radius:12px;padding:14px 16px;display:flex;gap:12px;align-items:center;font-size:14px"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#B83A26">error</span><div style="flex:1"><b>1 absence à justifier</b> — jeudi 1er octobre, journée entière.</div><button onClick="{{ goViesco }}" style="height:36px;padding:0 14px;border-radius:9px;border:none;background:#B83A26;color:#FFFFFF;font-weight:700;font-size:14px;cursor:pointer">Justifier</button></div>
+<div style="display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:16px;align-items:start">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px;grid-row:span 2">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700">Aujourd'hui</h2><button onClick="{{ goEdt }}" style="border:none;background:none;color:#1F5546;font-weight:700;font-size:14px;cursor:pointer">Semaine</button></div>
+<sc-for list="{{ today }}" as="c" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:48px 1fr;gap:12px;align-items:stretch">
+<span style="font-size:13px;color:#5F6B66;font-variant-numeric:tabular-nums;padding-top:10px">{{ c.t }}</span>
+<div style="border-radius:10px;padding:10px 12px;background:{{ c.tint }};display:flex;flex-direction:column;gap:2px;outline:{{ c.outline }};outline-offset:2px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="color:{{ c.ink }};font-size:14.5px">{{ c.name }}</b><sc-if value="{{ c.now }}" hint-placeholder-val="{{ false }}"><span style="background:#1B2421;color:#FFFFFF;font-size:11px;font-weight:700;border-radius:5px;padding:2px 6px">En cours</span></sc-if></div>
+<span style="font-size:13px;color:#3D4945">{{ c.room }} · {{ c.prof }}</span>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700">Pour demain</h2><span style="font-size:13px;color:#5F6B66">{{ hwDone }}</span></div>
+<sc-for list="{{ tomorrow }}" as="h" hint-placeholder-count="3">
+<button onClick="{{ h.toggle }}" style="display:flex;gap:12px;padding:12px;border-radius:10px;border:1px solid #E2DED3;background:#FFFFFF;text-align:left;cursor:pointer;align-items:flex-start;font-family:inherit">
+<sc-if value="{{ h.done }}" hint-placeholder-val="{{ false }}"><span style="width:22px;height:22px;border-radius:6px;background:#1F5546;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:18px;flex-shrink:0">check</span></sc-if>
+<sc-if value="{{ h.todo }}" hint-placeholder-val="{{ true }}"><span style="width:22px;height:22px;border-radius:6px;border:1.5px solid #CFC9BB;flex-shrink:0"></span></sc-if>
+<div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:700;color:{{ h.ink }}">{{ h.name }}</span><span style="font-size:14.5px;color:#1B2421;text-decoration:{{ h.deco }}">{{ h.text }}</span></div>
+</button>
+</sc-for>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700">Dernières évaluations</h2><button onClick="{{ goNotes }}" style="border:none;background:none;color:#1F5546;font-weight:700;font-size:14px;cursor:pointer">Tout voir</button></div>
+<sc-for list="{{ lastEvals }}" as="e" hint-placeholder-count="4">
+<div style="display:flex;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid #EEEBE3">
+<span style="width:20px;height:20px;border-radius:50%;background:{{ e.c }};flex-shrink:0"></span>
+<div style="display:flex;flex-direction:column;flex:1;min-width:0"><b style="font-size:14px">{{ e.title }}</b><span style="font-size:13px;color:#5F6B66">{{ e.name }} · {{ e.date }}</span></div>
+<span style="font-size:13px;color:#3D4945">{{ e.label }}</span>
+</div>
+</sc-for>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700">Vie scolaire</h2>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+<div style="background:#F5F3EC;border-radius:10px;padding:12px"><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:28px;font-weight:800">1</div><div style="font-size:13px;color:#3D4945">absence</div></div>
+<div style="background:#F5F3EC;border-radius:10px;padding:12px"><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:28px;font-weight:800">2</div><div style="font-size:13px;color:#3D4945">retards</div></div>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:center"><h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700">Messages</h2><span style="background:#E8673A;color:#1B2421;border-radius:999px;font-size:12px;font-weight:700;padding:1px 8px">3</span></div>
+<div style="display:flex;flex-direction:column;gap:2px;font-size:14px"><b>Mme Petit</b><span style="color:#3D4945">Sortie théâtre du 22 novembre</span></div>
+<div style="display:flex;flex-direction:column;gap:2px;font-size:14px"><b>Vie scolaire</b><span style="color:#3D4945">Rappel : photo de classe jeudi</span></div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.dashStaff }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:24px">
+<div><div style="font-size:14px;color:#5F6B66">Mardi 13 octobre 2026</div><div style="font-family:'Schibsted Grotesk',sans-serif;font-weight:800;font-size:40px;letter-spacing:-0.04em;line-height:1.1">{{ user.hello }}</div></div>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px">
+<sc-for list="{{ staff.kpis }}" as="k" hint-placeholder-count="3">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Schibsted Grotesk',sans-serif;font-size:40px;font-weight:800;letter-spacing:-0.03em;color:{{ k.c }}">{{ k.v }}</span><span style="font-size:14px;color:#3D4945">{{ k.l }}</span></div>
+</sc-for>
+</div>
+<div style="display:grid;grid-template-columns:1.4fr 1fr;gap:16px;align-items:start">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:4px">
+<h2 style="margin:0 0 10px;font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700">{{ staff.listTitle }}</h2>
+<sc-for list="{{ staff.list }}" as="r" hint-placeholder-count="4">
+<div style="display:grid;grid-template-columns:56px 1fr auto auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid #EEEBE3">
+<span style="font-size:13px;color:#5F6B66;font-variant-numeric:tabular-nums">{{ r.t }}</span>
+<div style="display:flex;flex-direction:column"><b style="font-size:14.5px">{{ r.title }}</b><span style="font-size:13px;color:#5F6B66">{{ r.sub }}</span></div>
+<span style="background:{{ r.bg }};color:{{ r.fg }};border-radius:6px;padding:4px 8px;font-size:12.5px;font-weight:700">{{ r.status }}</span>
+<sc-if value="{{ r.action }}" hint-placeholder-val="{{ false }}"><button onClick="{{ r.go }}" style="height:36px;padding:0 12px;border-radius:9px;border:none;background:#1F5546;color:#FFFFFF;font-weight:700;font-size:13.5px;cursor:pointer">{{ r.action }}</button></sc-if>
+</div>
+</sc-for>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700">À traiter</h2>
+<sc-for list="{{ staff.todo }}" as="t" hint-placeholder-count="3">
+<div style="display:flex;gap:12px;padding:12px;border-radius:10px;background:#F5F3EC;align-items:flex-start"><span style="font-family:'Material Symbols Rounded';font-size:22px;color:#1F5546">{{ t.icon }}</span><div style="display:flex;flex-direction:column;gap:2px"><b style="font-size:14.5px">{{ t.title }}</b><span style="font-size:13px;color:#5F6B66">{{ t.sub }}</span></div></div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.notes }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:12px 16px;flex-wrap:wrap">
+<div style="display:flex;gap:4px;background:#E8E4DA;border-radius:10px;padding:4px;white-space:nowrap"><span style="padding:8px 14px;border-radius:7px;background:#FFFFFF;font-weight:700;font-size:14px">Trimestre 1</span><span style="padding:8px 14px;font-size:14px;color:#3D4945">Trimestre 2</span><span style="padding:8px 14px;font-size:14px;color:#3D4945">Trimestre 3</span></div>
+<div style="display:flex;gap:8px 14px;font-size:13px;color:#3D4945;flex-wrap:wrap"><span style="display:flex;gap:6px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:#C8402B"></span>Insuffisante</span><span style="display:flex;gap:6px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:#E8892B"></span>Fragile</span><span style="display:flex;gap:6px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:#2F6FC0"></span>Satisfaisante</span><span style="display:flex;gap:6px;align-items:center"><span style="width:12px;height:12px;border-radius:50%;background:#2E8B57"></span>Très bonne</span></div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="display:grid;grid-template-columns:200px minmax(0,1fr) 140px;gap:16px;padding:12px 20px;font-size:12.5px;color:#5F6B66;background:#FAF9F5;border-bottom:1px solid #E2DED3"><span>Matière</span><span>Évaluations du trimestre</span><span>Répartition</span></div>
+<sc-for list="{{ evalRows }}" as="r" hint-placeholder-count="8">
+<div style="display:grid;grid-template-columns:200px minmax(0,1fr) 140px;gap:16px;padding:12px 20px;border-bottom:1px solid #EEEBE3;align-items:center">
+<div style="display:flex;gap:10px;align-items:center"><span style="width:10px;height:10px;border-radius:50%;background:{{ r.dot }};flex-shrink:0"></span><div style="display:flex;flex-direction:column"><b style="font-size:14.5px">{{ r.name }}</b><span style="font-size:12.5px;color:#5F6B66">{{ r.prof }}</span></div></div>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<sc-for list="{{ r.evals }}" as="e" hint-placeholder-count="4">
+<button onClick="{{ e.pick }}" title="{{ e.title }}" style="width:24px;height:24px;border-radius:50%;background:{{ e.c }};border:none;cursor:pointer;box-shadow:{{ e.ring }}"></button>
+</sc-for>
+</div>
+<div style="display:flex;gap:2px;height:10px">
+<sc-for list="{{ r.dist }}" as="d" hint-placeholder-count="3"><div style="flex:{{ d.n }};background:{{ d.c }};border-radius:3px"></div></sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px;position:sticky;top:0">
+<span style="align-self:flex-start;background:{{ sel.tint }};color:{{ sel.ink }};border-radius:999px;padding:4px 10px;font-size:12.5px;font-weight:700">{{ sel.name }}</span>
+<div><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:21px;font-weight:700;letter-spacing:-0.01em">{{ sel.title }}</div><div style="font-size:13px;color:#5F6B66;margin-top:4px">{{ sel.date }} · {{ sel.prof }}</div></div>
+<div style="display:flex;gap:12px;align-items:center;padding:14px;border-radius:12px;background:#F5F3EC"><span style="width:28px;height:28px;border-radius:50%;background:{{ sel.c }}"></span><b style="font-size:16px">{{ sel.label }}</b></div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="font-size:12.5px;color:#5F6B66">Compétences évaluées</span>
+<sc-for list="{{ sel.skills }}" as="s" hint-placeholder-count="3">
+<div style="display:flex;gap:10px;align-items:center;font-size:14px"><span style="width:16px;height:16px;border-radius:50%;background:{{ s.c }};flex-shrink:0"></span><span style="flex:1">{{ s.t }}</span></div>
+</sc-for>
+</div>
+<div style="font-size:14px;line-height:1.5;color:#3D4945;border-top:1px solid #EEEBE3;padding-top:14px">« {{ sel.comment }} »</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.devoirs }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 280px;gap:20px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:24px">
+<sc-for list="{{ hwDays }}" as="d" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">{{ d.day }}</h2>
+<sc-for list="{{ d.items }}" as="h" hint-placeholder-count="2">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:16px 18px;display:flex;gap:14px;align-items:flex-start">
+<button onClick="{{ h.toggle }}" aria-label="Marquer comme fait" style="width:26px;height:26px;border-radius:7px;border:{{ h.border }};background:{{ h.boxBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:19px;cursor:pointer;flex-shrink:0;padding:0">{{ h.mark }}</button>
+<div style="display:flex;flex-direction:column;gap:8px;flex:1">
+<div style="display:flex;gap:8px;align-items:center"><span style="background:{{ h.tint }};color:{{ h.ink }};border-radius:999px;padding:3px 10px;font-size:12.5px;font-weight:700">{{ h.name }}</span><sc-if value="{{ h.exam }}" hint-placeholder-val="{{ false }}"><span style="background:#1B2421;color:#FFFFFF;border-radius:6px;padding:3px 8px;font-size:12px;font-weight:700">Contrôle</span></sc-if></div>
+<span style="font-size:15.5px;text-decoration:{{ h.deco }};color:{{ h.color }}">{{ h.text }}</span>
+<sc-if value="{{ h.file }}" hint-placeholder-val="{{ false }}"><span style="display:flex;gap:6px;align-items:center;font-size:13.5px;color:#1F5546;font-weight:700"><span style="font-family:'Material Symbols Rounded';font-size:18px">attach_file</span>{{ h.file }}</span></sc-if>
+</div>
+<span style="font-size:12.5px;color:#5F6B66">Donné le {{ h.given }}</span>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Cette semaine</h2>
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-size:40px;font-weight:800;letter-spacing:-0.03em">{{ hwStats.done }}<span style="font-size:20px;color:#5F6B66"> / {{ hwStats.total }}</span></div>
+<div style="height:8px;border-radius:999px;background:#EEEBE3;overflow:hidden"><div style="height:100%;width:{{ hwStats.pct }}%;background:#1F5546"></div></div>
+<span style="font-size:13.5px;color:#3D4945">devoirs marqués comme faits. Cette coche est personnelle, le professeur ne la voit pas.</span>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.edt }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="display:grid;grid-template-columns:56px repeat(5,1fr);border-bottom:1px solid #E2DED3">
+<span></span>
+<sc-for list="{{ edtDays }}" as="d" hint-placeholder-count="5"><div style="padding:12px;font-size:14px;font-weight:700;border-left:1px solid #EEEBE3;background:{{ d.headBg }};color:{{ d.headFg }}">{{ d.label }}</div></sc-for>
+</div>
+<div style="display:grid;grid-template-columns:56px repeat(5,1fr);position:relative">
+<div style="position:relative;height:540px">
+<sc-for list="{{ hours }}" as="h" hint-placeholder-count="9"><span style="position:absolute;right:8px;top:{{ h.top }}px;font-size:12px;color:#5F6B66;font-variant-numeric:tabular-nums">{{ h.l }}</span></sc-for>
+</div>
+<sc-for list="{{ edtDays }}" as="d" hint-placeholder-count="5">
+<div style="position:relative;height:540px;border-left:1px solid #EEEBE3;background-image:repeating-linear-gradient(to bottom,#EEEBE3 0,#EEEBE3 1px,transparent 1px,transparent 60px)">
+<sc-for list="{{ d.blocks }}" as="b" hint-placeholder-count="4">
+<div style="position:absolute;left:4px;right:4px;top:{{ b.top }}px;height:{{ b.h }}px;background:{{ b.tint }};border-radius:8px;padding:6px 9px;display:flex;flex-direction:column;gap:1px;overflow:hidden;opacity:{{ b.op }}">
+<b style="font-size:13.5px;color:{{ b.ink }};text-decoration:{{ b.deco }}">{{ b.name }}</b>
+<span style="font-size:12px;color:#3D4945">{{ b.room }}</span>
+<sc-if value="{{ b.cancel }}" hint-placeholder-val="{{ false }}"><span style="font-size:11.5px;font-weight:700;color:#B83A26">Annulé</span></sc-if>
+</div>
+</sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.viesco }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:18px"><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:36px;font-weight:800">1</div><div style="font-size:14px;color:#3D4945">Absence · 1 à justifier</div></div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:18px"><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:36px;font-weight:800">2</div><div style="font-size:14px;color:#3D4945">Retards · 24 min au total</div></div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:18px"><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:36px;font-weight:800">0</div><div style="font-size:14px;color:#3D4945">Sanction</div></div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:18px"><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:36px;font-weight:800;color:#2F7D4F">1</div><div style="font-size:14px;color:#3D4945">Encouragement</div></div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<sc-for list="{{ events }}" as="e" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:44px 160px minmax(0,1fr) 130px 120px;gap:16px;padding:16px 20px;border-bottom:1px solid #EEEBE3;align-items:center">
+<span style="width:40px;height:40px;border-radius:10px;background:{{ e.bg }};color:{{ e.fg }};display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded';font-size:22px">{{ e.icon }}</span>
+<div style="display:flex;flex-direction:column"><b style="font-size:14.5px">{{ e.type }}</b><span style="font-size:13px;color:#5F6B66">{{ e.date }}</span></div>
+<span style="font-size:14.5px;color:#3D4945">{{ e.detail }}</span>
+<span style="justify-self:start;background:{{ e.sbg }};color:{{ e.sfg }};border-radius:6px;padding:4px 8px;font-size:12.5px;font-weight:700">{{ e.status }}</span>
+<sc-if value="{{ e.cta }}" hint-placeholder-val="{{ false }}"><button style="height:36px;border-radius:9px;border:none;background:#1F5546;color:#FFFFFF;font-weight:700;font-size:13.5px;cursor:pointer">Justifier</button></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.messages }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:180px 340px minmax(0,1fr);gap:0;background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden;height:660px">
+<div style="padding:16px;display:flex;flex-direction:column;gap:4px;border-right:1px solid #E2DED3;background:#FAF9F5">
+<button style="height:42px;border-radius:10px;border:none;background:#1F5546;color:#FFFFFF;font-weight:700;font-size:14px;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer"><span style="font-family:'Material Symbols Rounded';font-size:19px">edit</span>Écrire</button>
+<span style="padding:9px 10px;border-radius:8px;background:#E3EEE9;color:#1F5546;font-weight:700;font-size:14px;display:flex;justify-content:space-between">Reçus<span>3</span></span>
+<span style="padding:9px 10px;font-size:14px;color:#3D4945">Envoyés</span>
+<span style="padding:9px 10px;font-size:14px;color:#3D4945">Brouillons</span>
+<span style="padding:9px 10px;font-size:14px;color:#3D4945">Archivés</span>
+</div>
+<div style="border-right:1px solid #E2DED3;overflow:auto">
+<sc-for list="{{ msgs }}" as="m" hint-placeholder-count="6">
+<button onClick="{{ m.open }}" style="width:100%;display:flex;gap:12px;padding:14px 16px;border:none;border-bottom:1px solid #EEEBE3;background:{{ m.bg }};text-align:left;cursor:pointer;font-family:inherit">
+<span style="width:36px;height:36px;border-radius:50%;background:#E3EEE9;color:#1F5546;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12.5px;flex-shrink:0">{{ m.ini }}</span>
+<div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+<div style="display:flex;justify-content:space-between;gap:8px"><span style="font-size:14px;font-weight:{{ m.w }};color:#1B2421">{{ m.from }}</span><span style="font-size:12px;color:#5F6B66;flex-shrink:0">{{ m.date }}</span></div>
+<span style="font-size:14px;font-weight:{{ m.w }};color:#1B2421;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.subject }}</span>
+<span style="font-size:13px;color:#5F6B66;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ m.preview }}</span>
+</div>
+</button>
+</sc-for>
+</div>
+<div style="padding:28px 32px;display:flex;flex-direction:column;gap:18px;overflow:auto">
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:24px;font-weight:700;letter-spacing:-0.015em">{{ msg.subject }}</h2>
+<div style="display:flex;gap:12px;align-items:center"><span style="width:40px;height:40px;border-radius:50%;background:#E3EEE9;color:#1F5546;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px">{{ msg.ini }}</span><div style="display:flex;flex-direction:column"><b style="font-size:14.5px">{{ msg.from }}</b><span style="font-size:13px;color:#5F6B66">{{ msg.role }} · {{ msg.date }}</span></div></div>
+<div style="font-size:15.5px;line-height:1.6;color:#1B2421;max-width:620px;white-space:pre-line">{{ msg.body }}</div>
+<div style="margin-top:auto;border:1.5px solid #CFC9BB;border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;color:#5F6B66;font-size:14.5px">Répondre à {{ msg.from }}…<button style="height:38px;padding:0 14px;border-radius:9px;border:none;background:#1F5546;color:#FFFFFF;font-weight:700;font-size:14px">Envoyer</button></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.documents }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;gap:8px">
+<span style="padding:8px 14px;border-radius:999px;background:#1B2421;color:#FFFFFF;font-size:14px;font-weight:700">Tous</span>
+<span style="padding:8px 14px;border-radius:999px;background:#FFFFFF;border:1px solid #E2DED3;font-size:14px">Administratif</span>
+<span style="padding:8px 14px;border-radius:999px;background:#FFFFFF;border:1px solid #E2DED3;font-size:14px">Pédagogique</span>
+<span style="padding:8px 14px;border-radius:999px;background:#FFFFFF;border:1px solid #E2DED3;font-size:14px">À signer · 1</span>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 160px 130px 90px 44px;gap:16px;padding:12px 20px;font-size:12.5px;color:#5F6B66;background:#FAF9F5;border-bottom:1px solid #E2DED3"><span>Nom</span><span>Catégorie</span><span>Ajouté le</span><span>Taille</span><span></span></div>
+<sc-for list="{{ docs }}" as="d" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 160px 130px 90px 44px;gap:16px;padding:14px 20px;border-bottom:1px solid #EEEBE3;align-items:center;font-size:14.5px">
+<div style="display:flex;gap:12px;align-items:center"><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#1F5546">{{ d.icon }}</span><b>{{ d.name }}</b><sc-if value="{{ d.sign }}" hint-placeholder-val="{{ false }}"><span style="background:#FBE6E1;color:#B83A26;border-radius:6px;padding:3px 8px;font-size:12px;font-weight:700">À signer</span></sc-if></div>
+<span style="color:#3D4945">{{ d.cat }}</span><span style="color:#3D4945">{{ d.date }}</span><span style="color:#5F6B66">{{ d.size }}</span>
+<span style="font-family:'Material Symbols Rounded';font-size:22px;color:#3D4945">download</span>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.agenda }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:16px 20px;border-bottom:1px solid #E2DED3"><h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:20px;font-weight:700">Octobre 2026</h2><div style="display:flex;gap:6px"><span style="width:36px;height:36px;border-radius:9px;border:1px solid #E2DED3;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded'">chevron_left</span><span style="width:36px;height:36px;border-radius:9px;border:1px solid #E2DED3;display:flex;align-items:center;justify-content:center;font-family:'Material Symbols Rounded'">chevron_right</span></div></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr);font-size:12.5px;color:#5F6B66;border-bottom:1px solid #E2DED3"><span style="padding:8px 12px">lun.</span><span style="padding:8px 12px">mar.</span><span style="padding:8px 12px">mer.</span><span style="padding:8px 12px">jeu.</span><span style="padding:8px 12px">ven.</span><span style="padding:8px 12px">sam.</span><span style="padding:8px 12px">dim.</span></div>
+<div style="display:grid;grid-template-columns:repeat(7,1fr)">
+<sc-for list="{{ month }}" as="d" hint-placeholder-count="35">
+<div style="min-height:104px;padding:8px;border-right:1px solid #EEEBE3;border-bottom:1px solid #EEEBE3;background:{{ d.bg }};display:flex;flex-direction:column;gap:4px">
+<span style="align-self:flex-start;min-width:26px;height:26px;border-radius:999px;display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:700;background:{{ d.numBg }};color:{{ d.numFg }}">{{ d.n }}</span>
+<sc-for list="{{ d.ev }}" as="e" hint-placeholder-count="0"><span style="background:{{ e.bg }};color:{{ e.fg }};border-radius:5px;padding:3px 6px;font-size:12px;font-weight:700;line-height:1.3">{{ e.t }}</span></sc-for>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.paiements }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#1F5546;color:#F5F3EC;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:14px;color:#A9C2B9">Solde cantine · Léa</span><span style="font-family:'Material Symbols Rounded';font-size:22px">restaurant</span></div>
+<div style="font-family:'Schibsted Grotesk',sans-serif;font-size:48px;font-weight:800;letter-spacing:-0.03em">23,40 €</div>
+<span style="font-size:14px;color:#DCE7E2">Environ 5 repas restants</span>
+<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+<button style="height:42px;border-radius:9px;border:1.5px solid rgba(245,243,236,.4);background:transparent;color:#F5F3EC;font-weight:700;font-size:14px">+ 20 €</button>
+<button style="height:42px;border-radius:9px;border:none;background:#F5F3EC;color:#1F5546;font-weight:700;font-size:14px">+ 40 €</button>
+<button style="height:42px;border-radius:9px;border:1.5px solid rgba(245,243,236,.4);background:transparent;color:#F5F3EC;font-weight:700;font-size:14px">+ 60 €</button>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:10px">
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Menu de mardi</h2>
+<span style="font-size:14.5px">Carottes râpées</span><span style="font-size:14.5px">Hachis parmentier · option végétarienne</span><span style="font-size:14.5px">Yaourt fermier, pomme</span>
+</div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="padding:16px 20px;border-bottom:1px solid #E2DED3"><h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Factures et paiements</h2></div>
+<sc-for list="{{ bills }}" as="b" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 120px 110px 120px;gap:16px;padding:16px 20px;border-bottom:1px solid #EEEBE3;align-items:center">
+<div style="display:flex;flex-direction:column"><b style="font-size:14.5px">{{ b.label }}</b><span style="font-size:13px;color:#5F6B66">{{ b.date }}</span></div>
+<b style="font-size:15px;font-variant-numeric:tabular-nums;text-align:right">{{ b.amount }}</b>
+<span style="justify-self:start;background:{{ b.bg }};color:{{ b.fg }};border-radius:6px;padding:4px 8px;font-size:12.5px;font-weight:700">{{ b.status }}</span>
+<sc-if value="{{ b.pay }}" hint-placeholder-val="{{ false }}"><button style="height:36px;border-radius:9px;border:none;background:#1F5546;color:#FFFFFF;font-weight:700;font-size:13.5px">Payer</button></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.bulletins }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:260px minmax(0,1fr);gap:20px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="background:#FFFFFF;border:1.5px solid #E2DED3;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:2px;opacity:.7"><b style="font-size:14.5px">Trimestre 1 · 2026–2027</b><span style="font-size:13px;color:#5F6B66">Publication le 11 déc.</span></div>
+<div style="background:#FFFFFF;border:1.5px solid #1F5546;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:2px"><b style="font-size:14.5px">Trimestre 3 · 2025–2026</b><span style="font-size:13px;color:#5F6B66">5e B · publié le 2 juil.</span></div>
+<div style="background:#FFFFFF;border:1.5px solid #E2DED3;border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:2px"><b style="font-size:14.5px">Trimestre 2 · 2025–2026</b><span style="font-size:13px;color:#5F6B66">5e B · publié le 3 avr.</span></div>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:20px 24px;border-bottom:1px solid #E2DED3">
+<div><div style="font-family:'Schibsted Grotesk',sans-serif;font-size:22px;font-weight:700">Bulletin du 3e trimestre</div><div style="font-size:13.5px;color:#5F6B66">Léa Martin · 5e B · Professeure principale : Mme Petit</div></div>
+<button style="height:40px;padding:0 14px;border-radius:9px;border:1.5px solid #CFC9BB;background:#FFFFFF;font-weight:700;font-size:14px;display:flex;align-items:center;gap:6px"><span style="font-family:'Material Symbols Rounded';font-size:19px">download</span>PDF</button>
+</div>
+<div style="display:grid;grid-template-columns:170px 4fr 6fr;gap:16px;padding:10px 24px;font-size:12.5px;color:#5F6B66;background:#FAF9F5;border-bottom:1px solid #E2DED3"><span>Matière</span><span>Positionnement</span><span>Appréciation</span></div>
+<sc-for list="{{ report }}" as="r" hint-placeholder-count="5">
+<div style="display:grid;grid-template-columns:170px 4fr 6fr;gap:16px;padding:14px 24px;border-bottom:1px solid #EEEBE3;align-items:center">
+<div style="display:flex;gap:8px;align-items:center"><span style="width:9px;height:9px;border-radius:50%;background:{{ r.dot }}"></span><b style="font-size:14px">{{ r.name }}</b></div>
+<div style="display:flex;gap:6px;align-items:center"><sc-for list="{{ r.scale }}" as="s" hint-placeholder-count="4"><span style="flex:1;height:22px;border-radius:5px;background:{{ s.c }}"></span></sc-for><span style="font-size:13px;color:#3D4945;width:90px;padding-left:6px">{{ r.label }}</span></div>
+<span style="font-size:14px;color:#3D4945;line-height:1.45">{{ r.app }}</span>
+</div>
+</sc-for>
+<div style="padding:18px 24px;display:flex;gap:16px;align-items:center;background:#E3EEE9"><span style="font-family:'Material Symbols Rounded';font-size:24px;color:#1F5546">workspace_premium</span><div style="font-size:14.5px;line-height:1.45"><b>Félicitations du conseil de classe.</b> Année très solide, curiosité et sérieux constants.</div></div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.saisie }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:center">
+<div style="display:flex;gap:4px;background:#E8E4DA;border-radius:10px;padding:4px">
+<button onClick="{{ tabAppel }}" style="padding:8px 16px;border-radius:7px;border:none;background:{{ tabs.appelBg }};font-weight:700;font-size:14px;cursor:pointer;color:#1B2421">Appel</button>
+<button onClick="{{ tabEval }}" style="padding:8px 16px;border-radius:7px;border:none;background:{{ tabs.evalBg }};font-weight:700;font-size:14px;cursor:pointer;color:#1B2421">Évaluation</button>
+</div>
+<div style="font-size:14px;color:#3D4945"><b>4e D · Mathématiques</b> · mar. 13 oct. · 10 h 15 – 11 h 15 · Salle B12</div>
+</div>
+<sc-if value="{{ tabs.appel }}" hint-placeholder-val="{{ true }}">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="display:flex;justify-content:space-between;align-items:center;padding:14px 20px;background:#FAF9F5;border-bottom:1px solid #E2DED3;font-size:14px"><span>{{ appelSummary }}</span><button style="height:40px;padding:0 16px;border-radius:9px;border:none;background:#1F5546;color:#FFFFFF;font-weight:700;font-size:14px">Valider l'appel</button></div>
+<sc-for list="{{ students }}" as="s" hint-placeholder-count="10">
+<div style="display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:14px;padding:10px 20px;border-bottom:1px solid #EEEBE3;align-items:center">
+<span style="width:34px;height:34px;border-radius:50%;background:#E3EEE9;color:#1F5546;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">{{ s.ini }}</span>
+<b style="font-size:14.5px">{{ s.name }}</b>
+<div style="display:flex;gap:6px">
+<sc-for list="{{ s.opts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.set }}" style="height:36px;min-width:88px;padding:0 12px;border-radius:9px;border:1.5px solid {{ o.bd }};background:{{ o.bg }};color:{{ o.fg }};font-weight:700;font-size:13.5px;cursor:pointer">{{ o.l }}</button></sc-for>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ tabs.eval }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;overflow:hidden">
+<div style="padding:14px 20px;background:#FAF9F5;border-bottom:1px solid #E2DED3;font-size:14px;display:flex;justify-content:space-between;align-items:center"><span><b>Contrôle — Fractions</b> · cliquez sur une pastille pour changer de niveau</span><button style="height:40px;padding:0 16px;border-radius:9px;border:none;background:#1F5546;color:#FFFFFF;font-weight:700;font-size:14px">Publier</button></div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) repeat(3,150px);gap:8px;padding:10px 20px;font-size:12.5px;color:#5F6B66;border-bottom:1px solid #E2DED3"><span>Élève</span><span style="text-align:center">Calculer</span><span style="text-align:center">Raisonner</span><span style="text-align:center">Communiquer</span></div>
+<sc-for list="{{ evalGrid }}" as="r" hint-placeholder-count="10">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) repeat(3,150px);gap:8px;padding:6px 20px;border-bottom:1px solid #EEEBE3;align-items:center">
+<b style="font-size:14.5px">{{ r.name }}</b>
+<sc-for list="{{ r.cells }}" as="c" hint-placeholder-count="3"><button onClick="{{ c.cycle }}" title="{{ c.label }}" style="justify-self:center;height:44px;display:flex;align-items:center;gap:8px;padding:0 10px;border:none;background:transparent;cursor:pointer;font-size:13px;color:#3D4945;font-family:inherit"><span style="width:20px;height:20px;border-radius:50%;background:{{ c.c }};border:{{ c.bd }}"></span>{{ c.short }}</button></sc-for>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ is.compte }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:20px;align-items:start">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:16px">
+<h2 style="margin:0;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Profil</h2>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Nom<input value="{{ user.name }}" readonly style="height:44px;border:1.5px solid #E2DED3;border-radius:10px;padding:0 12px;font-size:15px;font-family:inherit;background:#FAF9F5;color:#3D4945"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Adresse e-mail<input value="{{ user.email }}" style="height:44px;border:1.5px solid #CFC9BB;border-radius:10px;padding:0 12px;font-size:15px;font-family:inherit"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:700">Téléphone<input value="06 12 34 56 78" style="height:44px;border:1.5px solid #CFC9BB;border-radius:10px;padding:0 12px;font-size:15px;font-family:inherit"></label>
+</div>
+<div style="display:flex;flex-direction:column;gap:20px">
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:22px;display:flex;flex-direction:column;gap:4px">
+<h2 style="margin:0 0 8px;font-family:'Schibsted Grotesk',sans-serif;font-size:18px;font-weight:700">Notifications et affichage</h2>
+<sc-for list="{{ toggles }}" as="t" hint-placeholder-count="6">
+<button onClick="{{ t.flip }}" style="display:flex;justify-content:space-between;align-items:center;min-height:48px;border:none;background:none;padding:0;cursor:pointer;font-family:inherit;font-size:14.5px;color:#1B2421;text-align:left;border-top:1px solid #EEEBE3"><span>{{ t.l }}</span><span style="width:42px;height:24px;border-radius:999px;background:{{ t.track }};padding:3px;display:flex;justify-content:{{ t.justify }}"><span style="width:18px;height:18px;border-radius:50%;background:#FFFFFF"></span></span></button>
+</sc-for>
+</div>
+<div style="background:#FFFFFF;border:1px solid #E2DED3;border-radius:14px;padding:22px;display:flex;justify-content:space-between;align-items:center;gap:16px">
+<div><b style="font-size:15px">Double authentification</b><div style="font-size:13.5px;color:#5F6B66">Code envoyé par SMS à chaque connexion</div></div>
+<span style="background:#E4F2E8;color:#2F7D4F;border-radius:6px;padding:4px 8px;font-size:12.5px;font-weight:700">Activée</span>
+</div>
+</div>
+</div>
+</sc-if>
+
+</div>
+</main>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<footer style="padding:48px 32px;border-top:1px solid #E2DED3"><div style="max-width:1200px;margin:0 auto;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13px;color:#5F6B66"><span>Préau · Brand guidelines v1.0 · octobre 2026</span><span>Polices : SIL Open Font License · Icônes : Apache 2.0</span></div></footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;defaultProfile&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;college&quot;,&quot;lycee&quot;,&quot;parent&quot;,&quot;prof&quot;,&quot;cpe&quot;,&quot;direction&quot;,&quot;secretariat&quot;],&quot;default&quot;:&quot;college&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Prototype&quot;}}">
+const SUBJ={fr:['Français',30,'Mme Petit',['Lire','Écrire','Étude de la langue']],hg:['Histoire-Géo',60,'M. Garnier',['Se repérer','Raisonner','Analyser un document']],eps:['EPS',120,'M. Colin',['Performance','Coopérer','Méthodes']],svt:['SVT',150,'Mme Ndiaye',['Pratiquer une démarche','Modéliser','Communiquer']],pc:['Physique-Chimie',180,'M. Roche',['Mesurer','Modéliser','Communiquer']],techno:['Technologie',210,'Mme Faure',['Concevoir','Réaliser','Communiquer']],ma:['Mathématiques',240,'M. Durand',['Calculer','Raisonner','Communiquer']],es:['Espagnol',270,'Mme Ortiz',['Comprendre','S\'exprimer à l\'oral','Écrire']],en:['Anglais',300,'Mrs Clarke',['Comprendre','S\'exprimer à l\'oral','Écrire']],mu:['Musique',330,'M. Blanc',['Chanter','Écouter','Créer']],ap:['Arts plastiques',0,'Mme Lemoine',['Expérimenter','Représenter','S\'exprimer']]};
+const S=k=>{const [name,h,prof,skills]=SUBJ[k];return {key:k,name,prof,skills,dot:`oklch(0.6 0.13 ${h})`,tint:`oklch(0.95 0.035 ${h})`,ink:`oklch(0.38 0.09 ${h})`};};
+const EV=[{c:'#C8402B',l:'Maîtrise insuffisante',s:'MI'},{c:'#E8892B',l:'Maîtrise fragile',s:'MF'},{c:'#2F6FC0',l:'Maîtrise satisfaisante',s:'MS'},{c:'#2E8B57',l:'Très bonne maîtrise',s:'TB'}];
+const COM=['Notions à reprendre : venez me voir en fin de cours.','Des bases présentes, à consolider avec les exercices du manuel.','Bon travail, méthode bien appliquée.','Excellent travail, raisonnement clair et rigoureux.'];
+const T={ok:{fg:'#2F7D4F',bg:'#E4F2E8'},danger:{fg:'#B83A26',bg:'#FBE6E1'},warn:{fg:'#9A6512',bg:'#FBF0D9'},info:{fg:'#2D63A8',bg:'#E3ECF8'},neutral:{fg:'#3D4945',bg:'#EEEBE3'},brand:{fg:'#FFFFFF',bg:'#1F5546'}};
+const MOD={dash:['Tableau de bord','space_dashboard'],edt:['Emploi du temps','calendar_view_week'],devoirs:['Devoirs','menu_book'],notes:['Évaluations','donut_large'],viesco:['Vie scolaire','how_to_reg'],messages:['Messagerie','mail'],documents:['Documents','folder'],agenda:['Agenda','event'],paiements:['Paiements & cantine','payments'],bulletins:['Bulletins','article'],saisie:['Appel & évaluation','fact_check'],compte:['Mon compte','settings']};
+const SLUG={dash:'accueil',edt:'emploi-du-temps',devoirs:'devoirs',notes:'evaluations',viesco:'vie-scolaire',messages:'messagerie',documents:'documents',agenda:'agenda',paiements:'paiements',bulletins:'bulletins',saisie:'appel',compte:'compte'};
+const ELEVE=['dash','edt','devoirs','notes','viesco','messages','documents','agenda','bulletins','compte'];
+const PROFILES=[
+{id:'college',label:'Élève · collège',name:'Léa Martin',role:'4e B',ini:'LM',hello:'Bonjour Léa',email:'lea.martin@jean-moulin.preau.fr',nav:ELEVE},
+{id:'lycee',label:'Élève · lycée',name:'Hugo Benali',role:'1re 3 · Spé. Maths, SES',ini:'HB',hello:'Bonjour Hugo',email:'hugo.benali@preau.fr',nav:ELEVE},
+{id:'parent',label:'Parent',name:'Sophie Martin',role:'Responsable de Léa (4e B)',ini:'SM',hello:'Bonjour Madame Martin',email:'sophie.martin@mail.fr',nav:['dash','notes','devoirs','edt','viesco','messages','paiements','bulletins','documents','agenda','compte']},
+{id:'prof',label:'Professeur',name:'Marc Durand',role:'Mathématiques',ini:'MD',hello:'Bonjour Monsieur Durand',email:'marc.durand@ac-academie.fr',staff:true,labels:{devoirs:'Cahier de textes'},nav:['dash','saisie','edt','devoirs','messages','documents','agenda','compte']},
+{id:'cpe',label:'Vie scolaire / CPE',name:'Nadia Kader',role:'Conseillère principale d\'éducation',ini:'NK',hello:'Bonjour Madame Kader',email:'nadia.kader@ac-academie.fr',staff:true,nav:['dash','viesco','edt','messages','agenda','documents','compte']},
+{id:'direction',label:'Direction',name:'Paul Lefèvre',role:'Principal',ini:'PL',hello:'Bonjour Monsieur Lefèvre',email:'principal@jean-moulin.preau.fr',staff:true,nav:['dash','bulletins','viesco','agenda','messages','documents','compte']},
+{id:'secretariat',label:'Secrétariat',name:'Claire Roux',role:'Secrétariat de direction',ini:'CR',hello:'Bonjour Madame Roux',email:'secretariat@jean-moulin.preau.fr',staff:true,nav:['dash','paiements','documents','messages','agenda','compte']}];
+const st=(t,title,sub,tone,status,action,go)=>({t,title,sub,status,action,go,...T[tone]});
+const STAFF={
+prof:{kpis:[['2','Appels à faire aujourd\'hui','#B83A26'],['26','Copies à évaluer · 3e A','#1B2421'],['5','Messages non lus','#1B2421']],listTitle:'Mes cours aujourd\'hui',list:[['08:00','4e B · Mathématiques','Salle B12','ok','Appel fait'],['09:00','3e A · Mathématiques','Salle B12','ok','Appel fait'],['10:15','4e D · Mathématiques','Salle B12','danger','Appel à faire','Faire l\'appel'],['14:30','6e C · Mathématiques','Salle B14','neutral','À venir']],todo:[['edit_note','Évaluer le contrôle « Fractions »','3e A · avant le 16 oct.'],['mail','Message de Mme Martin','Responsable de Léa Martin, 4e B'],['event','Conseil pédagogique','jeu. 15 oct. · 17 h 00']]},
+cpe:{kpis:[['14','Absences non justifiées','#B83A26'],['6','Retards ce matin','#9A6512'],['3','Appels non faits','#1B2421']],listTitle:'Appels du créneau 10 h 15',list:[['10:15','4e D · M. Durand','27 élèves','danger','Non fait'],['10:15','3e A · Mme Petit','26 élèves · 2 absents','ok','Fait'],['10:15','5e C · M. Garnier','28 élèves · 1 retard','ok','Fait'],['10:15','6e B · Mrs Clarke','25 élèves','danger','Non fait']],todo:[['event_busy','Noah Dupuis · 3e A','Absent depuis 3 jours, famille injoignable'],['description','5 justificatifs reçus','À valider'],['gavel','Commission éducative','ven. 16 oct. · 14 h 00']]},
+direction:{kpis:[['4,2 %','Taux d\'absentéisme · septembre','#1B2421'],['18/24','Conseils de classe planifiés','#1B2421'],['2','Incidents à traiter','#B83A26']],listTitle:'Conseils de classe du trimestre',list:[['30/11','6e A à 6e D','Salle du conseil','ok','Planifié'],['01/12','5e A à 5e D','Salle du conseil','ok','Planifié'],['02/12','4e A à 4e D','Salle du conseil','warn','2 profs manquants'],['03/12','3e A à 3e D','—','danger','À planifier','Planifier']],todo:[['report','Incident · cour de récréation','Rapport de M. Colin, lun. 12 oct.'],['article','Valider le modèle de bulletin T1','Avant le 20 nov.'],['groups','Conseil d\'administration','jeu. 5 nov. · 18 h 00']]},
+secretariat:{kpis:[['12','Factures impayées','#B83A26'],['4','Inscriptions en attente','#9A6512'],['7','Certificats demandés','#1B2421']],listTitle:'Demandes du jour',list:[['08:42','Certificat de scolarité','Famille Benali · 1re 3','neutral','Nouveau','Générer'],['09:15','Changement d\'adresse','Famille Morel · 5e A','warn','Pièce manquante'],['10:03','Inscription en cours d\'année','Famille Diallo · 6e','info','Dossier complet','Ouvrir'],['11:20','Remboursement cantine','Famille Roche · 4e C','ok','Traité']],todo:[['payments','Relancer 12 impayés de cantine','Total 486,00 €'],['print','Imprimer les convocations au brevet blanc','3e A à 3e D'],['mail','Circulaire photos de classe','À diffuser avant jeudi']]}};
+const EVALS={fr:[['Dictée','18 sept.',1],['Rédaction — portrait','2 oct.',2],['Lecture analytique','9 oct.',2]],ma:[['Calcul mental','15 sept.',3],['Nombres relatifs','25 sept.',2],['Contrôle — Fractions','9 oct.',3]],hg:[['Repères chronologiques','22 sept.',1],['Croquis — la ville','6 oct.',2]],en:[['Oral — present yourself','17 sept.',2],['Compréhension écrite','5 oct.',3]],es:[['Vocabulaire','24 sept.',2],['Expression orale','8 oct.',1]],svt:[['TP microscope','29 sept.',0],['Le vivant et son évolution','7 oct.',1]],pc:[['Mesures et incertitudes','30 sept.',2]],techno:[['Projet — cahier des charges','1 oct.',3]],mu:[['Chant choral','21 sept.',3]],eps:[['Demi-fond','28 sept.',2],['Badminton','12 oct.',2]],ap:[['Autoportrait','23 sept.',2]]};
+const EDT=[[[8,9,'ma','B12'],[9,10,'fr','A04'],[10.25,11.25,'en','A10'],[11.25,12.25,'hg','A04'],[13.5,15.5,'eps','Gymnase']],[[8,9,'fr','A04'],[9,10,'ma','B12'],[10.25,12.25,'pc','Labo 2'],[13.5,14.5,'es','A12'],[14.5,15.5,'techno','C03']],[[8,9,'en','A10'],[9,10,'hg','A04'],[10.25,11.25,'ma','B12'],[11.25,12.25,'mu','Salle de musique']],[[8,10,'svt','Labo 1'],[10.25,11.25,'fr','A04'],[11.25,12.25,'es','A12'],[13.5,15.5,'ap','Arts'],[15.5,16.5,'en','A10']],[[8,9,'ma','B12'],[9,10,'fr','A04'],[10.25,11.25,'hg','A04'],[11.25,12.25,'techno','C03',true],[13.5,14.5,'pc','Labo 2'],[14.5,16.5,'eps','Gymnase']]];
+const HW=[['Pour mercredi 14 octobre',[['ma','Exercices 12 à 15 page 84, sur feuille double.','12 oct.'],['en','Apprendre le vocabulaire de l\'unité 3.','9 oct.'],['hg','Relire la leçon sur la Révolution française.','12 oct.']]],['Pour jeudi 15 octobre',[['svt','Compte rendu du TP microscope.','7 oct.',false,'Fiche-TP-microscope.pdf'],['fr','Lire les chapitres 4 et 5 du Petit Prince.','6 oct.']]],['Pour vendredi 16 octobre',[['hg','La Révolution française, chapitre 2.','5 oct.',true]]]];
+const MSGS=[['MP','Mme Petit','Professeure de français','Sortie théâtre du 22 novembre','il y a 2 h','Bonjour,\n\nLa classe de 4e B assistera à une représentation du Petit Prince le dimanche 22 novembre à 15 h, au théâtre municipal.\n\nL\'autorisation de sortie est disponible dans Documents. Merci de la signer avant le 6 novembre.\n\nBien cordialement,\nMme Petit'],['VS','Vie scolaire','Collège Jean-Moulin','Rappel : photo de classe jeudi','hier','La photo de classe de 4e B aura lieu jeudi 15 octobre à 9 h dans le préau.'],['MD','M. Durand','Professeur de mathématiques','Contrôle sur les fractions','lun. 12 oct.','Les évaluations du contrôle sont en ligne. Le corrigé est joint dans Documents.'],['SE','Secrétariat','Collège Jean-Moulin','Facture sortie Futuroscope','ven. 9 oct.','La facture de la sortie est disponible dans Paiements.'],['MC','M. Colin','Professeur d\'EPS','Tenue pour le cross','mar. 6 oct.','Prévoir une tenue de sport et une bouteille d\'eau.'],['PL','M. Lefèvre','Principal','Bienvenue sur Préau','1 sept.','Préau remplace l\'ancien espace numérique à partir de cette rentrée.']];
+const DOCS=[['draw','Autorisation — Sortie théâtre','Administratif','12 oct.','84 Ko',true],['description','Corrigé — Contrôle fractions','Pédagogique','12 oct.','210 Ko'],['restaurant','Menus d\'octobre','Cantine','1 oct.','1,2 Mo'],['description','Fiche méthode — Le croquis','Pédagogique','28 sept.','340 Ko'],['badge','Certificat de scolarité 2026–2027','Administratif','3 sept.','62 Ko'],['gavel','Règlement intérieur','Administratif','1 sept.','480 Ko']];
+const NAMES=['Adam Bernard','Inès Chevalier','Noah Dupuis','Lina Faure','Gabriel Girard','Jade Henry','Louis Lambert','Léa Martin','Rayan Mercier','Chloé Morel','Sacha Perrin','Zoé Robin'];
+const ini=n=>n.split(' ').map(x=>x[0]).join('');
+const MONTH=(()=>{const out=[];const ev={2:[['Photo de classe','info']],8:[['Cross du collège','ok']],13:[['Réunion parents-profs · 17 h 30','brand']],15:[['Conseil pédagogique','neutral']],16:[['Sortie Futuroscope','warn']],19:[['Vacances de la Toussaint','neutral']]};for(let i=0;i<35;i++){const prev=i<3;const n=prev?28+i:(i-2<=31?i-2:i-33);const next=!prev&&i-2>31;const day=prev||next?null:n;const wk=i%7>=5;const vac=day&&day>=17;out.push({n,bg:vac?'#F2EFE6':wk?'#FAF9F5':'#FFFFFF',numBg:day===13?'#1F5546':'transparent',numFg:day===13?'#FFFFFF':(prev||next)?'#B3B0A6':'#1B2421',ev:(day&&ev[day]||[]).map(([t,tn])=>({t,...T[tn]}))});}return out;})();
+const REPORT=[['fr',2,'Lectrice attentive, expression écrite en net progrès.'],['ma',3,'Excellent trimestre, raisonnement rigoureux.'],['hg',2,'Bon investissement, connaissances à consolider.'],['en',3,'Très bon oral, participation constante.'],['svt',1,'Démarche expérimentale à travailler.'],['eps',2,'Engagée et volontaire.']];
+
+class Component extends DCLogic {
+  constructor(props){super(props);
+    const p=props.defaultProfile||'college';
+    const grid={};NAMES.forEach((n,i)=>grid[n]=[(i*3+1)%4,(i*2+2)%4,i%5===0?-1:(i+2)%4]);
+    const appel={};NAMES.forEach(n=>appel[n]='p');appel['Noah Dupuis']='a';appel['Sacha Perrin']='r';
+    this.state={profile:p,screen:'dash',sel:{s:'ma',i:2},done:{'0-0':true},msg:0,tab:'appel',appel,grid,toggles:[true,true,true,true,false,false]};
+  }
+  renderVals(){
+    const s=this.state;const prof=PROFILES.find(x=>x.id===s.profile)||PROFILES[0];
+    const screen=prof.nav.includes(s.screen)?s.screen:'dash';
+    const go=k=>()=>this.setState({screen:k});
+    const label=k=>(prof.labels&&prof.labels[k])||MOD[k][0];
+    const counts={messages:3,devoirs:prof.staff?0:4};
+    const nav=prof.nav.map(k=>({label:label(k),icon:MOD[k][1],active:k===screen,inactive:k!==screen,count:counts[k]||'',go:go(k)}));
+    const profileTabs=PROFILES.map(x=>({label:x.label,active:x.id===prof.id,inactive:x.id!==prof.id,select:()=>this.setState({profile:x.id,screen:'dash'})}));
+    const is={dashStudent:screen==='dash'&&!prof.staff,dashStaff:screen==='dash'&&!!prof.staff};
+    Object.keys(MOD).forEach(k=>{if(k!=='dash')is[k]=screen===k;});
+    const sd=STAFF[prof.id];
+    const staff=sd?{kpis:sd.kpis.map(([v,l,c])=>({v,l,c})),listTitle:sd.listTitle,list:sd.list.map(([t,title,sub,tone,status,action])=>st(t,title,sub,tone,status,action||'',prof.id==='prof'?go('saisie'):()=>{})),todo:sd.todo.map(([icon,title,sub])=>({icon,title,sub}))}:{kpis:[],list:[],todo:[]};
+    // evaluations
+    const evalRows=Object.keys(EVALS).map(k=>{const sb=S(k);const evs=EVALS[k];const cnt=[0,0,0,0];evs.forEach(e=>cnt[e[2]]++);
+      return {...sb,evals:evs.map((e,i)=>({c:EV[e[2]].c,title:`${e[0]} · ${EV[e[2]].l}`,ring:s.sel.s===k&&s.sel.i===i?'0 0 0 2px #FFFFFF, 0 0 0 4px #1B2421':'none',pick:()=>this.setState({sel:{s:k,i}})})),dist:cnt.map((n,i)=>({n,c:EV[i].c})).filter(d=>d.n)};});
+    const ss=S(s.sel.s);const se=EVALS[s.sel.s][s.sel.i];const lv=se[2];
+    const sel={...ss,title:se[0],date:se[1],c:EV[lv].c,label:EV[lv].l,comment:COM[lv],skills:ss.skills.map((t,i)=>{const l=Math.max(0,Math.min(3,lv+(i===1?(lv<3?1:-1):0)));return {t,c:EV[l].c};})};
+    const lastEvals=[['ma',2],['fr',2],['es',1],['svt',1]].map(([k,i])=>{const e=EVALS[k][i];return {name:S(k).name,title:e[0],date:e[1],c:EV[e[2]].c,label:EV[e[2]].l};});
+    // devoirs
+    const toggle=key=>()=>this.setState(x=>({done:{...x.done,[key]:!x.done[key]}}));
+    let total=0,doneN=0;
+    const hwDays=HW.map(([day,items],di)=>({day,items:items.map(([k,text,given,exam,file],ii)=>{const key=di+'-'+ii;const d=!!s.done[key];total++;if(d)doneN++;const sb=S(k);
+      return {...sb,text,given,exam:!!exam,file:file||'',done:d,todo:!d,toggle:toggle(key),mark:d?'check':'',boxBg:d?'#1F5546':'#FFFFFF',border:d?'none':'1.5px solid #CFC9BB',deco:d?'line-through':'none',color:d?'#5F6B66':'#1B2421'};})}));
+    const tomorrow=hwDays[0].items;
+    // edt
+    const dl=['lun. 12 oct.','mar. 13 oct.','mer. 14 oct.','jeu. 15 oct.','ven. 16 oct.'];
+    const edtDays=EDT.map((bl,di)=>({label:dl[di],headBg:di===1?'#1F5546':'#FFFFFF',headFg:di===1?'#FFFFFF':'#1B2421',blocks:bl.map(([a,b,k,room,cancel])=>({...S(k),room,top:(a-8)*60+2,h:(b-a)*60-4,cancel:!!cancel,op:cancel?0.6:1,deco:cancel?'line-through':'none'}))}));
+    const hours=[8,9,10,11,12,13,14,15,16].map(h=>({top:(h-8)*60+4,l:(h<10?'0':'')+h+':00'}));
+    const fmt=x=>{const h=Math.floor(x),m=Math.round((x-h)*60);return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;};
+    const today=EDT[1].map(([a,b,k,room])=>{const sb=S(k);const now=a===10.25;return {...sb,t:fmt(a),room,now,outline:now?'2px solid #1B2421':'none'};});
+    // vie scolaire
+    const ev=(icon,type,date,detail,tone,status,stTone,cta)=>({icon,type,date,detail,status,cta:!!cta,fg:T[tone].fg,bg:T[tone].bg,sfg:T[stTone].fg,sbg:T[stTone].bg});
+    const events=[ev('event_busy','Absence','jeu. 1 oct. · journée','Motif non renseigné','danger','À justifier','danger',true),ev('schedule','Retard','lun. 12 oct. · 8 h 12','Mathématiques · 12 min','warn','Justifié','ok'),ev('schedule','Retard','lun. 28 sept. · 13 h 42','EPS · 12 min · transport scolaire','warn','Justifié','ok'),ev('backpack','Oubli de matériel','mer. 23 sept.','Arts plastiques · carnet de croquis','neutral','Noté','neutral'),ev('thumb_up','Encouragement','ven. 9 oct.','Mme Petit · participation remarquable','ok','Encouragement','ok')];
+    // messages
+    const msgs=MSGS.map(([i,from,role,subject,date,body],k)=>({ini:i,from,subject,date,preview:body.replace(/\n+/g,' ').slice(0,70),w:k<3?700:400,bg:k===s.msg?'#E3EEE9':'#FFFFFF',open:()=>this.setState({msg:k})}));
+    const m=MSGS[s.msg];const msg={ini:m[0],from:m[1],role:m[2],subject:m[3],date:m[4],body:m[5]};
+    const docs=DOCS.map(([icon,name,cat,date,size,sign])=>({icon,name,cat,date,size,sign:!!sign}));
+    const bills=[['Sortie Futuroscope','à régler avant le 14 oct.','32,00 €','À payer','danger',true],['Rechargement cantine','1 oct. · carte bancaire','40,00 €','Crédité','info'],['Cantine — septembre','payée le 2 oct.','78,00 €','Payée','ok'],['Cotisation foyer socio-éducatif','payée le 8 sept.','15,00 €','Payée','ok']].map(([label,date,amount,status,tone,pay])=>({label,date,amount,status,pay:!!pay,...T[tone]}));
+    const report=REPORT.map(([k,l,app])=>({...S(k),app,label:EV[l].s,scale:[0,1,2,3].map(i=>({c:i===l?EV[l].c:'#EEEBE3'}))}));
+    // saisie
+    const A={p:['Présent',T.ok],a:['Absent',T.danger],r:['Retard',T.warn]};
+    const students=NAMES.map(n=>({name:n,ini:ini(n),opts:['p','a','r'].map(o=>{const on=s.appel[n]===o;return {l:A[o][0],bg:on?A[o][1].bg:'#FFFFFF',fg:on?A[o][1].fg:'#3D4945',bd:on?A[o][1].fg:'#E2DED3',set:()=>this.setState(x=>({appel:{...x.appel,[n]:o}}))};})}));
+    const c={p:0,a:0,r:0};NAMES.forEach(n=>c[s.appel[n]]++);
+    const appelSummary=`${c.p} présents · ${c.a} absent${c.a>1?'s':''} · ${c.r} retard${c.r>1?'s':''} — ${NAMES.length} élèves`;
+    const evalGrid=NAMES.map(n=>({name:n,cells:s.grid[n].map((v,j)=>({c:v<0?'transparent':EV[v].c,bd:v<0?'2px dashed #CFC9BB':'none',short:v<0?'NE':EV[v].s,label:v<0?'Non évalué':EV[v].l,cycle:()=>this.setState(x=>{const g={...x.grid};const r=[...g[n]];r[j]=r[j]>=3?-1:r[j]+1;g[n]=r;return {grid:g};})}))}));
+    const tl=['Nouvelles évaluations','Devoirs ajoutés ou modifiés','Messages reçus','Absences et retards','Mode sombre','Sigles sur les pastilles'];
+    const toggles=tl.map((l,i)=>({l,track:s.toggles[i]?'#1F5546':'#CFC9BB',justify:s.toggles[i]?'flex-end':'flex-start',flip:()=>this.setState(x=>{const t=[...x.toggles];t[i]=!t[i];return {toggles:t};})}));
+    return {profileTabs,nav,user:prof,isParent:prof.id==='parent',screenTitle:screen==='dash'?MOD.dash[0]:label(screen),screenSlug:SLUG[screen],is,staff,
+      evalRows,sel,lastEvals,hwDays,tomorrow,hwDone:`${tomorrow.filter(h=>h.done).length} / ${tomorrow.length} faits`,hwStats:{done:doneN,total,pct:Math.round(doneN/total*100)},
+      edtDays,hours,today,events,msgs,msg,docs,month:MONTH,bills,report,students,appelSummary,evalGrid,toggles,
+      tabs:{appel:s.tab==='appel',eval:s.tab==='eval',appelBg:s.tab==='appel'?'#FFFFFF':'transparent',evalBg:s.tab==='eval'?'#FFFFFF':'transparent'},
+      tabAppel:()=>this.setState({tab:'appel'}),tabEval:()=>this.setState({tab:'eval'}),
+      goViesco:go('viesco'),goEdt:go('edt'),goNotes:go('notes')};
+  }
+}
+</script>
+</body>
+</html>
