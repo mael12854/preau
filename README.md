@@ -24,14 +24,14 @@ On se connecte sur `/connexion` avec une adresse e-mail et un mot de passe (Supa
 
 ### Comptes
 
-Les comptes sont créés par l'établissement (pas d'inscription libre). Les adresses e-mail des comptes existants sont dans `supabase/seed.sql`.
+Les comptes sont créés par l'établissement (pas d'inscription libre).
 
 L'application utilise l'heure réelle. Pour des essais, `PREAU_NOW` permet de la figer.
 
 ## Base de données (Supabase)
 
 - `supabase/migrations/` : schéma, sécurité (RLS), fonctions métier. À appliquer dans l'ordre.
-- `supabase/seed.sql` : l'établissement, ses classes et matières, et les personnes (comptes, élèves, responsables, enseignants). Aucune donnée scolaire : emploi du temps, devoirs, évaluations, messages, documents et factures sont à saisir dans l'application.
+- `supabase/seed.sql` : les matières, les trois établissements (École du Weekend, Collège du Weekend, +VK) et leurs classes. Aucun compte ni aucune personne, aucune donnée scolaire.
 - `lib/supabase/database.types.ts` : types générés depuis le schéma ; à régénérer après chaque migration.
 
 **Règle « aucune note » dans la base** : les évaluations ne stockent que le type `eval_value` (MI, MF, MS, TB, NE, ABS, DISP). Aucune colonne numérique de note n'existe. Le niveau global d'une évaluation n'est jamais calculé à partir des compétences : ce serait une moyenne déguisée.
