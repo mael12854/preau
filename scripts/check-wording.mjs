@@ -9,7 +9,8 @@ import { join, relative } from "node:path";
 
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIRS = ["app", "components", "lib"];
-const FORBIDDEN = [/\/\s?20\b/, /moyenne/i, /classement/i, /\branking\b/i];
+// « 12/20 » ou « / 20 », mais pas une opacité Tailwind comme « ink/20 ».
+const FORBIDDEN = [/(?<![a-z-])\/\s?20\b/i, /moyenne/i, /classement/i, /\branking\b/i];
 
 const files = [];
 const walk = (dir) => {

@@ -1,6 +1,6 @@
 -- Préau — personnes et structure de l'établissement (Collège Jean-Moulin)
 -- Comptes, profils, élèves, responsables, classes, matières, enseignements.
--- Les données de démonstration (cours, devoirs, évaluations…) sont dans seed-demo.sql.
+-- Aucune donnée de démonstration (cours, devoirs, évaluations…) : elles ont été supprimées.
 -- ⚠️ Comptes de démonstration, mot de passe commun « preau-demo-2026 » :
 --    à supprimer avant toute utilisation réelle.
 -- Les adresses utilisent le domaine réservé .example : aucun e-mail ne peut partir.

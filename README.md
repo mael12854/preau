@@ -36,12 +36,12 @@ Mot de passe commun : `preau-demo-2026`. **À supprimer avant toute utilisation 
 | Direction (Paul Lefèvre) | `principal@jean-moulin.example` |
 | Secrétariat (Claire Roux) | `secretariat@jean-moulin.example` |
 
-La démo est figée au **mardi 13 octobre 2026, 10 h 30** (`PREAU_NOW`), car les données couvrent cette semaine-là. `PREAU_NOW=real` utilise l'heure réelle.
+L'application utilise l'heure réelle. Pour des essais, `PREAU_NOW` permet de la figer.
 
 ## Base de données (Supabase)
 
 - `supabase/migrations/` : schéma, sécurité (RLS), fonctions métier. À appliquer dans l'ordre.
-- `supabase/seed.sql` : données de démonstration (Collège Jean-Moulin, semaine du 12 octobre 2026), avec les noms et textes du prototype.
+- `supabase/seed.sql` : l'établissement, ses classes et matières, et les personnes (comptes, élèves, responsables, enseignants). Aucune donnée scolaire : emploi du temps, devoirs, évaluations, messages, documents et factures sont à saisir dans l'application.
 - `lib/supabase/database.types.ts` : types générés depuis le schéma ; à régénérer après chaque migration.
 
 **Règle « aucune note » dans la base** : les évaluations ne stockent que le type `eval_value` (MI, MF, MS, TB, NE, ABS, DISP). Aucune colonne numérique de note n'existe. Le niveau global d'une évaluation n'est jamais calculé à partir des compétences : ce serait une moyenne déguisée.
@@ -87,7 +87,7 @@ Les comptes sont créés par l'établissement, pas par inscription libre. Un com
 ```
 app/
   globals.css            jetons clair / sombre, typographie (rem), focus, reduced-motion
-  page.tsx               choix du profil de démonstration
+  page.tsx               redirige vers /accueil
   design-system/         vitrine des composants
   (app)/<module>/        un écran par module, protégé par requireModule()
   (app)/actions.ts       actions serveur (coche, appel, saisie, messages, paiements…)
