@@ -3,7 +3,7 @@ import type { IconName } from "@/lib/icons";
 import type { ProfileId } from "./profiles";
 
 export type Kpi = { value: string; label: string; tone?: "danger" | "warn" };
-export type StaffRow = { time: string; title: string; sub: string; tone: Tone; status: string; action?: string; href?: string };
+export type StaffRow = { time: string; title: string; sub: string; tone: Tone; status: string; action?: string; href?: string; /** Confirmation affichée après l'action (démo). */ done?: string };
 export type StaffTodo = { icon: IconName; title: string; sub: string };
 
 export type StaffDashboard = { kpis: Kpi[]; listTitle: string; list: StaffRow[]; todo: StaffTodo[] };
@@ -58,7 +58,7 @@ export const STAFF_DASHBOARDS: Partial<Record<ProfileId, StaffDashboard>> = {
       { time: "30/11", title: "6e A à 6e D", sub: "Salle du conseil", tone: "ok", status: "Planifié" },
       { time: "01/12", title: "5e A à 5e D", sub: "Salle du conseil", tone: "ok", status: "Planifié" },
       { time: "02/12", title: "4e A à 4e D", sub: "Salle du conseil", tone: "warn", status: "2 profs manquants" },
-      { time: "03/12", title: "3e A à 3e D", sub: "—", tone: "danger", status: "À planifier", action: "Planifier" },
+      { time: "03/12", title: "3e A à 3e D", sub: "—", tone: "danger", status: "À planifier", action: "Planifier", done: "Conseils des 3e ajoutés au planning" },
     ],
     todo: [
       { icon: "report", title: "Incident · cour de récréation", sub: "Rapport de M. Colin, lun. 12 oct." },
@@ -74,9 +74,9 @@ export const STAFF_DASHBOARDS: Partial<Record<ProfileId, StaffDashboard>> = {
     ],
     listTitle: "Demandes du jour",
     list: [
-      { time: "08:42", title: "Certificat de scolarité", sub: "Famille Benali · 1re 3", tone: "neutral", status: "Nouveau", action: "Générer" },
+      { time: "08:42", title: "Certificat de scolarité", sub: "Famille Benali · 1re 3", tone: "neutral", status: "Nouveau", action: "Générer", done: "Certificat de scolarité généré" },
       { time: "09:15", title: "Changement d'adresse", sub: "Famille Morel · 5e A", tone: "warn", status: "Pièce manquante" },
-      { time: "10:03", title: "Inscription en cours d'année", sub: "Famille Diallo · 6e", tone: "info", status: "Dossier complet", action: "Ouvrir" },
+      { time: "10:03", title: "Inscription en cours d'année", sub: "Famille Diallo · 6e", tone: "info", status: "Dossier complet", action: "Ouvrir", done: "Dossier de la famille Diallo ouvert" },
       { time: "11:20", title: "Remboursement cantine", sub: "Famille Roche · 4e C", tone: "ok", status: "Traité" },
     ],
     todo: [
