@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Vos identifiants Préau</title>
+<!--
+  E-mail « Voici vos identifiants » — Préau.
+  Remplacez les champs entre doubles accolades avant l'envoi :
+    {{civilite_nom}}   ex. « Madame Martin », « Marin »
+    {{etablissement}}  ex. « École du Weekend »
+    {{identifiant}}    l'adresse e-mail de connexion
+    {{mot_de_passe}}   le mot de passe provisoire affiché dans l'Annuaire
+  Mise en page en tableaux et styles en ligne : compatible Gmail, Outlook, Apple Mail.
+-->
+</head>
+<body style="margin:0;padding:0;background:#f5f3ec;">
+  <div style="display:none;max-height:0;overflow:hidden;opacity:0;">Votre compte Préau est prêt : voici votre identifiant et votre mot de passe provisoire.</div>
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#f5f3ec;">
+    <tr>
+      <td align="center" style="padding:32px 16px;">
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:560px;">
+
+          <!-- En-tête -->
+          <tr>
+            <td style="background:#173f35;border-radius:14px 14px 0 0;padding:24px 32px;">
+              <span style="font-family:'Schibsted Grotesk',Arial,Helvetica,sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;color:#f5f3ec;">préau</span>
+              <span style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#a9c2b9;">&nbsp;·&nbsp;{{etablissement}}</span>
+            </td>
+          </tr>
+
+          <!-- Corps -->
+          <tr>
+            <td style="background:#ffffff;border:1px solid #e2ded3;border-top:0;border-radius:0 0 14px 14px;padding:32px;font-family:Arial,Helvetica,sans-serif;color:#1b2421;">
+              <h1 style="margin:0 0 16px;font-family:'Schibsted Grotesk',Arial,Helvetica,sans-serif;font-size:24px;line-height:1.25;color:#1b2421;">Voici vos identifiants</h1>
+              <p style="margin:0 0 16px;font-size:16px;line-height:1.55;">Bonjour {{civilite_nom}},</p>
+              <p style="margin:0 0 24px;font-size:16px;line-height:1.55;">Votre compte Préau est ouvert. Vous y retrouverez l'emploi du temps, les devoirs, les évaluations, la vie scolaire, les documents et la messagerie de {{etablissement}}.</p>
+
+              <!-- Identifiants -->
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#e3eee9;border-radius:10px;">
+                <tr>
+                  <td style="padding:20px 24px;">
+                    <p style="margin:0 0 4px;font-size:13px;color:#3d4945;">Identifiant</p>
+                    <p style="margin:0 0 16px;font-size:17px;font-weight:bold;color:#1b2421;word-break:break-all;">{{identifiant}}</p>
+                    <p style="margin:0 0 4px;font-size:13px;color:#3d4945;">Mot de passe provisoire</p>
+                    <p style="margin:0;font-family:'Courier New',Courier,monospace;font-size:19px;font-weight:bold;letter-spacing:1px;color:#1b2421;">{{mot_de_passe}}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Bouton -->
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:28px 0 24px;">
+                <tr>
+                  <td style="background:#1f5546;border-radius:10px;">
+                    <a href="https://logiciel-preau.vercel.app/connexion" style="display:inline-block;padding:14px 24px;font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:bold;color:#ffffff;text-decoration:none;">Se connecter à Préau</a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 12px;font-size:15px;line-height:1.55;"><b>Changez ce mot de passe dès votre première connexion</b>, dans <i>Mon compte</i>. Il est provisoire et ne doit pas être partagé.</p>
+              <p style="margin:0 0 24px;font-size:15px;line-height:1.55;color:#3d4945;">Si le bouton ne fonctionne pas, copiez cette adresse dans votre navigateur :<br><span style="color:#1f5546;word-break:break-all;">https://logiciel-preau.vercel.app/connexion</span></p>
+
+              <p style="margin:0;font-size:15px;line-height:1.55;">Bien cordialement,<br>Le secrétariat de {{etablissement}}</p>
+            </td>
+          </tr>
+
+          <!-- Pied -->
+          <tr>
+            <td style="padding:20px 32px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#5f6b66;text-align:center;">
+              Vous recevez ce message parce qu'un compte Préau a été ouvert pour vous par {{etablissement}}.<br>Vous n'êtes pas concerné ? Signalez-le simplement en répondant à ce message.
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
