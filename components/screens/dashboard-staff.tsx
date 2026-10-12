@@ -24,19 +24,19 @@ export function StaffDashboard({ profile }: { profile: Profile }) {
         ))}
       </ul>
       <div className="grid items-start gap-4 lg:grid-cols-[1.4fr_1fr]">
-        <Card aria-labelledby="staff-list" className="flex flex-col gap-1">
+        <Card aria-labelledby="staff-list" className="@container flex flex-col gap-1">
           <h2 id="staff-list" className="m-0 mb-2.5 font-display text-card font-bold">
             {data.listTitle}
           </h2>
           <ul className="m-0 list-none p-0">
             {data.list.map((r) => (
-              <li key={r.time + r.title} className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2 border-t border-line-soft py-3 sm:grid-cols-[3.5rem_minmax(0,1fr)_auto_auto]">
+              <li key={r.time + r.title} className="grid grid-cols-[3.5rem_minmax(0,1fr)] items-center gap-x-3.5 gap-y-2 border-t border-line-soft py-3 @lg:grid-cols-[3.5rem_minmax(0,1fr)_auto_auto]">
                 <span className="tabular text-caption text-ink-muted">{r.time}</span>
                 <div className="flex flex-col">
                   <b className="text-ui">{r.title}</b>
                   <span className="text-caption text-ink-muted">{r.sub}</span>
                 </div>
-                <div className="col-start-2 flex flex-wrap items-center gap-3 sm:contents">
+                <div className="col-start-2 flex flex-wrap items-center gap-3 @lg:contents">
                   <Badge tone={r.tone}>{r.status}</Badge>
                   {r.action &&
                     (r.href ? (

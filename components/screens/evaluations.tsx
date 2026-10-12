@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { DistributionBar, PastilleDot, PastilleLegend } from "@/components/ui/pastille";
 import { SegmentedControl } from "@/components/ui/segmented";
 import { SubjectChip, SubjectDot } from "@/components/ui/subject-chip";
@@ -8,7 +8,7 @@ import { cn } from "@/lib/cn";
 import { distribution, EVAL_META } from "@/lib/evaluation";
 import { COMMENTS, DEFAULT_SELECTION, EVALUATIONS, skillLevels, SUBJECTS, type SubjectKey } from "@/lib/mock";
 
-const COLS = "md:grid-cols-[12.5rem_minmax(0,1fr)_8.75rem]";
+const COLS = "@2xl:grid-cols-[12.5rem_minmax(0,1fr)_8.75rem]";
 const TERMS = [
   { value: "t1", label: "Trimestre 1" },
   { value: "t2", label: "Trimestre 2" },
@@ -19,6 +19,7 @@ const TERMS = [
 export function EvaluationsScreen() {
   const [term, setTerm] = useState("t1");
   const [sel, setSel] = useState(DEFAULT_SELECTION);
+  const detailRef = useRef<HTMLHeadingElement>(null);
   const rows = Object.keys(EVALUATIONS) as SubjectKey[];
   const s = SUBJECTS[sel.subject];
   const e = EVALUATIONS[sel.subject]![sel.index];
@@ -32,8 +33,8 @@ export function EvaluationsScreen() {
           <PastilleLegend />
         </div>
 
-        <div className="overflow-hidden rounded-card border border-line bg-surface">
-          <div aria-hidden="true" className={cn("hidden gap-4 border-b border-line bg-surface-2 px-5 py-3 text-meta text-ink-muted md:grid", COLS)}>
+        <div className="@container overflow-hidden rounded-card border border-line bg-surface">
+          <div aria-hidden="true" className={cn("hidden gap-4 border-b border-line bg-surface-2 px-5 py-3 text-meta text-ink-muted @2xl:grid", COLS)}>
             <span>Matière</span>
             <span>Évaluations du trimestre</span>
             <span>Répartition</span>
@@ -66,7 +67,11 @@ export function EvaluationsScreen() {
                               aria-pressed={active}
                               aria-label={`${ev.title}, ${ev.date} : ${EVAL_META[ev.level].label}`}
                               title={`${ev.title} · ${EVAL_META[ev.level].label}`}
-                              onClick={() => setSel({ subject: k, index: i })}
+                              onClick={() => {
+                                setSel({ subject: k, index: i });
+                                // Sur petit écran, le détail est sous le tableau : on y amène le focus.
+                                if (window.matchMedia("(max-width: 63.99rem)").matches) detailRef.current?.focus();
+                              }}
                               className="flex h-11 min-w-11 items-center gap-1.5 rounded-control px-1.5 text-meta text-ink-2 hover:bg-neutral-bg aria-pressed:font-bold aria-pressed:text-ink"
                             >
                               <span className={cn("flex rounded-full", active && "shadow-[0_0_0_2px_var(--surface),0_0_0_4px_var(--ink)]")}>
@@ -90,7 +95,7 @@ export function EvaluationsScreen() {
       <aside aria-labelledby="eval-detail" aria-live="polite" className="flex flex-col gap-4 rounded-card border border-line bg-surface p-[1.375rem] lg:sticky lg:top-6">
         <SubjectChip name={s.name} hue={s.hue} />
         <div>
-          <h2 id="eval-detail" className="m-0 font-display text-detail font-bold tracking-[-0.01em]">
+          <h2 id="eval-detail" ref={detailRef} tabIndex={-1} className="m-0 font-display text-detail font-bold tracking-[-0.01em]">
             {e.title}
           </h2>
           <p className="m-0 mt-1 text-caption text-ink-muted">

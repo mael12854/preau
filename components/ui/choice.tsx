@@ -123,7 +123,7 @@ export function Switch({ label, description, checked, defaultChecked, onCheckedC
       aria-describedby={description ? `${id}-desc` : undefined}
       className="group relative flex h-6 w-[2.625rem] shrink-0 items-center rounded-full bg-line-strong p-[3px] transition-colors after:absolute after:-inset-2.5 after:content-[''] data-[state=checked]:bg-brand"
     >
-      <RSwitch.Thumb className="block size-[1.125rem] rounded-full bg-surface shadow-thumb transition-transform data-[state=checked]:translate-x-[1.125rem]" />
+      <RSwitch.Thumb className="block size-[1.125rem] rounded-full bg-white shadow-thumb transition-transform data-[state=checked]:translate-x-[1.125rem]" />
     </RSwitch.Root>
   );
   if (row) {

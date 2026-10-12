@@ -152,11 +152,11 @@ export function Showcase() {
       <Section id="ds-typo" title="Typographie" intro="Schibsted Grotesk pour les titres, Atkinson Hyperlegible Next pour l'interface. 13 px minimum.">
         <Card className="flex flex-col gap-4">
           <span className="font-display text-display font-extrabold tracking-[-0.04em]">Display 56</span>
-          <span className="font-display text-h1 font-bold tracking-[-0.025em]">Titre h1 · 32 / 36</span>
-          <span className="font-display text-h2 font-bold tracking-[-0.01em]">Titre h2 · 20 / 26</span>
-          <span className="text-body">Corps de texte · 16 / 25. Notes, devoirs, absences, messages.</span>
-          <span className="text-label font-bold">Libellé · 14 / 20</span>
-          <span className="text-caption text-ink-muted">Légende · 13 / 18 (minimum)</span>
+          <span className="font-display text-h1 font-bold tracking-[-0.025em]">Titre h1 · 32 px, interligne 36</span>
+          <span className="font-display text-h2 font-bold tracking-[-0.01em]">Titre h2 · 20 px, interligne 26</span>
+          <span className="text-body">Corps de texte · 16 px, interligne 25. Notes, devoirs, absences, messages.</span>
+          <span className="text-label font-bold">Libellé · 14 px, interligne 20</span>
+          <span className="text-caption text-ink-muted">Légende · 13 px, interligne 18 (minimum)</span>
           <span className="tabular text-body">Chiffres tabulaires : 08:30 · 10:15 · 23,40 €</span>
         </Card>
       </Section>
@@ -307,7 +307,7 @@ export function Showcase() {
         </div>
       </Section>
 
-      <Section id="ds-dataviz" title="Visualiser les évaluations" intro="Aucune moyenne, aucun classement : on montre la répartition des pastilles, dans l'ordre MI → TB.">
+      <Section id="ds-dataviz" title="Visualiser les évaluations" intro="Pas de chiffre, pas de comparaison entre élèves : on montre la répartition des pastilles, dans l'ordre MI → TB.">
         <Demo title="Répartition par matière">
           <div className="grid grid-cols-[8rem_1fr] items-center gap-x-3.5 gap-y-3 text-label">
             <span>Français</span>

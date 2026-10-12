@@ -6,8 +6,8 @@ import { cn } from "@/lib/cn";
 import { Icon } from "./icon";
 
 const CONTROL =
-  "h-11 w-full rounded-control border-[1.5px] bg-surface px-3 text-md text-ink outline-none transition-[border-color,box-shadow] " +
-  "placeholder:text-ink-muted focus:border-brand focus:shadow-[0_0_0_3px_var(--brand-tint)] focus-visible:outline-none";
+  "h-11 w-full rounded-control border-[1.5px] bg-surface px-3 text-md text-ink transition-[border-color] " +
+  "placeholder:text-ink-muted focus:border-brand";
 
 type FieldShellProps = {
   id: string;
@@ -115,7 +115,7 @@ export function SelectField({ label, placeholder, options, hint, error, id, clas
                 <RSelect.Item
                   key={o.value}
                   value={o.value}
-                  className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-[8px] px-3 text-md outline-none select-none data-[highlighted]:bg-brand-tint data-[state=checked]:font-bold"
+                  className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-[8px] px-3 text-md outline-none select-none data-[highlighted]:bg-brand-tint data-[highlighted]:outline-2 data-[highlighted]:-outline-offset-2 data-[highlighted]:outline-accent data-[highlighted]:outline-solid data-[state=checked]:font-bold"
                 >
                   <RSelect.ItemText>{o.label}</RSelect.ItemText>
                   <RSelect.ItemIndicator>

@@ -99,7 +99,7 @@ export function MessagerieScreen() {
         </div>
         <div className="max-w-[38.75rem] text-lg leading-relaxed whitespace-pre-line">{m.body}</div>
         <form
-          className="mt-auto flex items-end gap-3 rounded-alert border-[1.5px] border-line-strong p-3.5 focus-within:border-brand"
+          className="mt-auto flex items-end gap-3 rounded-alert border-[1.5px] border-line-strong p-3.5 focus-within:border-brand has-[textarea:focus-visible]:outline-[3px] has-[textarea:focus-visible]:outline-offset-2 has-[textarea:focus-visible]:outline-accent has-[textarea:focus-visible]:outline-solid"
           onSubmit={(e) => {
             e.preventDefault();
             if (!reply.trim()) return;

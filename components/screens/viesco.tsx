@@ -20,7 +20,7 @@ export function VieScolaireScreen() {
           </li>
         ))}
       </ul>
-      <section aria-labelledby="viesco-events" className="overflow-hidden rounded-card border border-line bg-surface">
+      <section aria-labelledby="viesco-events" className="@container overflow-hidden rounded-card border border-line bg-surface">
         <h2 id="viesco-events" className="sr-only">
           Événements
         </h2>
@@ -30,7 +30,7 @@ export function VieScolaireScreen() {
             return (
               <li
                 key={e.type + e.date}
-                className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2 border-b border-line-soft px-5 py-4 last:border-b-0 md:grid-cols-[2.75rem_10rem_minmax(0,1fr)_8.125rem_7.5rem]"
+                className="grid grid-cols-[2.75rem_minmax(0,1fr)] items-center gap-x-4 gap-y-2 border-b border-line-soft px-5 py-4 last:border-b-0 @3xl:grid-cols-[2.75rem_10rem_minmax(0,1fr)_8.125rem_7.5rem]"
               >
                 <span aria-hidden="true" className={cn("flex size-10 items-center justify-center rounded-control", TONE_CLASSES[e.tone])}>
                   <Icon name={e.icon} size={22} />
@@ -39,11 +39,11 @@ export function VieScolaireScreen() {
                   <h3 className="m-0 text-ui font-bold">{e.type}</h3>
                   <span className="text-caption text-ink-muted">{e.date}</span>
                 </div>
-                <span className="col-start-2 text-ui text-ink-2 md:col-start-auto">{e.detail}</span>
-                <div className="col-start-2 md:col-start-auto">
+                <span className="col-start-2 text-ui text-ink-2 @3xl:col-start-auto">{e.detail}</span>
+                <div className="col-start-2 @3xl:col-start-auto">
                   <Badge tone={done ? "info" : e.statusTone}>{done ? "Justificatif envoyé" : e.status}</Badge>
                 </div>
-                <div className="col-start-2 md:col-start-auto">
+                <div className="col-start-2 @3xl:col-start-auto">
                   {e.canJustify && !done && <JustifyButton what={`${e.type} · ${e.date}`} onJustified={() => setJustified((j) => [...j, i])} />}
                 </div>
               </li>

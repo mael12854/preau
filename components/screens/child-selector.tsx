@@ -24,7 +24,7 @@ export function ChildSelector() {
               <DropdownMenu.RadioItem
                 key={c.id}
                 value={c.id}
-                className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[8px] px-3 text-label outline-none data-[highlighted]:bg-brand-tint"
+                className="flex min-h-11 cursor-pointer items-center gap-2.5 rounded-[8px] px-3 text-label outline-none data-[highlighted]:bg-brand-tint data-[highlighted]:outline-2 data-[highlighted]:-outline-offset-2 data-[highlighted]:outline-accent data-[highlighted]:outline-solid"
               >
                 <Avatar initials={c.initials} size={26} />
                 <span className="flex-1">{c.label}</span>

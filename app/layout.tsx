@@ -38,7 +38,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="fr" className={`${schibsted.variable} ${atkinson.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font -- police d'icônes, sous-ensemble via icon_names */}
         <link rel="stylesheet" href={ICON_FONT_URL} />
       </head>
       <body>

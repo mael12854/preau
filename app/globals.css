@@ -39,9 +39,9 @@
   --ink-faint: #b3b0a6;
 
   /* Sémantiques (texte / fond) */
-  --ok: #2f7d4f;
+  --ok: #2d784c; /* README : #2F7D4F, assombri pour atteindre 4,5:1 sur --ok-bg */
   --ok-bg: #e4f2e8;
-  --warn: #9a6512;
+  --warn: #956211; /* README : #9A6512, assombri pour atteindre 4,5:1 sur --warn-bg */
   --warn-bg: #fbf0d9;
   --danger: #b83a26;
   --danger-bg: #fbe6e1;

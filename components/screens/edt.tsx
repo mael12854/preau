@@ -11,7 +11,7 @@ export function EdtScreen() {
   return (
     <div className="overflow-hidden rounded-card border border-line bg-surface">
       {/* La grille 2D défile horizontalement sur petit écran (exception de redistribution RGAA). */}
-      <div className="overflow-x-auto" data-scroll-x tabIndex={0} role="region" aria-label="Grille de la semaine">
+      <div className="relative overflow-x-auto" data-scroll-x tabIndex={0} role="region" aria-label="Grille de la semaine">
         <div className="min-w-[45rem]">
           <div className="grid grid-cols-[3.5rem_repeat(5,1fr)] border-b border-line" aria-hidden="true">
             <span />

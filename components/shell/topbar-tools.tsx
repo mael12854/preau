@@ -13,7 +13,7 @@ export function TopbarTools() {
         role="search"
         onSubmit={(e) => e.preventDefault()}
         className={cn(
-          "h-10 items-center gap-2 rounded-control border border-line bg-surface px-3 text-ink-muted focus-within:border-brand focus-within:shadow-[0_0_0_3px_var(--brand-tint)]",
+          "h-10 items-center gap-2 rounded-control border border-line bg-surface px-3 text-ink-muted focus-within:border-brand focus-within:outline-[3px] focus-within:outline-offset-2 focus-within:outline-accent focus-within:outline-solid",
           searchOpen
             ? "absolute inset-x-4 top-4 z-10 flex md:static md:w-70"
             : "hidden md:flex md:w-70",
