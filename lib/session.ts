@@ -78,6 +78,12 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     primaryClass = own?.name ?? null;
     primaryTeacher = !!own && (t ?? []).every((x) => x.classes?.level === "primaire");
   }
+  // Administration d'une école primaire : toutes les classes de l'établissement sont du primaire.
+  let primarySchool = false;
+  if (me.kind === "cpe" || me.kind === "direction" || me.kind === "secretariat") {
+    const { data: levels } = await supabase.from("classes").select("level");
+    primarySchool = !!levels?.length && levels.every((c) => c.level === "primaire");
+  }
   const variant: ProfileId =
     me.kind === "eleve"
       ? level
@@ -110,7 +116,7 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     userId: auth.user.id,
     school: { name: me.schools?.name ?? "", year: me.schools?.year_label ?? "", domain: me.schools?.domain ?? "" },
     student,
-    scale: PRIMARY_PROFILES.includes(variant) ? "primaire" : "college",
+    scale: PRIMARY_PROFILES.includes(variant) || primarySchool ? "primaire" : "college",
     counts: await navCounts(supabase, me.id, student, me.kind === "eleve" || me.kind === "parent", auth.user.id),
   };
 });
