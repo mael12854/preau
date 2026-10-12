@@ -1,3 +1,4 @@
+/** Modules de l'application et menu de chaque profil. */
 import type { IconName } from "@/lib/icons";
 
 export type ModuleKey =
@@ -42,6 +43,10 @@ export type Profile = {
 
 const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "notes", "viesco", "messages", "documents", "agenda", "bulletins", "compte"];
 
+/**
+ * Menu de chaque profil. Les noms et rôles ne servent que de valeurs par défaut :
+ * la personne connectée est lue dans Supabase (lib/session.ts).
+ */
 export const PROFILES: Profile[] = [
   { id: "college", label: "Élève · collège", name: "Léa Martin", role: "4e B", initials: "LM", hello: "Bonjour Léa", email: "lea.martin@jean-moulin.preau.fr", staff: false, nav: ELEVE },
   { id: "lycee", label: "Élève · lycée", name: "Hugo Benali", role: "1re 3 · Spé. Maths, SES", initials: "HB", hello: "Bonjour Hugo", email: "hugo.benali@preau.fr", staff: false, nav: ELEVE },
@@ -68,21 +73,8 @@ export const PROFILES: Profile[] = [
   },
 ];
 
-export const DEFAULT_PROFILE: ProfileId = "college";
-
-export function getProfileById(id: string | undefined): Profile {
-  return PROFILES.find((p) => p.id === id) ?? PROFILES[0];
-}
-
 export function moduleLabel(profile: Profile, key: ModuleKey): string {
   return profile.labels?.[key] ?? MODULES[key].label;
-}
-
-/** Compteurs de la navigation (non lus, à faire). */
-export function navCount(profile: Profile, key: ModuleKey): number {
-  if (key === "messages") return 3;
-  if (key === "devoirs" && !profile.staff) return 4;
-  return 0;
 }
 
 export function navCountLabel(key: ModuleKey, n: number): string {

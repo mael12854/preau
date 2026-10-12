@@ -3,14 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
-import { STAFF_DASHBOARDS, type Profile } from "@/lib/mock";
+import type { StaffDashboard as StaffDashboardData } from "@/lib/mock/staff";
+import type { Viewer } from "@/lib/session";
 import { DemoActionButton } from "./demo-action";
 import { Greeting, Stat } from "./greeting";
 
 /** Tableau de bord du personnel : 3 indicateurs, liste du jour, « À traiter ». */
-export function StaffDashboard({ profile }: { profile: Profile }) {
-  const data = STAFF_DASHBOARDS[profile.id];
-  if (!data) return null;
+export function StaffDashboard({ profile, data }: { profile: Viewer; data: StaffDashboardData }) {
   return (
     <div className="flex flex-col gap-6">
       <Greeting hello={profile.hello} />

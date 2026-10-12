@@ -1,12 +1,13 @@
 import type { ReactNode } from "react";
-import { moduleLabel, type ModuleKey, type Profile } from "@/lib/mock/profiles";
+import { moduleLabel, type ModuleKey } from "@/lib/navigation";
+import type { Viewer } from "@/lib/session";
 import { MobileNav } from "./mobile-nav";
 import { SidebarContent } from "./sidebar";
 import { SkipLink } from "./skip-link";
 import { TopbarTools } from "./topbar-tools";
 
 type AppShellProps = {
-  profile: Profile;
+  profile: Viewer;
   module: ModuleKey;
   children: ReactNode;
 };

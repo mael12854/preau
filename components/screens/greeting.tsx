@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { formatDateLong } from "@/lib/format";
-import { TODAY } from "@/lib/mock/school";
+import { now } from "@/lib/clock";
 
 /** Date du jour et salutation (« Bonjour Léa », « Bonjour Madame Martin »). */
 export function Greeting({ hello, aside }: { hello: string; aside?: ReactNode }) {
   return (
     <div className="flex flex-wrap items-end justify-between gap-4">
       <div>
-        <p className="m-0 text-label text-ink-muted">{formatDateLong(TODAY, true)}</p>
+        <p className="m-0 text-label text-ink-muted">{formatDateLong(now(), true)}</p>
         <p className="m-0 font-display text-[clamp(2rem,5vw,2.5rem)] leading-[1.1] font-extrabold tracking-[-0.04em]">{hello}</p>
       </div>
       {aside}

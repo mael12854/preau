@@ -1,16 +1,24 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
+import { updateNotifications, updatePhone } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/choice";
 import { TextField } from "@/components/ui/field";
 import { SegmentedControl } from "@/components/ui/segmented";
-import type { Profile } from "@/lib/mock";
+import { useToast } from "@/components/ui/toast";
 import type { TextSize } from "@/lib/preferences";
 import { useEffectiveDark, usePreferences } from "@/lib/use-preferences";
 
-const NOTIFICATIONS = ["Nouvelles évaluations", "Devoirs ajoutés ou modifiés", "Messages reçus", "Absences et retards"];
+const NOTIFICATIONS = [
+  { key: "evaluations", label: "Nouvelles évaluations" },
+  { key: "devoirs", label: "Devoirs ajoutés ou modifiés" },
+  { key: "messages", label: "Messages reçus" },
+  { key: "absences", label: "Absences et retards" },
+] as const;
+
+type Account = { name: string; email: string; phone: string; notifications: Record<string, boolean> };
 
 function Panel({ id, title, children }: { id: string; title: string; children: React.ReactNode }) {
   return (
@@ -24,10 +32,26 @@ function Panel({ id, title, children }: { id: string; title: string; children: R
 }
 
 /** Mon compte : profil, notifications et affichage, double authentification. */
-export function CompteScreen({ profile }: { profile: Profile }) {
+export function CompteScreen({ account }: { account: Account }) {
+  const toast = useToast();
   const [prefs, setPrefs] = usePreferences();
   const dark = useEffectiveDark(prefs);
-  const [notif, setNotif] = useState([true, true, true, true]);
+  const [notif, setNotif] = useState(account.notifications);
+  const [phone, setPhone] = useState(account.phone);
+  const [phoneError, setPhoneError] = useState<string>();
+  const [, start] = useTransition();
+
+  const toggleNotif = (key: string, value: boolean) => {
+    const next = { ...notif, [key]: value };
+    setNotif(next);
+    start(async () => {
+      const r = await updateNotifications(next);
+      if (!r.ok) {
+        setNotif(notif);
+        toast({ title: r.error });
+      }
+    });
+  };
 
   return (
     <div className="grid items-start gap-5 lg:grid-cols-2">
@@ -35,15 +59,30 @@ export function CompteScreen({ profile }: { profile: Profile }) {
         <h2 id="profil" className="m-0 font-display text-h3 font-bold">
           Profil
         </h2>
-        <TextField label="Nom" value={profile.name} readOnly hint="Modifiable par le secrétariat uniquement" />
-        <TextField label="Adresse e-mail" type="email" autoComplete="email" defaultValue={profile.email} />
-        <TextField label="Téléphone" type="tel" autoComplete="tel" defaultValue="06 12 34 56 78" />
+        <TextField label="Nom" value={account.name} readOnly hint="Modifiable par le secrétariat uniquement" />
+        <TextField label="Adresse e-mail" type="email" value={account.email} readOnly hint="Adresse de connexion, modifiable par le secrétariat" />
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            start(async () => {
+              const r = await updatePhone(phone);
+              setPhoneError(r.ok ? undefined : r.error);
+              if (r.ok) toast({ title: "Téléphone enregistré" });
+            });
+          }}
+        >
+          <TextField label="Téléphone" type="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} error={phoneError} />
+          <Button type="submit" variant="secondary" size="sm" className="self-start" disabled={phone === account.phone}>
+            Enregistrer
+          </Button>
+        </form>
       </section>
 
       <div className="flex flex-col gap-5">
         <Panel id="notifications" title="Notifications et affichage">
-          {NOTIFICATIONS.map((l, i) => (
-            <Switch key={l} row label={l} checked={notif[i]} onCheckedChange={(v) => setNotif((n) => n.map((x, j) => (j === i ? v : x)))} />
+          {NOTIFICATIONS.map((n) => (
+            <Switch key={n.key} row label={n.label} checked={notif[n.key] ?? true} onCheckedChange={(v) => toggleNotif(n.key, v)} />
           ))}
           <Switch
             row

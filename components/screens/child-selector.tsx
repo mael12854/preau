@@ -4,10 +4,10 @@ import { DropdownMenu } from "radix-ui";
 import { Avatar } from "@/components/ui/avatar";
 import { Icon } from "@/components/ui/icon";
 
-const CHILDREN = [{ id: "lea", initials: "LM", label: "Léa Martin · 4e B" }];
-
 /** Sélecteur d'enfant pour les responsables légaux. */
-export function ChildSelector() {
+export function ChildSelector({ student }: { student: { id: string; name: string; className: string } }) {
+  const initials = student.name.split(" ").map((x) => x[0]).join("");
+  const CHILDREN = [{ id: student.id, initials, label: `${student.name} · ${student.className}` }];
   const current = CHILDREN[0];
   return (
     <DropdownMenu.Root>

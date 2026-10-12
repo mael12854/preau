@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { TONE_CLASSES } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
+import type { AgendaEventView } from "@/lib/data/types";
 import { formatDateLong, formatMonth } from "@/lib/format";
-import { AGENDA_EVENTS, AGENDA_MONTH, HOLIDAYS_FROM, TODAY } from "@/lib/mock";
 
 const DAYS = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
 const DAYS_LONG = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"];
@@ -25,15 +25,17 @@ function monthCells(year: number, month: number): Cell[][] {
   );
 }
 
-const sameDay = (a: Date, b: Date) => a.toDateString() === b.toDateString();
+function firstWeekday(day: string): string {
+  const d = new Date(`${day}T12:00:00`);
+  while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() + 1);
+  return localIso(d);
+}
 
-/** Agenda : vue mois, événements colorés, jour courant. */
-export function AgendaScreen() {
-  const [shift, setShift] = useState(0);
-  const ref = new Date(AGENDA_MONTH.year, AGENDA_MONTH.month + shift, 1);
-  const year = ref.getFullYear();
-  const month = ref.getMonth();
-  const isRef = shift === 0;
+const localIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+
+/** Agenda : vue mois, événements colorés, jour courant. Les mois voisins sont chargés par l'URL. */
+export function AgendaScreen({ year, month, today, events }: { year: number; month: number; today: string; events: AgendaEventView[] }) {
+  const router = useRouter();
   const weeks = monthCells(year, month);
   const title = formatMonth(year, month);
 
@@ -52,7 +54,10 @@ export function AgendaScreen() {
               key={b.d}
               type="button"
               aria-label={b.label}
-              onClick={() => setShift((s) => s + b.d)}
+              onClick={() => {
+                const d = new Date(year, month + b.d, 1);
+                router.push(`/agenda?mois=${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}`);
+              }}
               className="relative flex size-9 items-center justify-center rounded-[9px] border border-line hover:border-line-strong after:absolute after:-inset-1 after:content-['']"
             >
               <Icon name={b.icon} />
@@ -79,13 +84,16 @@ export function AgendaScreen() {
               <tr key={wi}>
                 {week.map(({ date, inMonth }, di) => {
                   const n = date.getDate();
-                  const events = inMonth && isRef ? (AGENDA_EVENTS[n] ?? []) : [];
-                  const today = sameDay(date, TODAY);
-                  const holiday = inMonth && isRef && n >= HOLIDAYS_FROM;
+                  const iso = localIso(date);
+                  const isToday = iso === today;
+                  const holidayEvent = events.find((e) => e.holiday && e.startsOn <= iso && (e.endsOn ?? e.startsOn) >= iso);
+                  const holiday = inMonth && !!holidayEvent;
+                  // Un congé s'affiche sur son premier jour de semaine ; les autres événements sur leur date.
+                  const dayEvents = inMonth ? events.filter((e) => (e.holiday ? firstWeekday(e.startsOn) === iso : e.startsOn === iso)) : [];
                   return (
                     <td
                       key={di}
-                      aria-current={today ? "date" : undefined}
+                      aria-current={isToday ? "date" : undefined}
                       className={cn(
                         "h-26 border-r border-b border-line-soft p-2 align-top last:border-r-0",
                         holiday ? "bg-calendar-off" : di >= 5 ? "bg-surface-2" : "bg-surface",
@@ -95,13 +103,13 @@ export function AgendaScreen() {
                         <span
                           className={cn(
                             "flex h-[1.625rem] min-w-[1.625rem] items-center justify-center self-start rounded-full text-sm font-bold",
-                            today ? "bg-brand text-on-brand" : inMonth ? "text-ink" : "font-normal text-ink-muted",
+                            isToday ? "bg-brand text-on-brand" : inMonth ? "text-ink" : "font-normal text-ink-muted",
                           )}
                         >
                           <span aria-hidden="true">{n}</span>
                           <span className="sr-only">{formatDateLong(date)}</span>
                         </span>
-                        {events.map((e) => (
+                        {dayEvents.map((e) => (
                           <span key={e.title} className={cn("rounded-[5px] px-1.5 py-[0.1875rem] text-xs leading-[1.3] font-bold", TONE_CLASSES[e.tone])}>
                             {e.title}
                           </span>

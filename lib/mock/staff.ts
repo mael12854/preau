@@ -1,6 +1,10 @@
+/**
+ * Tableaux de bord de la vie scolaire, de la direction et du secrétariat : données du prototype,
+ * en attendant les tables correspondantes (demandes administratives, conseils de classe…).
+ */
 import type { Tone } from "@/lib/tone";
 import type { IconName } from "@/lib/icons";
-import type { ProfileId } from "./profiles";
+import type { ProfileId } from "@/lib/navigation";
 
 export type Kpi = { value: string; label: string; tone?: "danger" | "warn" };
 export type StaffRow = { time: string; title: string; sub: string; tone: Tone; status: string; action?: string; href?: string; /** Confirmation affichée après l'action (démo). */ done?: string };

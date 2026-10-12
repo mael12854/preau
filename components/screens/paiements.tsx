@@ -1,98 +1,157 @@
 "use client";
 
-import { useState } from "react";
+import { useTransition } from "react";
+import { cancelPayment, payInvoice, topUpCanteen, type PaymentResult } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
-import { formatEuro } from "@/lib/format";
-import { BILLS, CANTEEN } from "@/lib/mock";
+import type { BillView, PendingTopUpView } from "@/lib/data/types";
+import { formatCents } from "@/lib/format";
 
-/** Paiements & cantine : solde et recharge, menu du jour, factures. */
-export function PaiementsScreen() {
+const TOP_UPS = [20, 40, 60];
+const SUGGESTED = 40;
+
+type Props = {
+  student: { id: string; firstName: string } | null;
+  balance: { cents: number; meals: number } | null;
+  menu: string[] | null;
+  menuDay: string;
+  bills: BillView[];
+  pendingTopUps: PendingTopUpView[];
+  /** Seuls les responsables paient ; le secrétariat consulte. */
+  canPay: boolean;
+};
+
+const WAITING = "Paiement en attente de confirmation par Crédit Domestique";
+
+/**
+ * Paiements & cantine : solde et recharge, menu du jour, factures.
+ * Un paiement n'est jamais crédité par le navigateur : il reste en attente jusqu'à la confirmation du prestataire.
+ */
+export function PaiementsScreen({ student, balance, menu, menuDay, bills, pendingTopUps, canPay }: Props) {
   const toast = useToast();
-  const [balance, setBalance] = useState(CANTEEN.balance);
-  const [paid, setPaid] = useState<string[]>([]);
+  const [pending, start] = useTransition();
+  const pay = (fn: () => Promise<PaymentResult>) =>
+    start(async () => {
+      const r = await fn();
+      if (!r.ok) return toast({ title: r.error });
+      if (r.checkoutUrl) window.location.assign(r.checkoutUrl);
+      else toast({ title: WAITING });
+    });
+  const cancel = (id: string) =>
+    start(async () => {
+      const r = await cancelPayment(id);
+      toast({ title: r.ok ? "Paiement annulé" : r.error });
+    });
+
   return (
-    <div className="grid items-start gap-5 lg:grid-cols-[22.5rem_minmax(0,1fr)]">
-      <div className="flex flex-col gap-4">
-        <section aria-labelledby="solde" className="flex flex-col gap-4 rounded-card bg-hero p-[1.375rem] text-hero-ink">
-          <div className="flex items-center justify-between">
-            <h2 id="solde" className="m-0 text-label font-normal text-hero-muted">
-              Solde cantine · {CANTEEN.child}
+    <div className={cn("grid items-start gap-5", student && "lg:grid-cols-[22.5rem_minmax(0,1fr)]")}>
+      {student && (
+        <div className="flex flex-col gap-4">
+          {balance && (
+            <section aria-labelledby="solde" className="flex flex-col gap-4 rounded-card bg-hero p-[1.375rem] text-hero-ink">
+              <div className="flex items-center justify-between">
+                <h2 id="solde" className="m-0 text-label font-normal text-hero-muted">
+                  Solde cantine · {student.firstName}
+                </h2>
+                <Icon name="restaurant" size={22} />
+              </div>
+              <p className="m-0 font-display text-amount font-extrabold tracking-[-0.03em]" aria-live="polite">
+                {formatCents(balance.cents)}
+              </p>
+              <p className="m-0 text-label text-hero-soft">
+                {balance.meals > 0 ? `Environ ${balance.meals} repas restants` : "Solde insuffisant pour un repas"}
+              </p>
+              {canPay && (
+                <div className="grid grid-cols-3 gap-2" role="group" aria-label="Recharger le compte cantine">
+                  {TOP_UPS.map((v) => (
+                    <button
+                      key={v}
+                      type="button"
+                      disabled={pending}
+                      aria-label={`Recharger de ${v} euros`}
+                      onClick={() => pay(() => topUpCanteen(student.id, v))}
+                      className={cn(
+                        "h-[2.625rem] rounded-[9px] text-label font-bold disabled:opacity-60",
+                        v === SUGGESTED ? "bg-bg text-brand" : "border-[1.5px] border-hero-ink/40 bg-transparent text-hero-ink hover:bg-hero-ink/10",
+                      )}
+                    >
+                      + {v} €
+                    </button>
+                  ))}
+                </div>
+              )}
+              {pendingTopUps.length > 0 && (
+                <ul className="m-0 flex list-none flex-col gap-1.5 border-t border-hero-ink/20 p-0 pt-3 text-label text-hero-soft">
+                  {pendingTopUps.map((t) => (
+                    <li key={t.id} className="flex items-center justify-between gap-3">
+                      <span>
+                        Recharge de {t.amount} en attente · {t.date}
+                      </span>
+                      {canPay && (
+                        <button type="button" disabled={pending} onClick={() => cancel(t.id)} className="relative font-bold text-hero-ink underline-offset-2 hover:underline after:absolute after:-inset-3 after:content-['']">
+                          Annuler
+                        </button>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+          <section aria-labelledby="menu" className="flex flex-col gap-2.5 rounded-card border border-line bg-surface p-5">
+            <h2 id="menu" className="m-0 font-display text-h3 font-bold">
+              Menu de {menuDay}
             </h2>
-            <Icon name="restaurant" size={22} />
-          </div>
-          <p className="m-0 font-display text-amount font-extrabold tracking-[-0.03em]" aria-live="polite">
-            {formatEuro(balance)}
-          </p>
-          <p className="m-0 text-label text-hero-soft">{CANTEEN.mealsLeft}</p>
-          <div className="grid grid-cols-3 gap-2" role="group" aria-label="Recharger le compte cantine">
-            {CANTEEN.topUps.map((v) => (
-              <button
-                key={v}
-                type="button"
-                aria-label={`Recharger de ${v} euros`}
-                onClick={() => {
-                  setBalance((b) => b + v);
-                  toast({ title: `Compte cantine rechargé de ${formatEuro(v)}` });
-                }}
-                className={cn(
-                  "h-[2.625rem] rounded-[9px] text-label font-bold",
-                  v === CANTEEN.suggested ? "bg-bg text-brand" : "border-[1.5px] border-hero-ink/40 bg-transparent text-hero-ink hover:bg-hero-ink/10",
-                )}
-              >
-                + {v} €
-              </button>
-            ))}
-          </div>
-        </section>
-        <section aria-labelledby="menu" className="flex flex-col gap-2.5 rounded-card border border-line bg-surface p-5">
-          <h2 id="menu" className="m-0 font-display text-h3 font-bold">
-            Menu de {CANTEEN.menuDay}
-          </h2>
-          <ul className="m-0 flex list-none flex-col gap-2.5 p-0 text-ui">
-            {CANTEEN.menu.map((d) => (
-              <li key={d}>{d}</li>
-            ))}
-          </ul>
-        </section>
-      </div>
+            {menu ? (
+              <ul className="m-0 flex list-none flex-col gap-2.5 p-0 text-ui">
+                {menu.map((d) => (
+                  <li key={d}>{d}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="m-0 text-ui text-ink-2">Pas de service de cantine aujourd&apos;hui.</p>
+            )}
+          </section>
+        </div>
+      )}
 
       <section aria-labelledby="factures" className="@container overflow-hidden rounded-card border border-line bg-surface">
         <h2 id="factures" className="m-0 border-b border-line px-5 py-4 font-display text-h3 font-bold">
           Factures et paiements
         </h2>
+        {bills.length === 0 && <p className="m-0 px-5 py-8 text-ui text-ink-2">Aucune facture.</p>}
         <ul className="m-0 list-none p-0">
-          {BILLS.map((b) => {
-            const isPaid = paid.includes(b.label);
-            return (
-              <li key={b.label} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-line-soft px-5 py-4 last:border-b-0 @xl:grid-cols-[minmax(0,1fr)_7.5rem_6.875rem_7.5rem]">
-                <div className="flex flex-col">
-                  <b className="text-ui">{b.label}</b>
-                  <span className="text-caption text-ink-muted">{isPaid ? "payée aujourd'hui" : b.date}</span>
-                </div>
-                <b className="tabular text-right text-md">{formatEuro(b.amount)}</b>
-                <Badge tone={isPaid ? "ok" : b.tone}>{isPaid ? "Payée" : b.status}</Badge>
-                <div className="justify-self-end @xl:justify-self-stretch">
-                  {b.payable && !isPaid && (
-                    <Button
-                      size="sm"
-                      className="w-full"
-                      aria-label={`Payer ${b.label}, ${formatEuro(b.amount)}`}
-                      onClick={() => {
-                        setPaid((p) => [...p, b.label]);
-                        toast({ title: `Paiement de ${formatEuro(b.amount)} effectué` });
-                      }}
-                    >
-                      Payer
-                    </Button>
-                  )}
-                </div>
-              </li>
-            );
-          })}
+          {bills.map((b) => (
+            <li key={b.id} className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 gap-y-2 border-b border-line-soft px-5 py-4 last:border-b-0 @xl:grid-cols-[minmax(0,1fr)_7.5rem_6.875rem_7.5rem]">
+              <div className="flex flex-col">
+                <b className="text-ui">{b.label}</b>
+                <span className="text-caption text-ink-muted">{[b.student, b.date].filter(Boolean).join(" · ")}</span>
+              </div>
+              <b className="tabular text-right text-md">{b.amount}</b>
+              <Badge tone={b.tone}>{b.status}</Badge>
+              <div className="justify-self-end @xl:justify-self-stretch">
+                {b.payable && canPay && student && (
+                  <Button
+                    size="sm"
+                    className="w-full"
+                    disabled={pending}
+                    aria-label={`Payer ${b.label}, ${b.amount}`}
+                    onClick={() => pay(() => payInvoice(student.id, b.id, b.label))}
+                  >
+                    Payer
+                  </Button>
+                )}
+                {b.pendingPaymentId && canPay && (
+                  <Button size="sm" variant="secondary" className="w-full" disabled={pending} aria-label={`Annuler le paiement de ${b.label}`} onClick={() => cancel(b.pendingPaymentId!)}>
+                    Annuler
+                  </Button>
+                )}
+              </div>
+            </li>
+          ))}
         </ul>
       </section>
     </div>
