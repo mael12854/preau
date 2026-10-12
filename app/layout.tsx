@@ -16,6 +16,7 @@ const atkinson = Atkinson_Hyperlegible_Next({
   subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "700"],
   variable: "--font-atkinson",
+  adjustFontFallback: false,
   display: "swap",
 });
 
