@@ -55,11 +55,11 @@ export async function classStudents(
   const [{ data: main }, { data: extra }] = await Promise.all([
     supabase
       .from("students")
-      .select(`profile_id, profiles(${fields})`)
+      .select(`profile_id, profiles!students_profile_id_fkey(${fields})`)
       .eq("class_id", classId),
     supabase
       .from("class_members")
-      .select(`student_id, students(profiles(${fields}))`)
+      .select(`student_id, students(profiles!students_profile_id_fkey(${fields}))`)
       .eq("class_id", classId),
   ]);
   const rows = [

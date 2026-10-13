@@ -38,7 +38,7 @@ export async function getDirectory(
     supabase.from("students").select("profile_id, class_id, classes!students_class_id_fkey(name)"),
     supabase
       .from("guardians")
-      .select("guardian_id, students(profiles(display_name))"),
+      .select("guardian_id, students(profiles!students_profile_id_fkey(display_name))"),
     supabase
       .from("class_members")
       .select("student_id, class_id, classes(name)"),

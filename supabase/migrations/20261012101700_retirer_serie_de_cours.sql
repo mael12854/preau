@@ -1,11 +1,11 @@
--- Retirer une série de cours (direction, secrétariat) : les cours à venir de la série, à partir de p_from.
+-- Retirer une série de cours (secrétariat) : les cours à venir de la série, à partir de p_from.
 -- Les cours passés restent, avec leur appel.
 create or replace function public.delete_lesson_series(p_series uuid, p_from date)
 returns integer language plpgsql security definer set search_path = '' as $$
 declare v_count integer;
 begin
-  if private.me() is null or private.my_kind() not in ('direction', 'secretariat') then
-    raise exception 'Seuls la direction et le secrétariat construisent l''emploi du temps.' using errcode = '42501';
+  if private.me() is null or private.my_kind() <> 'secretariat' then
+    raise exception 'Seul le secrétariat construit l''emploi du temps.' using errcode = '42501';
   end if;
   delete from public.lessons l
    using public.classes c

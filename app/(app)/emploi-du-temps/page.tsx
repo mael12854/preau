@@ -7,7 +7,7 @@ import {
 import { SelectLink } from "@/components/screens/select-link";
 import { AppShell } from "@/components/shell/app-shell";
 import { now } from "@/lib/clock";
-import { getPublishTargets, isAdminStaff, isManager } from "@/lib/data/targets";
+import { getPublishTargets, isAdminStaff } from "@/lib/data/targets";
 import { getWeekLessons } from "@/lib/data/timetable";
 import { addDays, formatDateShort, isoDay, mondayOf } from "@/lib/format";
 import { requireModule } from "@/lib/session";
@@ -60,8 +60,9 @@ export default async function EdtPage({
   };
   const dates = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 
-  const manage = isManager(profile) && classId;
-  const [{ data: subjects }, { data: teachers }] = manage
+  // Seul le secrétariat construit l'emploi du temps ; la direction et la vie scolaire le consultent.
+  const manage = profile.id === "secretariat" && classId;
+  const [{ data: subjects }, { data: teachers }, { data: klass }] = manage
     ? await Promise.all([
         supabase.from("subjects").select("id, name").order("name"),
         supabase
@@ -69,8 +70,13 @@ export default async function EdtPage({
           .select("id, display_name")
           .eq("kind", "prof")
           .order("display_name"),
+        supabase
+          .from("classes")
+          .select("level, profiles!classes_teacher_id_fkey(display_name)")
+          .eq("id", classId)
+          .maybeSingle(),
       ])
-    : [{ data: [] }, { data: [] }];
+    : [{ data: [] }, { data: [] }, { data: null }];
   const className = classes.find((c) => c.id === classId)?.name ?? "";
 
   return (
@@ -105,6 +111,11 @@ export default async function EdtPage({
                   id: t.id,
                   name: t.display_name,
                 }))}
+                titular={
+                  klass?.level === "primaire"
+                    ? (klass.profiles?.display_name ?? "")
+                    : null
+                }
                 defaultFrom={isoDay(reference)}
                 defaultUntil={endOfSchoolYear(isoDay(reference))}
               />
@@ -132,7 +143,7 @@ export default async function EdtPage({
             lessons={week.lessons}
             days={week.days}
             dates={dates}
-            canManage={admin}
+            canManage={profile.id === "secretariat"}
             me={profile.profileId}
           />
         )}

@@ -36,7 +36,7 @@ export async function getLifeEvents(
   let q = supabase
     .from("life_events")
     .select(
-      "id, kind, occurred_at, whole_day, detail, status, minutes, students(profiles(display_name))",
+      "id, kind, occurred_at, whole_day, detail, status, minutes, students(profiles!students_profile_id_fkey(display_name))",
     )
     .order("occurred_at", { ascending: false });
   if (studentId) q = q.eq("student_id", studentId);

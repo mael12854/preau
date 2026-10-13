@@ -104,7 +104,7 @@ async function cpe(
       .order("starts_at"),
     supabase
       .from("life_events")
-      .select("kind, occurred_at, students(profiles(display_name))")
+      .select("kind, occurred_at, students(profiles!students_profile_id_fkey(display_name))")
       .eq("status", "justificatif_envoye")
       .order("occurred_at")
       .limit(5),
@@ -230,7 +230,7 @@ async function secretariat(
       supabase
         .from("invoices")
         .select(
-          "id, label, amount_cents, due_on, created_at, students(profiles(display_name))",
+          "id, label, amount_cents, due_on, created_at, students(profiles!students_profile_id_fkey(display_name))",
         )
         .eq("status", "a_payer")
         .order("due_on", { nullsFirst: false }),

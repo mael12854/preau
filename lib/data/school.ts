@@ -93,7 +93,7 @@ export async function getPayments(
   let invoices = supabase
     .from("invoices")
     .select(
-      "id, label, amount_cents, status, due_on, paid_on, method, created_at, students(profiles(display_name))",
+      "id, label, amount_cents, status, due_on, paid_on, method, created_at, students(profiles!students_profile_id_fkey(display_name))",
     )
     .order("created_at", { ascending: false });
   if (studentId) invoices = invoices.eq("student_id", studentId);
@@ -200,7 +200,7 @@ export async function getReportCards(
   const { data } = await supabase
     .from("report_cards")
     .select(
-      "id, school_year, term, class_name, head_teacher, publish_on, council_mention, council_text, students(profiles(display_name)), report_card_lines(level, comment, position, subjects(id, name, hue))",
+      "id, school_year, term, class_name, head_teacher, publish_on, council_mention, council_text, students(profiles!students_profile_id_fkey(display_name)), report_card_lines(level, comment, position, subjects(id, name, hue))",
     )
     .order("publish_on", { ascending: false });
   return (data ?? []).map((rc) => {

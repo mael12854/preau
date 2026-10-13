@@ -33,7 +33,10 @@ export function AddLessonSeries({
   teachers,
   defaultFrom,
   defaultUntil,
+  titular,
 }: {
+  /** Primaire : nom du titulaire, qui fait tous les cours de la classe (nul hors primaire). */
+  titular: string | null;
   classId: string;
   className: string;
   subjects: Option[];
@@ -55,7 +58,14 @@ export function AddLessonSeries({
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
-  if (!teachers.length)
+  if (titular === "")
+    return (
+      <p className="m-0 text-label text-ink-2">
+        Cette classe n&apos;a pas encore de titulaire : confiez-la à un
+        enseignant dans l&apos;Annuaire.
+      </p>
+    );
+  if (!teachers.length && titular === null)
     return (
       <p className="m-0 text-label text-ink-2">
         Ajoutez d&apos;abord un enseignant dans l&apos;Annuaire pour construire
@@ -118,12 +128,18 @@ export function AddLessonSeries({
           value={subjectId}
           onValueChange={setSubjectId}
         />
-        <SelectField
-          label="Enseignant"
-          options={teachers.map((t) => ({ value: t.id, label: t.name }))}
-          value={teacherId}
-          onValueChange={setTeacherId}
-        />
+        {titular !== null ? (
+          <p className="m-0 text-label text-ink-2">
+            Enseignant : <b>{titular}</b>, titulaire de la classe.
+          </p>
+        ) : (
+          <SelectField
+            label="Enseignant"
+            options={teachers.map((t) => ({ value: t.id, label: t.name }))}
+            value={teacherId}
+            onValueChange={setTeacherId}
+          />
+        )}
         <TextField
           label="Salle"
           value={room}
