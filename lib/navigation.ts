@@ -56,16 +56,16 @@ const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "notes", "viesco", "messag
  */
 export const PROFILES: Profile[] = [
   // École primaire : l'enfant a une interface très simple (ses devoirs et le cahier de liaison).
-  { id: "primaire", label: "Élève · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false, nav: ["dash", "devoirs", "liaison", "compte"] },
+  { id: "primaire", label: "Élève · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false, nav: ["dash", "edt", "devoirs", "liaison", "compte"] },
   {
     id: "parent-primaire", label: "Parent · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,
     labels: { bulletins: "Livret scolaire", viesco: "Absences" },
-    nav: ["dash", "liaison", "devoirs", "notes", "viesco", "messages", "paiements", "bulletins", "documents", "agenda", "compte"],
+    nav: ["dash", "liaison", "edt", "devoirs", "notes", "viesco", "messages", "paiements", "bulletins", "documents", "agenda", "compte"],
   },
   {
     id: "enseignant-primaire", label: "Enseignant · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: true,
     labels: { devoirs: "Cahier de textes", bulletins: "Livret scolaire" },
-    nav: ["dash", "liaison", "saisie", "devoirs", "bulletins", "messages", "documents", "agenda", "compte"],
+    nav: ["dash", "liaison", "saisie", "edt", "devoirs", "bulletins", "messages", "documents", "agenda", "compte"],
   },
   { id: "college", label: "Élève · collège", name: "Léa Martin", role: "4e B", initials: "LM", hello: "Bonjour Léa", email: "lea.martin@jean-moulin.preau.fr", staff: false, nav: ELEVE },
   { id: "lycee", label: "Élève · lycée", name: "Hugo Benali", role: "1re 3 · Spé. Maths, SES", initials: "HB", hello: "Bonjour Hugo", email: "hugo.benali@preau.fr", staff: false, nav: ELEVE },
@@ -84,11 +84,11 @@ export const PROFILES: Profile[] = [
   },
   {
     id: "direction", label: "Direction", name: "Paul Lefèvre", role: "Principal", initials: "PL", hello: "Bonjour Monsieur Lefèvre", email: "principal@jean-moulin.preau.fr", staff: true,
-    nav: ["dash", "bulletins", "viesco", "agenda", "messages", "documents", "annuaire", "compte"],
+    nav: ["dash", "edt", "bulletins", "viesco", "agenda", "messages", "documents", "annuaire", "compte"],
   },
   {
     id: "secretariat", label: "Secrétariat", name: "Claire Roux", role: "Secrétariat de direction", initials: "CR", hello: "Bonjour Madame Roux", email: "secretariat@jean-moulin.preau.fr", staff: true,
-    nav: ["dash", "paiements", "bulletins", "documents", "messages", "agenda", "annuaire", "compte"],
+    nav: ["dash", "edt", "paiements", "bulletins", "documents", "messages", "agenda", "annuaire", "compte"],
   },
 ];
 

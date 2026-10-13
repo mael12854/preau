@@ -17,6 +17,9 @@ export type LessonView = {
   day: number; // 0 = lundi
   cancelled: boolean;
   now: boolean;
+  /** Série hebdomadaire d'origine (nul : cours ponctuel). */
+  seriesId: string | null;
+  teacherId: string;
 };
 
 export type HomeworkView = {

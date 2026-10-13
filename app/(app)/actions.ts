@@ -574,6 +574,73 @@ export async function assignTeaching(
   );
 }
 
+export type LessonSeriesInput = {
+  classId: string;
+  subjectId: string;
+  teacherId: string;
+  room: string;
+  weekday: number;
+  starts: string;
+  ends: string;
+  from: string;
+  until: string;
+};
+
+/** Emploi du temps : créer un cours chaque semaine sur une période (direction, secrétariat). */
+export async function createLessonSeries(
+  i: LessonSeriesInput,
+): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_lesson_series", {
+    p_class: i.classId,
+    p_subject: i.subjectId,
+    p_teacher: i.teacherId,
+    p_room: i.room,
+    p_weekday: i.weekday,
+    p_starts: i.starts,
+    p_ends: i.ends,
+    p_from: i.from,
+    p_until: i.until,
+  });
+  if (error)
+    return {
+      ok: false,
+      error:
+        /^[A-ZÉÈL]/.test(error.message) &&
+        !/permission|violates|syntax/i.test(error.message)
+          ? error.message
+          : FAILED,
+    };
+  revalidatePath("/emploi-du-temps");
+  return { ok: true, count: data ?? 0 };
+}
+
+/** Annuler ou rétablir un cours (son enseignant, l'administration). */
+export async function setLessonCancelled(
+  lessonId: string,
+  cancelled: boolean,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("set_lesson_cancelled", {
+        p_lesson: lessonId,
+        p_cancelled: cancelled,
+      }),
+    ["/emploi-du-temps", "/accueil"],
+  );
+}
+
+/** Retirer les cours à venir d'une série, à partir d'une date (ceux qui ont déjà un appel restent). */
+export async function deleteLessonSeries(
+  seriesId: string,
+  from: string,
+): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("delete_lesson_series", { p_series: seriesId, p_from: from }),
+    ["/emploi-du-temps", "/accueil"],
+  );
+}
+
 export async function setScore(
   assessmentId: string,
   studentId: string,

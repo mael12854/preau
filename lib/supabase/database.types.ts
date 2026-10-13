@@ -581,6 +581,8 @@ export type Database = {
       }
       lessons: {
         Row: {
+          created_by: string | null
+          series_id: string | null
           attendance_validated_at: string | null
           cancelled: boolean
           class_id: string
@@ -592,6 +594,8 @@ export type Database = {
           teacher_id: string
         }
         Insert: {
+          created_by?: string | null
+          series_id?: string | null
           attendance_validated_at?: string | null
           cancelled?: boolean
           class_id: string
@@ -603,6 +607,8 @@ export type Database = {
           teacher_id: string
         }
         Update: {
+          created_by?: string | null
+          series_id?: string | null
           attendance_validated_at?: string | null
           cancelled?: boolean
           class_id?: string
@@ -1299,6 +1305,20 @@ export type Database = {
         }
         Returns: { id: string; storage_path: string }[]
       }
+      create_lesson_series: {
+        Args: {
+          p_class: string
+          p_ends: string
+          p_from: string
+          p_room: string
+          p_starts: string
+          p_subject: string
+          p_teacher: string
+          p_until: string
+          p_weekday: number
+        }
+        Returns: number
+      }
       create_person: {
         Args: {
           p_children: string[]
@@ -1314,6 +1334,7 @@ export type Database = {
         Args: { p_class: string; p_publish_on: string; p_term: number }
         Returns: number
       }
+      delete_lesson_series: { Args: { p_from: string; p_series: string }; Returns: number }
       delete_agenda_event: { Args: { p_event: string }; Returns: undefined }
       delete_document: { Args: { p_document: string }; Returns: string }
       justify_life_event: {
@@ -1380,6 +1401,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      set_lesson_cancelled: { Args: { p_cancelled: boolean; p_lesson: string }; Returns: undefined }
       set_report_council: {
         Args: { p_mention: string; p_report_card: string; p_text: string }
         Returns: undefined
