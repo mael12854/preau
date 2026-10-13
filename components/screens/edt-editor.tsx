@@ -4,8 +4,10 @@ import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
   createLessonSeries,
+  deleteLesson,
   deleteLessonSeries,
   setLessonCancelled,
+  updateLesson,
 } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -338,5 +340,264 @@ export function WeekLessonList({
         })}
       </ul>
     </section>
+  );
+}
+
+export type LessonEditOptions = {
+  /** « manage » : secrétariat (tout modifier) ; « teacher » : l'enseignant annule ou rétablit ses cours. */
+  mode: "manage" | "teacher";
+  me: string;
+  subjects: Option[];
+  teachers: Option[];
+  /** Primaire : nom du titulaire (l'enseignant ne se choisit pas) ; nul sinon. */
+  titular: string | null;
+  /** Dates ISO des 7 jours de la semaine affichée. */
+  dates: string[];
+};
+
+/** Fenêtre d'un cours : modifier (ce cours ou les suivants), annuler / rétablir, supprimer. */
+export function LessonDialog({
+  lesson,
+  options,
+  onClose,
+}: {
+  lesson: LessonView;
+  options: LessonEditOptions;
+  onClose: () => void;
+}) {
+  const toast = useToast();
+  const router = useRouter();
+  const manage = options.mode === "manage";
+  const [subjectId, setSubjectId] = useState(lesson.subject.id);
+  const [teacherId, setTeacherId] = useState(lesson.teacherId);
+  const [room, setRoom] = useState(lesson.room);
+  const [day, setDay] = useState(options.dates[lesson.day] ?? "");
+  const [starts, setStarts] = useState(formatTimeGrid(lesson.start));
+  const [ends, setEnds] = useState(formatTimeGrid(lesson.end));
+  const [scope, setScope] = useState<"one" | "following">("one");
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const label = `${lesson.subject.name} · ${lesson.className ?? ""}`;
+
+  const done = (r: { ok: boolean; error?: string }, ok: string) => {
+    if (!r.ok) return setError(r.error ?? "");
+    toast({ title: ok });
+    onClose();
+    router.refresh();
+  };
+
+  return (
+    <Dialog
+      open
+      onOpenChange={(o) => !o && onClose()}
+      title={label}
+      description={`${WEEKDAYS[lesson.day]} ${options.dates[lesson.day] ? options.dates[lesson.day].split("-").reverse().join("/") : ""} · ${formatTimeGrid(lesson.start)}–${formatTimeGrid(lesson.end)} · ${lesson.teacher}`}
+    >
+      {manage ? (
+        <form
+          className="flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (!room.trim()) return setError("Indiquez une salle.");
+            if (ends <= starts)
+              return setError("L'heure de fin doit suivre l'heure de début.");
+            setError(null);
+            start(async () =>
+              done(
+                await updateLesson(lesson.id, {
+                  subjectId,
+                  teacherId,
+                  room: room.trim(),
+                  day,
+                  starts,
+                  ends,
+                  scope,
+                }),
+                scope === "following"
+                  ? "Cours et suivants modifiés"
+                  : "Cours modifié",
+              ),
+            );
+          }}
+        >
+          <SelectField
+            label="Matière"
+            options={options.subjects.map((s) => ({
+              value: s.id,
+              label: s.name,
+            }))}
+            value={subjectId}
+            onValueChange={setSubjectId}
+          />
+          {options.titular !== null ? (
+            <p className="m-0 text-label text-ink-2">
+              Enseignant : <b>{options.titular}</b>, titulaire de la classe.
+            </p>
+          ) : (
+            <SelectField
+              label="Enseignant"
+              options={options.teachers.map((t) => ({
+                value: t.id,
+                label: t.name,
+              }))}
+              value={teacherId}
+              onValueChange={setTeacherId}
+            />
+          )}
+          <TextField
+            label="Salle"
+            value={room}
+            onChange={(e) => setRoom(e.target.value)}
+            maxLength={40}
+            required
+          />
+          {lesson.seriesId && (
+            <SelectField
+              label="Appliquer à"
+              options={[
+                { value: "one", label: "Ce cours seulement" },
+                { value: "following", label: "Ce cours et les suivants" },
+              ]}
+              value={scope}
+              onValueChange={(v) => setScope(v as "one" | "following")}
+            />
+          )}
+          {(scope === "one" || !lesson.seriesId) && (
+            <TextField
+              label="Date"
+              type="date"
+              value={day}
+              onChange={(e) => setDay(e.target.value)}
+              required
+            />
+          )}
+          <div className="grid gap-4 sm:grid-cols-2">
+            <TextField
+              label="Début"
+              type="time"
+              value={starts}
+              onChange={(e) => setStarts(e.target.value)}
+              required
+            />
+            <TextField
+              label="Fin"
+              type="time"
+              value={ends}
+              onChange={(e) => setEnds(e.target.value)}
+              required
+            />
+          </div>
+          {error && (
+            <p role="alert" className="m-0 text-label text-danger">
+              {error}
+            </p>
+          )}
+          <div className="flex flex-wrap justify-between gap-2 border-t border-line-soft pt-4">
+            <div className="flex flex-wrap gap-2">
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={pending}
+                className="h-10 px-3.5 text-label"
+                onClick={() =>
+                  start(async () =>
+                    done(
+                      await setLessonCancelled(lesson.id, !lesson.cancelled),
+                      lesson.cancelled ? "Cours rétabli" : "Cours annulé",
+                    ),
+                  )
+                }
+              >
+                {lesson.cancelled ? "Rétablir" : "Annuler le cours"}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={pending}
+                className="h-10 px-3.5 text-label"
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      `Supprimer ce cours de ${lesson.subject.name} ?`,
+                    )
+                  )
+                    return;
+                  start(async () =>
+                    done(await deleteLesson(lesson.id), "Cours supprimé"),
+                  );
+                }}
+              >
+                Supprimer ce cours
+              </Button>
+              {lesson.seriesId && (
+                <Button
+                  type="button"
+                  variant="secondary"
+                  disabled={pending}
+                  className="h-10 px-3.5 text-label"
+                  onClick={() => {
+                    if (
+                      !window.confirm(
+                        `Supprimer ce cours de ${lesson.subject.name} et tous les suivants de la série ? Les cours déjà appelés restent.`,
+                      )
+                    )
+                      return;
+                    start(async () =>
+                      done(
+                        await deleteLessonSeries(
+                          lesson.seriesId!,
+                          options.dates[lesson.day],
+                        ),
+                        "Cours et suivants supprimés",
+                      ),
+                    );
+                  }}
+                >
+                  Supprimer avec les suivants
+                </Button>
+              )}
+            </div>
+            <Button
+              type="submit"
+              disabled={pending}
+              className="h-10 px-4 text-label"
+            >
+              {pending ? "Enregistrement…" : "Enregistrer"}
+            </Button>
+          </div>
+        </form>
+      ) : (
+        <div className="flex flex-col gap-4">
+          <p className="m-0 text-label text-ink-2">
+            Salle {lesson.room}. Pour changer l&apos;horaire ou la salle,
+            adressez-vous au secrétariat.
+          </p>
+          {error && (
+            <p role="alert" className="m-0 text-label text-danger">
+              {error}
+            </p>
+          )}
+          {lesson.teacherId === options.me && (
+            <div className="flex justify-end">
+              <Button
+                type="button"
+                disabled={pending}
+                className="h-10 px-4 text-label"
+                onClick={() =>
+                  start(async () =>
+                    done(
+                      await setLessonCancelled(lesson.id, !lesson.cancelled),
+                      lesson.cancelled ? "Cours rétabli" : "Cours annulé",
+                    ),
+                  )
+                }
+              >
+                {lesson.cancelled ? "Rétablir le cours" : "Annuler le cours"}
+              </Button>
+            </div>
+          )}
+        </div>
+      )}
+    </Dialog>
   );
 }

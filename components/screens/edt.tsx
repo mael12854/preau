@@ -1,9 +1,13 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import type { LessonView } from "@/lib/data/types";
 import { formatTimeGrid, formatTimeText } from "@/lib/format";
 import { subjectStyle } from "@/lib/subjects";
+import { LessonDialog, type LessonEditOptions } from "./edt-editor";
 
 const HOUR = 3.75; // rem par heure (60 px)
 
@@ -24,13 +28,19 @@ export function EdtScreen({
   lessons,
   showClass,
   nav,
+  edit,
 }: {
+  /** Clic sur un cours : le modifier (secrétariat), l'annuler ou le rétablir (son enseignant). */
+  edit?: LessonEditOptions;
   days: string[];
   todayIndex: number;
   lessons: LessonView[];
   showClass?: boolean;
   nav?: WeekNav;
 }) {
+  const [selected, setSelected] = useState<LessonView | null>(null);
+  const clickable = (l: LessonView) =>
+    !!edit && (edit.mode === "manage" || l.teacherId === edit.me);
   const weekend = lessons.some((l) => l.day >= 5);
   const WEEK_DAYS = days.slice(0, weekend ? 7 : 5);
   const TODAY_INDEX = todayIndex < WEEK_DAYS.length ? todayIndex : -1;
@@ -144,6 +154,14 @@ export function EdtScreen({
                             height: `calc(${(l.end - l.start) * HOUR}rem - 4px)`,
                           }}
                         >
+                          {clickable(l) && (
+                            <button
+                              type="button"
+                              onClick={() => setSelected(l)}
+                              aria-label={`${s.name}, ${formatTimeText(l.start)} – ${formatTimeText(l.end)}${l.cancelled ? ", annulé" : ""} : ouvrir le cours`}
+                              className="absolute inset-0 z-10 cursor-pointer rounded-[8px] hover:bg-ink/5"
+                            />
+                          )}
                           <span className="sr-only">
                             {formatTimeText(l.start)} – {formatTimeText(l.end)}{" "}
                             :
@@ -175,6 +193,14 @@ export function EdtScreen({
           </div>
         </div>
       </div>
+      {selected && edit && (
+        <LessonDialog
+          key={selected.id}
+          lesson={selected}
+          options={edit}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </div>
   );
 }

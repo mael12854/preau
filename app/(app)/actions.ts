@@ -641,6 +641,46 @@ export async function createLessonSeries(
   return { ok: true, count: data ?? 0 };
 }
 
+export type LessonEdit = {
+  subjectId: string;
+  teacherId: string;
+  room: string;
+  day: string;
+  starts: string;
+  ends: string;
+  /** Ce cours seulement, ou ce cours et les suivants de la série. */
+  scope: "one" | "following";
+};
+
+/** Emploi du temps : modifier un cours (secrétariat). */
+export async function updateLesson(
+  lessonId: string,
+  e: LessonEdit,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("update_lesson", {
+        p_lesson: lessonId,
+        p_subject: e.subjectId,
+        p_teacher: e.teacherId,
+        p_room: e.room,
+        p_day: e.day,
+        p_starts: e.starts,
+        p_ends: e.ends,
+        p_scope: e.scope,
+      }),
+    ["/emploi-du-temps", "/accueil"],
+  );
+}
+
+/** Emploi du temps : supprimer un cours (secrétariat ; refusé si l'appel est fait). */
+export async function deleteLesson(lessonId: string): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("delete_lesson", { p_lesson: lessonId }),
+    ["/emploi-du-temps", "/accueil"],
+  );
+}
+
 /** Annuler ou rétablir un cours (son enseignant, l'administration). */
 export async function setLessonCancelled(
   lessonId: string,

@@ -140,6 +140,36 @@ export default async function EdtPage({
           lessons={week.lessons}
           showClass={!profile.student}
           nav={nav}
+          edit={
+            manage
+              ? {
+                  mode: "manage",
+                  me: profile.profileId,
+                  subjects: (subjects ?? []).map((s) => ({
+                    id: s.id,
+                    name: s.name,
+                  })),
+                  teachers: (teachers ?? []).map((t) => ({
+                    id: t.id,
+                    name: t.display_name,
+                  })),
+                  titular:
+                    klass?.level === "primaire"
+                      ? (klass.profiles?.display_name ?? "")
+                      : null,
+                  dates,
+                }
+              : !profile.student && !admin
+                ? {
+                    mode: "teacher",
+                    me: profile.profileId,
+                    subjects: [],
+                    teachers: [],
+                    titular: null,
+                    dates,
+                  }
+                : undefined
+          }
         />
         {week.lessons.length === 0 && (
           <p className="m-0 text-ui text-ink-2">

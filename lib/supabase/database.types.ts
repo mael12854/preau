@@ -1355,6 +1355,7 @@ export type Database = {
       }
       delete_report_card: { Args: { p_report_card: string }; Returns: undefined }
       delete_report_cards: { Args: { p_class: string; p_term: number }; Returns: number }
+      delete_lesson: { Args: { p_lesson: string }; Returns: undefined }
       delete_lesson_series: { Args: { p_from: string; p_series: string }; Returns: number }
       delete_agenda_event: { Args: { p_event: string }; Returns: undefined }
       delete_document: { Args: { p_document: string }; Returns: string }
@@ -1446,6 +1447,19 @@ export type Database = {
           p_student: string
         }
         Returns: string
+      }
+      update_lesson: {
+        Args: {
+          p_day: string
+          p_ends: string
+          p_lesson: string
+          p_room: string
+          p_scope: string
+          p_starts: string
+          p_subject: string
+          p_teacher: string
+        }
+        Returns: number
       }
       update_person_email: {
         Args: { p_email: string; p_profile: string }
