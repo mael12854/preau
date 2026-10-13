@@ -15,6 +15,21 @@ import type { LessonView } from "@/lib/data/types";
 import { formatTimeGrid } from "@/lib/format";
 
 type Option = { id: string; name: string };
+type Recurrence = "weekly" | "week_a" | "week_b" | "monthly" | "daily";
+const RECURRENCES: { value: Recurrence; label: string }[] = [
+  { value: "weekly", label: "Chaque semaine, ce jour-là" },
+  { value: "week_a", label: "Semaine A seulement" },
+  { value: "week_b", label: "Semaine B seulement" },
+  { value: "monthly", label: "Tous les mois" },
+  { value: "daily", label: "Tous les jours" },
+];
+const NTH = [
+  { value: "1", label: "Le 1er" },
+  { value: "2", label: "Le 2e" },
+  { value: "3", label: "Le 3e" },
+  { value: "4", label: "Le 4e" },
+  { value: "5", label: "Le dernier" },
+];
 const WEEKDAYS = [
   "Lundi",
   "Mardi",
@@ -51,6 +66,8 @@ export function AddLessonSeries({
   const [teacherId, setTeacherId] = useState(teachers[0]?.id ?? "");
   const [room, setRoom] = useState("");
   const [weekday, setWeekday] = useState("1");
+  const [recurrence, setRecurrence] = useState<Recurrence>("weekly");
+  const [nth, setNth] = useState("1");
   const [starts, setStarts] = useState("09:00");
   const [ends, setEnds] = useState("10:00");
   const [from, setFrom] = useState(defaultFrom);
@@ -87,6 +104,8 @@ export function AddLessonSeries({
         teacherId,
         room: room.trim(),
         weekday: Number(weekday),
+        recurrence,
+        nth: recurrence === "monthly" ? Number(nth) : null,
         starts,
         ends,
         from,
@@ -108,7 +127,7 @@ export function AddLessonSeries({
       open={open}
       onOpenChange={setOpen}
       title={`Ajouter un cours · ${className}`}
-      description="Le cours est créé chaque semaine sur la période, sauf pendant les vacances indiquées dans l'agenda."
+      description="Le cours est créé sur toute la période selon la récurrence choisie, sauf pendant les vacances indiquées dans l'agenda."
       trigger={
         <Button icon="add" className="h-10 px-4 text-label">
           Ajouter un cours
@@ -148,11 +167,36 @@ export function AddLessonSeries({
           required
         />
         <SelectField
-          label="Jour"
-          options={WEEKDAYS.map((d, i) => ({ value: String(i + 1), label: d }))}
-          value={weekday}
-          onValueChange={setWeekday}
+          label="Récurrence"
+          options={RECURRENCES}
+          value={recurrence}
+          onValueChange={(v) => setRecurrence(v as Recurrence)}
         />
+        {recurrence !== "daily" && (
+          <div
+            className={
+              recurrence === "monthly" ? "grid gap-4 sm:grid-cols-2" : undefined
+            }
+          >
+            {recurrence === "monthly" && (
+              <SelectField
+                label="Quel jour du mois"
+                options={NTH}
+                value={nth}
+                onValueChange={setNth}
+              />
+            )}
+            <SelectField
+              label="Jour"
+              options={WEEKDAYS.map((d, i) => ({
+                value: String(i + 1),
+                label: d,
+              }))}
+              value={weekday}
+              onValueChange={setWeekday}
+            />
+          </div>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <TextField
             label="Début"

@@ -1169,6 +1169,7 @@ export type Database = {
       }
       schools: {
         Row: {
+          week_a_monday: string
           domain: string
           grading: Database["public"]["Enums"]["grading_mode"]
           id: string
@@ -1176,6 +1177,7 @@ export type Database = {
           year_label: string
         }
         Insert: {
+          week_a_monday?: string
           domain: string
           grading?: Database["public"]["Enums"]["grading_mode"]
           id?: string
@@ -1183,6 +1185,7 @@ export type Database = {
           year_label: string
         }
         Update: {
+          week_a_monday?: string
           domain?: string
           grading?: Database["public"]["Enums"]["grading_mode"]
           id?: string
@@ -1305,6 +1308,22 @@ export type Database = {
         }
         Returns: { id: string; storage_path: string }[]
       }
+      create_lessons: {
+        Args: {
+          p_class: string
+          p_ends: string
+          p_from: string
+          p_nth: number
+          p_recurrence: string
+          p_room: string
+          p_starts: string
+          p_subject: string
+          p_teacher: string
+          p_until: string
+          p_weekday: number
+        }
+        Returns: number
+      }
       create_lesson_series: {
         Args: {
           p_class: string
@@ -1334,6 +1353,8 @@ export type Database = {
         Args: { p_class: string; p_publish_on: string; p_term: number }
         Returns: number
       }
+      delete_report_card: { Args: { p_report_card: string }; Returns: undefined }
+      delete_report_cards: { Args: { p_class: string; p_term: number }; Returns: number }
       delete_lesson_series: { Args: { p_from: string; p_series: string }; Returns: number }
       delete_agenda_event: { Args: { p_event: string }; Returns: undefined }
       delete_document: { Args: { p_document: string }; Returns: string }

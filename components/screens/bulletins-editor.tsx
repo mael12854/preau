@@ -3,6 +3,8 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
+  deleteReportCard,
+  deleteReportCards,
   prepareReportCards,
   saveReportCouncil,
   saveReportLine,
@@ -171,7 +173,34 @@ function StudentReport({
               />
             </fieldset>
           )}
-          <div className="flex justify-end">
+          <div className="flex flex-wrap justify-end gap-2">
+            {view.canPrepare && (
+              <Button
+                type="button"
+                variant="secondary"
+                disabled={pending}
+                className="h-10 px-4 text-label"
+                onClick={() => {
+                  if (
+                    !window.confirm(
+                      `Supprimer le bulletin de ${student.name} ? Ses appréciations et l'avis du conseil seront perdus.`,
+                    )
+                  )
+                    return;
+                  start(async () => {
+                    const r = await deleteReportCard(card);
+                    toast({
+                      title: r.ok
+                        ? `Bulletin de ${student.name} supprimé`
+                        : r.error,
+                    });
+                    if (r.ok) router.refresh();
+                  });
+                }}
+              >
+                Supprimer le bulletin
+              </Button>
+            )}
             <Button
               type="submit"
               disabled={pending}
@@ -275,6 +304,31 @@ export function BulletinsEditor({
           >
             {missing ? "Préparer les bulletins" : "Changer la date"}
           </Button>
+          {missing < view.students.length && (
+            <Button
+              type="button"
+              variant="secondary"
+              disabled={pending}
+              className="h-12 px-4 text-label"
+              onClick={() => {
+                if (
+                  !window.confirm(
+                    "Supprimer tous les bulletins de cette classe pour ce trimestre ? Les appréciations et les avis du conseil seront perdus.",
+                  )
+                )
+                  return;
+                start(async () => {
+                  const r = await deleteReportCards(view.classId!, view.term);
+                  toast({
+                    title: r.ok ? "Bulletins de la classe supprimés" : r.error,
+                  });
+                  if (r.ok) router.refresh();
+                });
+              }}
+            >
+              Supprimer les bulletins
+            </Button>
+          )}
         </form>
       )}
 

@@ -354,6 +354,26 @@ export async function saveReportLine(
   );
 }
 
+/** Bulletins : supprimer celui d'un élève, ou ceux d'une classe pour un trimestre (direction, secrétariat). */
+export async function deleteReportCard(
+  reportCardId: string,
+): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("delete_report_card", { p_report_card: reportCardId }),
+    ["/bulletins"],
+  );
+}
+
+export async function deleteReportCards(
+  classId: string,
+  term: number,
+): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("delete_report_cards", { p_class: classId, p_term: term }),
+    ["/bulletins"],
+  );
+}
+
 /** Bulletins : avis du conseil de classe (direction). */
 export async function saveReportCouncil(
   reportCardId: string,
@@ -584,14 +604,18 @@ export type LessonSeriesInput = {
   ends: string;
   from: string;
   until: string;
+  /** Chaque semaine, semaine A, semaine B, tous les mois (n-ième jour), tous les jours. */
+  recurrence: "weekly" | "week_a" | "week_b" | "monthly" | "daily";
+  /** Tous les mois : 1 à 4, ou 5 pour le dernier. */
+  nth: number | null;
 };
 
-/** Emploi du temps : créer un cours chaque semaine sur une période (direction, secrétariat). */
+/** Emploi du temps : créer une série de cours sur une période (secrétariat). */
 export async function createLessonSeries(
   i: LessonSeriesInput,
 ): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("create_lesson_series", {
+  const { data, error } = await supabase.rpc("create_lessons", {
     p_class: i.classId,
     p_subject: i.subjectId,
     p_teacher: i.teacherId,
@@ -601,6 +625,8 @@ export async function createLessonSeries(
     p_ends: i.ends,
     p_from: i.from,
     p_until: i.until,
+    p_recurrence: i.recurrence,
+    p_nth: i.nth as number,
   });
   if (error)
     return {

@@ -15,6 +15,15 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Emploi du temps" };
 
+/** Semaine A ou B : A, B, A, B… à partir de la semaine A de référence de l'établissement (un lundi). */
+function weekAB(monday: string, reference: string) {
+  const weeks = Math.round(
+    (Date.parse(`${monday}T12:00:00Z`) - Date.parse(`${reference}T12:00:00Z`)) /
+      (7 * 86_400_000),
+  );
+  return Math.abs(weeks) % 2 === 0 ? "A" : "B";
+}
+
 /** Fin de l'année scolaire en cours (début juillet). */
 function endOfSchoolYear(today: string) {
   const year = Number(today.slice(0, 4));
@@ -47,13 +56,16 @@ export default async function EdtPage({
     : admin
       ? { classId: classId ?? "" }
       : { teacherId: profile.profileId };
-  const week = await getWeekLessons(supabase, scope, reference, weekOf);
+  const [week, { data: school }] = await Promise.all([
+    getWeekLessons(supabase, scope, reference, weekOf),
+    supabase.from("schools").select("week_a_monday").limit(1).maybeSingle(),
+  ]);
 
   const href = (day: string) =>
     `/emploi-du-temps?semaine=${day}${classId ? `&classe=${classId}` : ""}`;
   const monday = week.monday;
   const nav = {
-    label: `Semaine du ${formatDateShort(monday)}`,
+    label: `Semaine du ${formatDateShort(monday)}${school ? ` · semaine ${weekAB(monday, school.week_a_monday)}` : ""}`,
     prev: href(addDays(monday, -7)),
     next: href(addDays(monday, 7)),
     current: href(mondayOf(isoDay(reference))),
