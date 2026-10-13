@@ -70,8 +70,9 @@ export function AddLessonSeries({
   const [nth, setNth] = useState("1");
   const [starts, setStarts] = useState("09:00");
   const [ends, setEnds] = useState("10:00");
-  const [from, setFrom] = useState(defaultFrom);
-  const [until, setUntil] = useState(defaultUntil);
+  // Période : d'aujourd'hui à la fin de l'année scolaire.
+  const from = defaultFrom;
+  const until = defaultUntil;
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -94,8 +95,6 @@ export function AddLessonSeries({
     if (!room.trim()) return setError("Indiquez une salle.");
     if (ends <= starts)
       return setError("L'heure de fin doit suivre l'heure de début.");
-    if (until < from)
-      return setError("La fin de la période précède son début.");
     setError(null);
     start(async () => {
       const r = await createLessonSeries({
@@ -127,7 +126,7 @@ export function AddLessonSeries({
       open={open}
       onOpenChange={setOpen}
       title={`Ajouter un cours · ${className}`}
-      description="Le cours est créé sur toute la période selon la récurrence choisie, sauf pendant les vacances indiquées dans l'agenda."
+      description="Le cours est créé d'aujourd'hui à la fin de l'année scolaire, selon la récurrence choisie, sauf pendant les vacances indiquées dans l'agenda."
       trigger={
         <Button icon="add" className="h-10 px-4 text-label">
           Ajouter un cours
@@ -210,23 +209,6 @@ export function AddLessonSeries({
             type="time"
             value={ends}
             onChange={(e) => setEnds(e.target.value)}
-            required
-          />
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <TextField
-            label="À partir du"
-            type="date"
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
-            required
-          />
-          <TextField
-            label="Jusqu'au"
-            type="date"
-            value={until}
-            min={from}
-            onChange={(e) => setUntil(e.target.value)}
             required
           />
         </div>
