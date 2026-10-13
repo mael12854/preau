@@ -388,12 +388,49 @@ export type CreatedPerson =
   | { ok: true; password: string | null }
   | { ok: false; error: string };
 
-/** Mot de passe provisoire lisible : 4 groupes de 4 caractères sans ambiguïté (pas de 0/O, 1/l). */
+/** Mot de passe provisoire lisible : 4 groupes de 4 majuscules et chiffres, sans caractère ambigu (0/O, 1/I). */
 function temporaryPassword(): string {
-  const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
   const bytes = crypto.getRandomValues(new Uint8Array(16));
   const chars = [...bytes].map((b) => alphabet[b % alphabet.length]).join("");
   return chars.match(/.{4}/g)!.join("-");
+}
+
+export type ResetResult =
+  | { ok: true; password: string }
+  | { ok: false; error: string };
+
+/** Annuaire : nouveau mot de passe provisoire pour une personne de l'établissement (secrétariat, direction). */
+export async function resetPassword(profileId: string): Promise<ResetResult> {
+  const supabase = await createClient();
+  const { data: userId, error } = await supabase.rpc("manageable_person", {
+    p_profile: profileId,
+  });
+  if (error)
+    return {
+      ok: false,
+      error:
+        /^[A-ZÉÈ]/.test(error.message) && !/permission/i.test(error.message)
+          ? error.message
+          : FAILED,
+    };
+  if (!userId)
+    return {
+      ok: false,
+      error: "Cette personne n'a pas de compte de connexion.",
+    };
+  const admin = createAdminClient();
+  if (!admin)
+    return {
+      ok: false,
+      error: "La gestion des comptes n'est pas configurée sur le serveur.",
+    };
+  const password = temporaryPassword();
+  const { error: e } = await admin.auth.admin.updateUserById(userId, {
+    password,
+  });
+  if (e) return { ok: false, error: FAILED };
+  return { ok: true, password };
 }
 
 /**

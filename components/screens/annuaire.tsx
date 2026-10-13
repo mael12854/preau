@@ -2,7 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { updatePersonEmail, updatePersonName } from "@/app/(app)/actions";
+import {
+  resetPassword,
+  updatePersonEmail,
+  updatePersonName,
+} from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
@@ -30,6 +34,66 @@ const fold = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 
 /** Modifier le nom et l'adresse e-mail d'une personne. */
+/** Nouveau mot de passe provisoire, affiché une seule fois. */
+function ResetPassword({ person }: { person: PersonView }) {
+  const [password, setPassword] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  return (
+    <div className="flex flex-col gap-2 border-t border-line-soft pt-4">
+      {password ? (
+        <div
+          role="status"
+          className="flex flex-col gap-1 rounded-control bg-bg p-3.5 text-label"
+        >
+          <span>
+            Identifiant : <b>{person.email}</b>
+          </span>
+          <span>
+            Nouveau mot de passe provisoire :{" "}
+            <b className="tabular select-all">{password}</b>
+          </span>
+          <span className="text-caption text-ink-muted">
+            Il ne sera plus affiché : notez-le et transmettez-le à la personne.
+          </span>
+        </div>
+      ) : (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <span className="text-label text-ink-2">
+            Mot de passe oublié ou mal saisi ?
+          </span>
+          <Button
+            type="button"
+            variant="secondary"
+            disabled={pending}
+            className="h-10 px-3.5 text-label"
+            onClick={() => {
+              if (
+                !window.confirm(
+                  `Donner un nouveau mot de passe provisoire à ${person.displayName} ? L'ancien ne fonctionnera plus.`,
+                )
+              )
+                return;
+              start(async () => {
+                const r = await resetPassword(person.id);
+                if (r.ok) setPassword(r.password);
+                else setError(r.error);
+              });
+            }}
+          >
+            Réinitialiser le mot de passe
+          </Button>
+        </div>
+      )}
+      {error && (
+        <p role="alert" className="m-0 text-label text-danger">
+          {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 type Context = {
   people: PersonView[];
   classes: ClassOption[];
@@ -150,6 +214,7 @@ function EditPerson({
           </Button>
         </div>
       </form>
+      {person.hasAccount && <ResetPassword person={person} />}
       <PersonLinks person={person} {...context} />
     </Dialog>
   );
