@@ -922,6 +922,7 @@ export type Database = {
         Row: {
           body: string
           id: string
+          notified_at: string | null
           reply_to: string | null
           school_id: string
           sender_id: string
@@ -931,6 +932,7 @@ export type Database = {
         Insert: {
           body: string
           id?: string
+          notified_at?: string | null
           reply_to?: string | null
           school_id: string
           sender_id: string
@@ -940,6 +942,7 @@ export type Database = {
         Update: {
           body?: string
           id?: string
+          notified_at?: string | null
           reply_to?: string | null
           school_id?: string
           sender_id?: string
@@ -1388,6 +1391,18 @@ export type Database = {
           p_title: string
         }
         Returns: { id: string; storage_path: string }[]
+      }
+      claim_message_notification: {
+        Args: { p_message: string }
+        Returns: boolean
+      }
+      claim_due_notifications: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      schedule_message: {
+        Args: { p_body: string; p_recipients: string[]; p_send_at: string; p_subject: string }
+        Returns: string
       }
       message_email_targets: {
         Args: { p_message: string }

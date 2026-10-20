@@ -12,6 +12,15 @@ const escape = (s: string) =>
  * Les destinataires qui ont coupé les notifications « messages » (Mon compte) ne reçoivent rien.
  */
 export async function notifyNewMessage(messageId: string) {
+  const admin = createAdminClient();
+  if (!admin) return;
+  // Une seule notification par message (envoi immédiat ou programmé), et pas avant sa date d'envoi.
+  const { data: claimed } = await admin.rpc("claim_message_notification", { p_message: messageId });
+  if (claimed) await sendMessageEmails(messageId);
+}
+
+/** Envoie les e-mails d'un message déjà réservé (claim_message_notification ou claim_due_notifications). */
+export async function sendMessageEmails(messageId: string) {
   const key = process.env.BREVO_API_KEY;
   const from = process.env.PREAU_MAIL_FROM;
   const admin = createAdminClient();

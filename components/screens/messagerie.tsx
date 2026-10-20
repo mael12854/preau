@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
-import { markRead, sendMessage } from "@/app/(app)/actions";
+import { markRead, scheduleMessage, sendMessage } from "@/app/(app)/actions";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/choice";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
@@ -25,6 +26,9 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
   // Plusieurs destinataires : chacun ajouté depuis la liste, retirable.
   const [to, setTo] = useState<string[]>([]);
   const [picker, setPicker] = useState(0);
+  // Envoi programmé : date et heure locales (heure de Paris), converties en ISO à l'envoi.
+  const [later, setLater] = useState(false);
+  const [at, setAt] = useState("");
   const [error, setError] = useState<string>();
   const labelOf = (id: string) => recipients.find((r) => r.value === id)?.label ?? id;
   const [pending, start] = useTransition();
@@ -34,7 +38,11 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
       onOpenChange={(o) => {
         setOpen(o);
         setError(undefined);
-        if (!o) setTo([]);
+        if (!o) {
+          setTo([]);
+          setLater(false);
+          setAt("");
+        }
       }}
       title="Nouveau message"
       trigger={
@@ -49,11 +57,24 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
           e.preventDefault();
           const f = new FormData(e.currentTarget);
           if (!to.length) return setError("Choisissez au moins un destinataire.");
+          const when = later && at ? new Date(at) : null;
+          if (later && (!when || when.getTime() < Date.now() + 60_000))
+            return setError("Choisissez une date et une heure à venir.");
           start(async () => {
-            const r = await sendMessage(to, String(f.get("objet")), String(f.get("texte")));
+            const subject = String(f.get("objet"));
+            const text = String(f.get("texte"));
+            const r = when
+              ? await scheduleMessage(to, subject, text, when.toISOString())
+              : await sendMessage(to, subject, text);
             if (!r.ok) return setError(r.error);
             setOpen(false);
-            toast({ title: to.length > 1 ? `Message envoyé à ${to.length} destinataires` : "Message envoyé" });
+            toast({
+              title: when
+                ? `Envoi programmé le ${when.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} à ${when.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
+                : to.length > 1
+                  ? `Message envoyé à ${to.length} destinataires`
+                  : "Message envoyé",
+            });
             setTo([]);
           });
         }}
@@ -89,13 +110,27 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
         </div>
         <TextField label="Objet" name="objet" required maxLength={200} />
         <TextAreaField label="Message" name="texte" required rows={6} />
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-label">
+          <Checkbox checked={later} onCheckedChange={setLater} />
+          Programmer l&apos;envoi
+        </label>
+        {later && (
+          <TextField
+            label="Envoyer le"
+            type="datetime-local"
+            value={at}
+            onChange={(e) => setAt(e.target.value)}
+            hint="Les destinataires recevront le message, et l'e-mail de notification, à cette date."
+            required
+          />
+        )}
         {error && <p role="alert" className="m-0 text-label text-danger">{error}</p>}
         <div className="flex justify-end gap-2.5">
           <Button variant="secondary" onClick={() => setOpen(false)}>
             Annuler
           </Button>
           <Button type="submit" icon="send" disabled={pending}>
-            {pending ? "Envoi…" : "Envoyer"}
+            {pending ? "Envoi…" : later ? "Programmer" : "Envoyer"}
           </Button>
         </div>
       </form>

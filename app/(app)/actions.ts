@@ -914,6 +914,31 @@ export async function sendMessage(
   return r;
 }
 
+/** Messagerie : programmer un message (date d'envoi à venir, ISO). La notification part à cette date. */
+export async function scheduleMessage(
+  recipients: string[],
+  subject: string,
+  body: string,
+  sendAt: string,
+): Promise<ActionResult> {
+  if (!body.trim())
+    return { ok: false, error: "Écrivez votre message avant de l'envoyer." };
+  if (!subject.trim()) return { ok: false, error: "Indiquez un objet." };
+  if (!recipients.length) return { ok: false, error: "Choisissez au moins un destinataire." };
+  if (Number.isNaN(Date.parse(sendAt)))
+    return { ok: false, error: "Choisissez une date et une heure d'envoi." };
+  return run(
+    (s) =>
+      s.rpc("schedule_message", {
+        p_recipients: [...new Set(recipients)],
+        p_subject: subject,
+        p_body: body,
+        p_send_at: sendAt,
+      }),
+    ["/messagerie"],
+  );
+}
+
 export async function markRead(messageId: string): Promise<ActionResult> {
   const viewer = await getViewer();
   if (!viewer) return { ok: false, error: FAILED };

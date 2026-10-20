@@ -1,7 +1,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-const PUBLIC_PATHS = ["/connexion", "/design-system", "/compte-non-rattache"];
+// /api/notifications : appelé chaque minute par la base (pg_cron) ; n'envoie que les notifications dues.
+const PUBLIC_PATHS = ["/connexion", "/design-system", "/compte-non-rattache", "/api/notifications"];
 
 /** Rafraîchit la session Supabase et protège les écrans de l'application. */
 export async function proxy(request: NextRequest) {

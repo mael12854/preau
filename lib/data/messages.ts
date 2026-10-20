@@ -1,5 +1,5 @@
 import "server-only";
-import { formatRelative } from "@/lib/format";
+import { formatDateShort, formatRelative, formatTimeText } from "@/lib/format";
 import type { SupabaseServer } from "@/lib/supabase/server";
 import type { MessageView } from "./types";
 
@@ -35,7 +35,11 @@ export async function getMessages(
         subject: m.subject,
         body: m.body,
         unread: false,
-        date: formatRelative(m.sent_at, reference),
+        // Envoi programmé : pas encore visible des destinataires.
+        date:
+          new Date(m.sent_at) > reference
+            ? `Programmé · ${formatDateShort(m.sent_at)} à ${formatTimeText(m.sent_at)}`
+            : formatRelative(m.sent_at, reference),
       };
     });
   }
