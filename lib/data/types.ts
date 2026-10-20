@@ -20,6 +20,9 @@ export type LessonView = {
   /** Série hebdomadaire d'origine (nul : cours ponctuel). */
   seriesId: string | null;
   teacherId: string;
+  /** Demi-groupe ou option (G1, Espagnol…) ; nul : classe entière. */
+  groupId: string | null;
+  group: string | null;
 };
 
 export type HomeworkView = {

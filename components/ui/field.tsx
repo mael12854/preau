@@ -16,12 +16,14 @@ type FieldShellProps = {
   error?: ReactNode;
   children: ReactNode;
   className?: string;
+  /** Libellé lu par les lecteurs d'écran seulement (tableaux de saisie). */
+  hideLabel?: boolean;
 };
 
-function FieldShell({ id, label, hint, error, children, className }: FieldShellProps) {
+function FieldShell({ id, label, hint, error, children, className, hideLabel }: FieldShellProps) {
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
-      <label htmlFor={id} className="text-label font-bold">
+      <label htmlFor={id} className={hideLabel ? "sr-only" : "text-label font-bold"}>
         {label}
       </label>
       {children}
@@ -80,14 +82,16 @@ type SelectFieldProps = {
   error?: ReactNode;
   id?: string;
   className?: string;
+  hideLabel?: boolean;
+  disabled?: boolean;
 };
 
 /** Liste déroulante accessible (Radix Select), même gabarit que le champ texte. */
-export function SelectField({ label, placeholder, options, hint, error, id, className, ...rest }: SelectFieldProps) {
+export function SelectField({ label, placeholder, options, hint, error, id, className, hideLabel, ...rest }: SelectFieldProps) {
   const auto = useId();
   const fid = id ?? auto;
   return (
-    <FieldShell id={fid} label={label} hint={hint} error={error} className={className}>
+    <FieldShell id={fid} label={label} hint={hint} error={error} className={className} hideLabel={hideLabel}>
       <RSelect.Root {...rest}>
         <RSelect.Trigger
           id={fid}

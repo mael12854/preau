@@ -20,8 +20,10 @@ type Lesson = {
   cancelled: boolean;
   attendance_validated_at: string | null;
   class_id: string;
+  group_id: string | null;
   classes: { name: string } | null;
   subjects: { name: string } | null;
+  class_groups: { name: string } | null;
 };
 
 async function todayLessons(
@@ -33,7 +35,7 @@ async function todayLessons(
   const { data } = await supabase
     .from("lessons")
     .select(
-      "id, starts_at, ends_at, room, cancelled, attendance_validated_at, class_id, classes(name), subjects(name)",
+      "id, starts_at, ends_at, room, cancelled, attendance_validated_at, class_id, group_id, classes(name), subjects(name), class_groups(name)",
     )
     .eq("teacher_id", teacherId)
     .gte(
@@ -196,9 +198,20 @@ export async function getAppel(
     null;
 
   let students: StudentRow[] = [];
+  let classRoster: StudentRow[] = [];
   const attendance: AppelData["attendance"] = {};
   if (current) {
-    students = await roster(supabase, current.class_id);
+    classRoster = await roster(supabase, current.class_id);
+    students = classRoster;
+    // Cours de groupe (demi-groupe, LV2, option) : seuls les élèves du groupe sont appelés.
+    if (current.group_id) {
+      const { data: members } = await supabase
+        .from("student_class_groups")
+        .select("student_id")
+        .eq("group_id", current.group_id);
+      const ids = new Set((members ?? []).map((m) => m.student_id));
+      students = students.filter((s) => ids.has(s.id));
+    }
     const { data } = await supabase
       .from("attendance")
       .select("student_id, status")
@@ -222,7 +235,7 @@ export async function getAppel(
   if (a) {
     evalStudents =
       a.class_id === current?.class_id
-        ? students
+        ? classRoster
         : await roster(supabase, a.class_id);
     const grid: Record<string, EvalValue[]> = {};
     evalStudents.forEach((s) => (grid[s.id] = a.skills.map(() => "NE")));
@@ -252,7 +265,7 @@ export async function getAppel(
   return {
     lesson: current && {
       id: current.id,
-      label: `${current.classes?.name} · ${current.subjects?.name}`,
+      label: `${current.classes?.name}${current.class_groups ? ` (${current.class_groups.name})` : ""} · ${current.subjects?.name}`,
       detail: `${formatDateShort(current.starts_at)} · ${formatTimeText(current.starts_at)} – ${formatTimeText(current.ends_at)} · Salle ${current.room}`,
       validated: !!current.attendance_validated_at,
     },

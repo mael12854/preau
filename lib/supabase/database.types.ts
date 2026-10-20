@@ -243,6 +243,48 @@ export type Database = {
           },
         ]
       }
+      class_groups: {
+        Row: { class_id: string; family: string; id: string; name: string }
+        Insert: { class_id: string; family?: string; id?: string; name: string }
+        Update: { class_id?: string; family?: string; id?: string; name?: string }
+        Relationships: [
+          {
+            foreignKeyName: "class_groups_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      student_class_groups: {
+        Row: { class_id: string; family: string; group_id: string | null; student_id: string }
+        Insert: { class_id: string; family?: string; group_id?: string | null; student_id: string }
+        Update: { class_id?: string; family?: string; group_id?: string | null; student_id?: string }
+        Relationships: [
+          {
+            foreignKeyName: "student_class_groups_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "class_groups"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_class_groups_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_class_groups_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["profile_id"]
+          },
+        ]
+      }
       class_members: {
         Row: {
           added_at: string
@@ -582,6 +624,7 @@ export type Database = {
       lessons: {
         Row: {
           created_by: string | null
+          group_id: string | null
           series_id: string | null
           attendance_validated_at: string | null
           cancelled: boolean
@@ -595,6 +638,7 @@ export type Database = {
         }
         Insert: {
           created_by?: string | null
+          group_id?: string | null
           series_id?: string | null
           attendance_validated_at?: string | null
           cancelled?: boolean
@@ -608,6 +652,7 @@ export type Database = {
         }
         Update: {
           created_by?: string | null
+          group_id?: string | null
           series_id?: string | null
           attendance_validated_at?: string | null
           cancelled?: boolean
@@ -620,6 +665,13 @@ export type Database = {
           teacher_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "lessons_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "class_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lessons_class_id_fkey"
             columns: ["class_id"]
@@ -1333,6 +1385,35 @@ export type Database = {
           p_title: string
         }
         Returns: { id: string; storage_path: string }[]
+      }
+      create_class_groups: {
+        Args: { p_class: string; p_family: string; p_names: string[] }
+        Returns: number
+      }
+      set_student_group: {
+        Args: { p_class: string; p_family: string; p_group: string | null; p_student: string }
+        Returns: undefined
+      }
+      set_lesson_group: {
+        Args: { p_group: string | null; p_lesson: string; p_scope: string }
+        Returns: number
+      }
+      create_lesson_set: {
+        Args: {
+          p_class: string
+          p_ends: string
+          p_from: string
+          p_group: string | null
+          p_nth: number | null
+          p_recurrence: string
+          p_room: string
+          p_starts: string
+          p_subject: string
+          p_teacher: string
+          p_until: string
+          p_weekday: number
+        }
+        Returns: number
       }
       create_lessons: {
         Args: {

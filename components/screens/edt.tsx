@@ -11,6 +11,31 @@ import { LessonDialog, type LessonEditOptions } from "./edt-editor";
 
 const HOUR = 3.75; // rem par heure (60 px)
 
+/** Cours simultanés (groupes en parallèle) : colonne et nombre de colonnes de chaque cours. */
+function lanes(lessons: LessonView[]) {
+  const sorted = [...lessons].sort((a, b) => a.start - b.start || a.end - b.end);
+  const out = new Map<string, { lane: number; of: number }>();
+  let cluster: LessonView[] = [];
+  let ends: number[] = [];
+  let clusterEnd = -1;
+  const flush = () => {
+    cluster.forEach((l) => (out.get(l.id)!.of = ends.length));
+    cluster = [];
+    ends = [];
+  };
+  for (const l of sorted) {
+    if (l.start >= clusterEnd) flush();
+    let lane = ends.findIndex((e) => e <= l.start);
+    if (lane < 0) lane = ends.push(l.end) - 1;
+    else ends[lane] = l.end;
+    out.set(l.id, { lane, of: 1 });
+    cluster.push(l);
+    clusterEnd = Math.max(clusterEnd, l.end);
+  }
+  flush();
+  return out;
+}
+
 export type WeekNav = {
   label: string;
   prev: string;
@@ -45,6 +70,7 @@ export function EdtScreen({
   const WEEK_DAYS = days.slice(0, weekend ? 7 : 5);
   const TODAY_INDEX = todayIndex < WEEK_DAYS.length ? todayIndex : -1;
   const TIMETABLE = WEEK_DAYS.map((_, i) => lessons.filter((l) => l.day === i));
+  const LANES = TIMETABLE.map(lanes);
   const DAY_START = Math.min(8, ...lessons.map((l) => Math.floor(l.start)));
   const DAY_END = Math.max(17, ...lessons.map((l) => Math.ceil(l.end)));
   const HOURS = Array.from(
@@ -141,15 +167,18 @@ export function EdtScreen({
                   <ol className="m-0 list-none p-0">
                     {lessons.map((l) => {
                       const s = l.subject;
+                      const pos = LANES[di].get(l.id) ?? { lane: 0, of: 1 };
                       return (
                         <li
                           key={l.id}
                           className={cn(
-                            "subject absolute inset-x-1 flex flex-col gap-px overflow-hidden rounded-[8px] bg-subject-tint px-[0.5625rem] py-1.5",
+                            "subject absolute flex flex-col gap-px overflow-hidden rounded-[8px] bg-subject-tint px-[0.5625rem] py-1.5",
                             l.cancelled && "opacity-60",
                           )}
                           style={{
                             ...subjectStyle(s.hue),
+                            left: `calc(${(pos.lane / pos.of) * 100}% + 4px)`,
+                            width: `calc(${100 / pos.of}% - 8px)`,
                             top: `calc(${(l.start - DAY_START) * HOUR}rem + 2px)`,
                             height: `calc(${(l.end - l.start) * HOUR}rem - 4px)`,
                           }}
@@ -158,7 +187,7 @@ export function EdtScreen({
                             <button
                               type="button"
                               onClick={() => setSelected(l)}
-                              aria-label={`${s.name}, ${formatTimeText(l.start)} – ${formatTimeText(l.end)}${l.cancelled ? ", annulé" : ""} : ouvrir le cours`}
+                              aria-label={`${s.name}${l.group ? ` (${l.group})` : ""}, ${formatTimeText(l.start)} – ${formatTimeText(l.end)}${l.cancelled ? ", annulé" : ""} : ouvrir le cours`}
                               className="absolute inset-0 z-10 cursor-pointer rounded-[8px] hover:bg-ink/5"
                             />
                           )}
@@ -173,6 +202,11 @@ export function EdtScreen({
                             )}
                           >
                             {s.name}
+                            {l.group && (
+                              <span className="ml-1 rounded-[4px] bg-surface px-1 text-xs font-bold text-ink-2">
+                                {l.group}
+                              </span>
+                            )}
                           </b>
                           <span className="text-xs text-ink-2">
                             {showClass && l.className

@@ -4,9 +4,11 @@ import {
   AddLessonSeries,
   WeekLessonList,
 } from "@/components/screens/edt-editor";
+import { ClassGroupsEditor } from "@/components/screens/edt-groups";
 import { SelectLink } from "@/components/screens/select-link";
 import { AppShell } from "@/components/shell/app-shell";
 import { now } from "@/lib/clock";
+import { classStudents } from "@/lib/data/common";
 import { getPublishTargets, isAdminStaff } from "@/lib/data/targets";
 import { getWeekLessons } from "@/lib/data/timetable";
 import { addDays, formatDateShort, isoDay, mondayOf } from "@/lib/format";
@@ -33,12 +35,12 @@ function endOfSchoolYear(today: string) {
 export default async function EdtPage({
   searchParams,
 }: {
-  searchParams: Promise<{ semaine?: string; classe?: string }>;
+  searchParams: Promise<{ semaine?: string; classe?: string; eleve?: string }>;
 }) {
   const profile = await requireModule("edt");
   const supabase = await createClient();
   const reference = now();
-  const { semaine, classe } = await searchParams;
+  const { semaine, classe, eleve } = await searchParams;
   const weekOf = /^\d{4}-\d{2}-\d{2}$/.test(semaine ?? "")
     ? semaine
     : undefined;
@@ -51,10 +53,29 @@ export default async function EdtPage({
   const classId = admin
     ? (classes.find((c) => c.id === classe)?.id ?? classes[0]?.id ?? null)
     : null;
+  // Administration : élèves et groupes de la classe, pour l'EDT nominatif et l'organisation des groupes.
+  const [roster, { data: classGroups }, { data: memberships }] =
+    admin && classId
+      ? await Promise.all([
+          classStudents(supabase, classId),
+          supabase
+            .from("class_groups")
+            .select("id, name, family")
+            .eq("class_id", classId)
+            .order("family")
+            .order("name"),
+          supabase
+            .from("student_class_groups")
+            .select("student_id, family, group_id")
+            .eq("class_id", classId),
+        ])
+      : [[], { data: [] }, { data: [] }];
+  const pupil = roster.find((s) => s.id === eleve) ?? null;
+  // EDT nominatif (élève, famille, ou élève choisi par l'administration) : classe entière + ses groupes.
   const scope = profile.student
-    ? { classId: profile.student.classIds }
+    ? { classId: profile.student.classIds, studentId: profile.student.id }
     : admin
-      ? { classId: classId ?? "" }
+      ? { classId: classId ?? "", studentId: pupil?.id }
       : { teacherId: profile.profileId };
   const [week, { data: school }] = await Promise.all([
     getWeekLessons(supabase, scope, reference, weekOf),
@@ -62,10 +83,10 @@ export default async function EdtPage({
   ]);
 
   const href = (day: string) =>
-    `/emploi-du-temps?semaine=${day}${classId ? `&classe=${classId}` : ""}`;
+    `/emploi-du-temps?semaine=${day}${classId ? `&classe=${classId}` : ""}${pupil ? `&eleve=${pupil.id}` : ""}`;
   const monday = week.monday;
   const nav = {
-    label: `Semaine du ${formatDateShort(monday)}${school ? ` · semaine ${weekAB(monday, school.week_a_monday)}` : ""}`,
+    label: `${pupil ? `${pupil.name} · ` : ""}Semaine du ${formatDateShort(monday)}${school ? ` · semaine ${weekAB(monday, school.week_a_monday)}` : ""}`,
     prev: href(addDays(monday, -7)),
     next: href(addDays(monday, 7)),
     current: href(mondayOf(isoDay(reference))),
@@ -90,6 +111,10 @@ export default async function EdtPage({
       ])
     : [{ data: [] }, { data: [] }, { data: null }];
   const className = classes.find((c) => c.id === classId)?.name ?? "";
+  const groupChoices = (classGroups ?? []).map((g) => ({
+    id: g.id,
+    name: `${g.name} (${g.family})`,
+  }));
 
   return (
     <AppShell profile={profile} module="edt">
@@ -97,15 +122,35 @@ export default async function EdtPage({
         {admin && (
           <div className="flex flex-wrap items-end justify-between gap-3">
             {classes.length ? (
-              <SelectLink
-                label="Classe"
-                value={classId ?? ""}
-                options={classes.map((c) => ({
-                  value: c.id,
-                  label: c.name,
-                  href: `/emploi-du-temps?semaine=${monday}&classe=${c.id}`,
-                }))}
-              />
+              <div className="flex flex-wrap items-end gap-3">
+                <SelectLink
+                  label="Classe"
+                  value={classId ?? ""}
+                  options={classes.map((c) => ({
+                    value: c.id,
+                    label: c.name,
+                    href: `/emploi-du-temps?semaine=${monday}&classe=${c.id}`,
+                  }))}
+                />
+                {roster.length > 0 && (
+                  <SelectLink
+                    label="Emploi du temps"
+                    value={pupil?.id ?? "classe"}
+                    options={[
+                      {
+                        value: "classe",
+                        label: "Général (toute la classe)",
+                        href: `/emploi-du-temps?semaine=${monday}&classe=${classId}`,
+                      },
+                      ...roster.map((s) => ({
+                        value: s.id,
+                        label: s.name,
+                        href: `/emploi-du-temps?semaine=${monday}&classe=${classId}&eleve=${s.id}`,
+                      })),
+                    ]}
+                  />
+                )}
+              </div>
             ) : (
               <p className="m-0 text-ui text-ink-2">
                 Aucune classe dans l&apos;établissement.
@@ -128,6 +173,7 @@ export default async function EdtPage({
                     ? (klass.profiles?.display_name ?? "")
                     : null
                 }
+                groups={groupChoices}
                 defaultFrom={isoDay(reference)}
                 defaultUntil={endOfSchoolYear(isoDay(reference))}
               />
@@ -158,6 +204,7 @@ export default async function EdtPage({
                       ? (klass.profiles?.display_name ?? "")
                       : null,
                   dates,
+                  groups: groupChoices,
                 }
               : !profile.student && !admin
                 ? {
@@ -179,6 +226,22 @@ export default async function EdtPage({
                 ? "Aucun cours cette semaine."
                 : "Aucun cours à votre nom cette semaine."}
           </p>
+        )}
+        {manage && (
+          <ClassGroupsEditor
+            classId={classId}
+            className={className}
+            groups={classGroups ?? []}
+            students={roster.map((s) => ({
+              id: s.id,
+              name: s.name,
+              groups: Object.fromEntries(
+                (memberships ?? [])
+                  .filter((m) => m.student_id === s.id)
+                  .map((m) => [m.family, m.group_id]),
+              ),
+            }))}
+          />
         )}
         {!profile.student && (
           <WeekLessonList

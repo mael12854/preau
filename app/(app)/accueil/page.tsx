@@ -37,7 +37,7 @@ export default async function DashboardPage() {
   const student = profile.student;
   const primary = profile.scale === "primaire";
   const [today, homework, done, lastEvaluations, life, messages, liaison] = await Promise.all([
-    student ? getTodayLessons(supabase, { classId: student.classIds }, reference) : [],
+    student ? getTodayLessons(supabase, { classId: student.classIds, studentId: student.id }, reference) : [],
     student ? getUpcomingHomework(supabase, { classId: student.classIds }, reference) : [],
     getDoneHomework(supabase, profile.userId),
     student ? getLastEvaluations(supabase, student.id) : [],

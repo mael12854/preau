@@ -7,6 +7,7 @@ import {
   deleteLesson,
   deleteLessonSeries,
   setLessonCancelled,
+  setLessonGroup,
   updateLesson,
 } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,12 @@ import type { LessonView } from "@/lib/data/types";
 import { formatTimeGrid } from "@/lib/format";
 
 type Option = { id: string; name: string };
+const WHOLE = "classe";
+/** Choix « Pour » : classe entière ou un groupe (G1, Espagnol…). */
+const groupOptions = (groups: Option[]) => [
+  { value: WHOLE, label: "Toute la classe" },
+  ...groups.map((g) => ({ value: g.id, label: g.name })),
+];
 type Recurrence = "weekly" | "week_a" | "week_b" | "monthly" | "daily";
 const RECURRENCES: { value: Recurrence; label: string }[] = [
   { value: "weekly", label: "Chaque semaine, ce jour-là" },
@@ -51,9 +58,12 @@ export function AddLessonSeries({
   defaultFrom,
   defaultUntil,
   titular,
+  groups = [],
 }: {
   /** Primaire : nom du titulaire, qui fait tous les cours de la classe (nul hors primaire). */
   titular: string | null;
+  /** Groupes de la classe, libellés « G1 (Demi-groupe) ». */
+  groups?: Option[];
   classId: string;
   className: string;
   subjects: Option[];
@@ -72,6 +82,7 @@ export function AddLessonSeries({
   const [nth, setNth] = useState("1");
   const [starts, setStarts] = useState("09:00");
   const [ends, setEnds] = useState("10:00");
+  const [groupId, setGroupId] = useState(WHOLE);
   // Période : d'aujourd'hui à la fin de l'année scolaire.
   const from = defaultFrom;
   const until = defaultUntil;
@@ -111,6 +122,7 @@ export function AddLessonSeries({
         ends,
         from,
         until,
+        groupId: groupId === WHOLE ? null : groupId,
       });
       if (!r.ok) return setError(r.error);
       toast({
@@ -158,6 +170,14 @@ export function AddLessonSeries({
             options={teachers.map((t) => ({ value: t.id, label: t.name }))}
             value={teacherId}
             onValueChange={setTeacherId}
+          />
+        )}
+        {groups.length > 0 && (
+          <SelectField
+            label="Pour"
+            options={groupOptions(groups)}
+            value={groupId}
+            onValueChange={setGroupId}
           />
         )}
         <TextField
@@ -296,7 +316,8 @@ export function WeekLessonList({
                 {l.subject.name}
                 <span className="font-normal text-ink-muted">
                   {" "}
-                  · {l.className} · {l.teacher} · {l.room}
+                  · {l.className}
+                  {l.group ? ` (${l.group})` : ""} · {l.teacher} · {l.room}
                 </span>
               </b>
               <Button
@@ -353,6 +374,8 @@ export type LessonEditOptions = {
   titular: string | null;
   /** Dates ISO des 7 jours de la semaine affichée. */
   dates: string[];
+  /** Groupes de la classe affichée (secrétariat). */
+  groups?: Option[];
 };
 
 /** Fenêtre d'un cours : modifier (ce cours ou les suivants), annuler / rétablir, supprimer. */
@@ -375,9 +398,11 @@ export function LessonDialog({
   const [starts, setStarts] = useState(formatTimeGrid(lesson.start));
   const [ends, setEnds] = useState(formatTimeGrid(lesson.end));
   const [scope, setScope] = useState<"one" | "following">("one");
+  const [groupId, setGroupId] = useState(lesson.groupId ?? WHOLE);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
-  const label = `${lesson.subject.name} · ${lesson.className ?? ""}`;
+  const label = `${lesson.subject.name} · ${lesson.className ?? ""}${lesson.group ? ` (${lesson.group})` : ""}`;
+  const groups = options.groups ?? [];
 
   const done = (r: { ok: boolean; error?: string }, ok: string) => {
     if (!r.ok) return setError(r.error ?? "");
@@ -402,22 +427,30 @@ export function LessonDialog({
             if (ends <= starts)
               return setError("L'heure de fin doit suivre l'heure de début.");
             setError(null);
-            start(async () =>
+            start(async () => {
+              const r = await updateLesson(lesson.id, {
+                subjectId,
+                teacherId,
+                room: room.trim(),
+                day,
+                starts,
+                ends,
+                scope,
+              });
+              const g = (lesson.groupId ?? WHOLE) !== groupId;
               done(
-                await updateLesson(lesson.id, {
-                  subjectId,
-                  teacherId,
-                  room: room.trim(),
-                  day,
-                  starts,
-                  ends,
-                  scope,
-                }),
+                r.ok && g
+                  ? await setLessonGroup(
+                      lesson.id,
+                      groupId === WHOLE ? null : groupId,
+                      scope,
+                    )
+                  : r,
                 scope === "following"
                   ? "Cours et suivants modifiés"
                   : "Cours modifié",
-              ),
-            );
+              );
+            });
           }}
         >
           <SelectField
@@ -442,6 +475,18 @@ export function LessonDialog({
               }))}
               value={teacherId}
               onValueChange={setTeacherId}
+            />
+          )}
+          {(groups.length > 0 || lesson.groupId) && (
+            <SelectField
+              label="Pour"
+              options={groupOptions(
+                groups.length
+                  ? groups
+                  : [{ id: lesson.groupId!, name: lesson.group ?? "" }],
+              )}
+              value={groupId}
+              onValueChange={setGroupId}
             />
           )}
           <TextField

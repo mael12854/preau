@@ -647,6 +647,8 @@ export type LessonSeriesInput = {
   recurrence: "weekly" | "week_a" | "week_b" | "monthly" | "daily";
   /** Tous les mois : 1 à 4, ou 5 pour le dernier. */
   nth: number | null;
+  /** Demi-groupe ou option visé ; nul : classe entière. */
+  groupId?: string | null;
 };
 
 /** Emploi du temps : créer une série de cours sur une période (secrétariat). */
@@ -654,7 +656,8 @@ export async function createLessonSeries(
   i: LessonSeriesInput,
 ): Promise<{ ok: true; count: number } | { ok: false; error: string }> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("create_lessons", {
+  const { data, error } = await supabase.rpc("create_lesson_set", {
+    p_group: i.groupId ?? null,
     p_class: i.classId,
     p_subject: i.subjectId,
     p_teacher: i.teacherId,
@@ -665,7 +668,7 @@ export async function createLessonSeries(
     p_from: i.from,
     p_until: i.until,
     p_recurrence: i.recurrence,
-    p_nth: i.nth as number,
+    p_nth: i.nth,
   });
   if (error)
     return {
@@ -707,6 +710,59 @@ export async function updateLesson(
         p_starts: e.starts,
         p_ends: e.ends,
         p_scope: e.scope,
+      }),
+    ["/emploi-du-temps", "/accueil"],
+  );
+}
+
+/** Groupes : créer des groupes dans une famille (Demi-groupe, LV2, LV3…) d'une classe (secrétariat). */
+export async function createClassGroups(
+  classId: string,
+  family: string,
+  names: string[],
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("create_class_groups", {
+        p_class: classId,
+        p_family: family,
+        p_names: names,
+      }),
+    ["/emploi-du-temps"],
+  );
+}
+
+/** Groupes : placer un élève dans un groupe d'une famille (nul : aucun). */
+export async function setStudentGroup(
+  studentId: string,
+  classId: string,
+  family: string,
+  groupId: string | null,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("set_student_group", {
+        p_student: studentId,
+        p_class: classId,
+        p_family: family,
+        p_group: groupId,
+      }),
+    ["/emploi-du-temps", "/accueil"],
+  );
+}
+
+/** Emploi du temps : changer le groupe d'un cours (ou de ce cours et des suivants). */
+export async function setLessonGroup(
+  lessonId: string,
+  groupId: string | null,
+  scope: "one" | "following",
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("set_lesson_group", {
+        p_lesson: lessonId,
+        p_group: groupId,
+        p_scope: scope,
       }),
     ["/emploi-du-temps", "/accueil"],
   );
