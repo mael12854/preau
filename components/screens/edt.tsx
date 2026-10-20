@@ -7,6 +7,7 @@ import { cn } from "@/lib/cn";
 import type { LessonView } from "@/lib/data/types";
 import { formatTimeGrid, formatTimeText } from "@/lib/format";
 import { subjectStyle } from "@/lib/subjects";
+import { setActAs } from "@/components/shell/act-as";
 import { LessonDialog, type LessonEditOptions } from "./edt-editor";
 
 const HOUR = 3.75; // rem par heure (60 px)
@@ -65,7 +66,7 @@ export function EdtScreen({
 }) {
   const [selected, setSelected] = useState<LessonView | null>(null);
   const clickable = (l: LessonView) =>
-    !!edit && (edit.mode === "manage" || l.teacherId === edit.me);
+    !!edit && (edit.mode === "manage" || (edit.mine ?? [edit.me]).includes(l.teacherId));
   const weekend = lessons.some((l) => l.day >= 5);
   const WEEK_DAYS = days.slice(0, weekend ? 7 : 5);
   const TODAY_INDEX = todayIndex < WEEK_DAYS.length ? todayIndex : -1;
@@ -186,7 +187,11 @@ export function EdtScreen({
                           {clickable(l) && (
                             <button
                               type="button"
-                              onClick={() => setSelected(l)}
+                              onClick={() => {
+                                // Espace « Général » : agir au nom de l'école du cours.
+                                setActAs(l.teacherId);
+                                setSelected(l);
+                              }}
                               aria-label={`${s.name}${l.group ? ` (${l.group})` : ""}, ${formatTimeText(l.start)} – ${formatTimeText(l.end)}${l.cancelled ? ", annulé" : ""} : ouvrir le cours`}
                               className="absolute inset-0 z-10 cursor-pointer rounded-[8px] hover:bg-ink/5"
                             />

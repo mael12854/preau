@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextField } from "@/components/ui/field";
+import { setActAs } from "@/components/shell/act-as";
 import { useToast } from "@/components/ui/toast";
 import type { LessonView } from "@/lib/data/types";
 import { formatTimeGrid } from "@/lib/format";
@@ -260,6 +261,7 @@ export function WeekLessonList({
   dates,
   canManage,
   me,
+  mine,
 }: {
   lessons: LessonView[];
   days: string[];
@@ -267,12 +269,15 @@ export function WeekLessonList({
   dates: string[];
   canManage: boolean;
   me: string;
+  /** Espace « Général » : toutes les fiches d'enseignant du compte. */
+  mine?: string[];
 }) {
   const toast = useToast();
   const router = useRouter();
   const [pending, start] = useTransition();
-  const mine = lessons.filter((l) => canManage || l.teacherId === me);
-  if (!mine.length) return null;
+  const own = mine ?? [me];
+  const list = lessons.filter((l) => canManage || own.includes(l.teacherId));
+  if (!list.length) return null;
   const act = (
     fn: () => Promise<{ ok: boolean; error?: string }>,
     ok: string,
@@ -295,12 +300,13 @@ export function WeekLessonList({
         Cours de la semaine
       </h2>
       <ul className="m-0 list-none p-0">
-        {mine.map((l) => {
+        {list.map((l) => {
           const day = days[l.day];
           const dayIso = dates[l.day];
           return (
             <li
               key={l.id}
+              onPointerDownCapture={() => setActAs(l.teacherId)}
               className="flex flex-wrap items-center gap-x-3 gap-y-2 border-b border-line-soft px-5 py-2.5 last:border-b-0"
             >
               <span className="tabular w-36 text-caption text-ink-muted">
@@ -368,6 +374,8 @@ export type LessonEditOptions = {
   /** « manage » : secrétariat (tout modifier) ; « teacher » : l'enseignant annule ou rétablit ses cours. */
   mode: "manage" | "teacher";
   me: string;
+  /** Espace « Général » : toutes les fiches d'enseignant du compte (cours cliquables de chaque école). */
+  mine?: string[];
   subjects: Option[];
   teachers: Option[];
   /** Primaire : nom du titulaire (l'enseignant ne se choisit pas) ; nul sinon. */
@@ -622,7 +630,7 @@ export function LessonDialog({
               {error}
             </p>
           )}
-          {lesson.teacherId === options.me && (
+          {(options.mine ?? [options.me]).includes(lesson.teacherId) && (
             <div className="flex justify-end">
               <Button
                 type="button"

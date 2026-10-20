@@ -41,5 +41,6 @@ export async function signOut() {
   const store = await cookies();
   store.delete(PROFILE_COOKIE);
   store.delete("preau-enfant");
+  store.delete("preau-agir");
   redirect("/connexion");
 }

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { StaffDashboard } from "@/components/screens/dashboard-staff";
 import { ChildDashboard, StudentDashboard } from "@/components/screens/dashboard-student";
 import { AppShell } from "@/components/shell/app-shell";
+import { Sections } from "@/components/shell/sections";
 import { now } from "@/lib/clock";
 import { getLastEvaluations } from "@/lib/data/evaluations";
 import { getLiaisonNotes } from "@/lib/data/liaison";
@@ -12,7 +13,7 @@ import { getStaffDashboard } from "@/lib/data/staff";
 import { getTeacherDashboard } from "@/lib/data/teacher";
 import { getTodayLessons } from "@/lib/data/timetable";
 import { addDays, formatDayLong, isoDay } from "@/lib/format";
-import { requireModule } from "@/lib/session";
+import { getSections, requireModule } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Tableau de bord" };
@@ -23,13 +24,18 @@ export default async function DashboardPage() {
   const reference = now();
 
   if (profile.staff) {
-    const data =
-      profile.id === "cpe" || profile.id === "direction" || profile.id === "secretariat"
-        ? await getStaffDashboard(supabase, profile.id, reference)
-        : await getTeacherDashboard(supabase, profile.profileId, reference);
+    // Espace « Général » : un tableau de bord par école.
+    const sections = await getSections(profile, "dash");
+    const data = await Promise.all(
+      sections.map(({ viewer, supabase: db }) =>
+        viewer.id === "cpe" || viewer.id === "direction" || viewer.id === "secretariat"
+          ? getStaffDashboard(db, viewer.id, reference)
+          : getTeacherDashboard(db, viewer.profileId, reference),
+      ),
+    );
     return (
       <AppShell profile={profile} module="dash">
-        <StaffDashboard profile={profile} data={data} />
+        <Sections sections={sections} render={(s, i) => <StaffDashboard profile={s.viewer} data={data[i]} />} />
       </AppShell>
     );
   }

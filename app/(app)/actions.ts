@@ -8,7 +8,7 @@ import { createCheckout } from "@/lib/payments";
 import type { EvalValue } from "@/lib/evaluation";
 import { CHILD_COOKIE, getViewer } from "@/lib/session";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient, PROFILE_COOKIE } from "@/lib/supabase/server";
+import { ACT_AS_COOKIE, createClient, PROFILE_COOKIE } from "@/lib/supabase/server";
 
 /** Résultat d'une action : message lisible en cas d'échec (jamais de code d'erreur brut). */
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -78,6 +78,13 @@ export async function removeHomework(id: string): Promise<ActionResult> {
     "/devoirs",
     "/accueil",
   ]);
+}
+
+/** Fiche au nom de laquelle agir : celle de la section cliquée dans l'espace « Général », sinon la fiche active. */
+async function actingProfileId(viewer: { profileId: string; general: string[] | null }) {
+  if (!viewer.general) return viewer.profileId;
+  const id = (await cookies()).get(ACT_AS_COOKIE)?.value;
+  return id && viewer.general.includes(id) ? id : viewer.profileId;
 }
 
 /** Coche personnelle d'un devoir. */
@@ -250,7 +257,7 @@ export async function confirmDocument(
     .select("storage_path, created_by")
     .eq("id", documentId)
     .maybeSingle();
-  if (!viewer || !doc?.storage_path || doc.created_by !== viewer.profileId)
+  if (!viewer || !doc?.storage_path || doc.created_by !== (await actingProfileId(viewer)))
     return { ok: false, error: FAILED };
   const store = storage();
   const folder = doc.storage_path.split("/").slice(0, -1).join("/");
@@ -899,13 +906,14 @@ export async function sendMessage(
 export async function markRead(messageId: string): Promise<ActionResult> {
   const viewer = await getViewer();
   if (!viewer) return { ok: false, error: FAILED };
+  const me = await actingProfileId(viewer);
   return run(
     (s) =>
       s
         .from("message_recipients")
         .update({ read_at: new Date().toISOString() })
         .eq("message_id", messageId)
-        .eq("recipient_id", viewer.profileId)
+        .eq("recipient_id", me)
         .is("read_at", null),
     ["/messagerie", "/accueil"],
   );
@@ -914,13 +922,14 @@ export async function markRead(messageId: string): Promise<ActionResult> {
 export async function archiveMessage(messageId: string): Promise<ActionResult> {
   const viewer = await getViewer();
   if (!viewer) return { ok: false, error: FAILED };
+  const me = await actingProfileId(viewer);
   return run(
     (s) =>
       s
         .from("message_recipients")
         .update({ archived_at: new Date().toISOString() })
         .eq("message_id", messageId)
-        .eq("recipient_id", viewer.profileId),
+        .eq("recipient_id", me),
     ["/messagerie"],
   );
 }

@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { LiaisonScreen } from "@/components/screens/liaison";
 import { AppShell } from "@/components/shell/app-shell";
+import { Sections } from "@/components/shell/sections";
 import { now } from "@/lib/clock";
 import { getLiaisonNotes, getTeacherClasses } from "@/lib/data/liaison";
-import { requireModule } from "@/lib/session";
+import { getSections, requireModule } from "@/lib/session";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Cahier de liaison" };
@@ -14,13 +15,21 @@ export default async function LiaisonPage() {
   const reference = now();
 
   if (profile.staff) {
-    const [notes, classes] = await Promise.all([
-      getLiaisonNotes(supabase, { authorId: profile.profileId }, reference),
-      getTeacherClasses(supabase, profile.profileId),
-    ]);
+    const sections = await getSections(profile, "liaison");
+    const data = await Promise.all(
+      sections.map(({ viewer, supabase: db }) =>
+        Promise.all([
+          getLiaisonNotes(db, { authorId: viewer.profileId }, reference),
+          getTeacherClasses(db, viewer.profileId),
+        ]),
+      ),
+    );
     return (
       <AppShell profile={profile} module="liaison">
-        <LiaisonScreen notes={notes} mode={{ kind: "enseignant", classes }} />
+        <Sections
+          sections={sections}
+          render={(_, i) => <LiaisonScreen notes={data[i][0]} mode={{ kind: "enseignant", classes: data[i][1] }} />}
+        />
       </AppShell>
     );
   }

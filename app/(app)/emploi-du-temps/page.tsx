@@ -241,6 +241,7 @@ export default async function EdtPage({
                 ? {
                     mode: "teacher",
                     me: profile.profileId,
+                    mine: profile.general ?? undefined,
                     subjects: [],
                     teachers: [],
                     titular: null,
@@ -295,6 +296,7 @@ export default async function EdtPage({
             dates={dates}
             canManage={profile.id === "secretariat"}
             me={profile.profileId}
+            mine={profile.general ?? undefined}
           />
         )}
       </div>

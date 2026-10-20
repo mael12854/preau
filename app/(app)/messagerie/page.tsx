@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { MessagerieScreen } from "@/components/screens/messagerie";
 import { AppShell } from "@/components/shell/app-shell";
+import { Sections } from "@/components/shell/sections";
 import { now } from "@/lib/clock";
 import { getMessages, getRecipients, type Folder } from "@/lib/data/messages";
-import { requireModule } from "@/lib/session";
-import { createClient } from "@/lib/supabase/server";
+import { getSections, requireModule } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Messagerie" };
 
@@ -12,14 +12,29 @@ export default async function MessageriePage({ searchParams }: { searchParams: P
   const profile = await requireModule("messages");
   const { dossier } = await searchParams;
   const folder = dossier === "envoyes" || dossier === "archives" || dossier === "brouillons" ? dossier : "recus";
-  const supabase = await createClient();
-  const [messages, recipients] = await Promise.all([
-    folder === "brouillons" ? [] : getMessages(supabase, profile.profileId, folder as Folder, now()),
-    getRecipients(supabase, profile.profileId, profile.staff),
-  ]);
+  const sections = await getSections(profile, "messages");
+  const data = await Promise.all(
+    sections.map(({ viewer, supabase }) =>
+      Promise.all([
+        folder === "brouillons" ? [] : getMessages(supabase, viewer.profileId, folder as Folder, now()),
+        getRecipients(supabase, viewer.profileId, viewer.staff),
+      ]),
+    ),
+  );
   return (
     <AppShell profile={profile} module="messages">
-      <MessagerieScreen key={folder} folder={folder} messages={messages} recipients={recipients} unreadCount={profile.counts.messages ?? 0} />
+      <Sections
+        sections={sections}
+        render={(s, i) => (
+          <MessagerieScreen
+            key={folder}
+            folder={folder}
+            messages={data[i][0]}
+            recipients={data[i][1]}
+            unreadCount={s.viewer.counts.messages ?? 0}
+          />
+        )}
+      />
     </AppShell>
   );
 }
