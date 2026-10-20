@@ -119,6 +119,7 @@ export function AddPerson({
     name: string;
     email: string;
     password: string | null;
+    linked?: boolean;
   } | null>(null);
   const [pending, start] = useTransition();
   const students = people.filter((p) => p.kind === "eleve");
@@ -163,6 +164,7 @@ export function AddPerson({
         name: [first, last].filter(Boolean).join(" "),
         email: email.trim(),
         password: r.password,
+        linked: !!r.linked,
       });
       router.refresh();
     });
@@ -206,6 +208,13 @@ export function AddPerson({
                 personne, qui devra le changer.
               </span>
             </div>
+          ) : created.linked ? (
+            <p className="m-0 text-label text-ink-2">
+              L&apos;adresse <b>{created.email}</b> avait déjà un compte : cette
+              fiche y est ajoutée comme un espace de plus. La personne se
+              connecte comme d&apos;habitude, puis choisit son espace dans le
+              menu « Espace ».
+            </p>
           ) : (
             <p className="m-0 text-label text-ink-2">
               Pas d&apos;adresse e-mail : aucun compte de connexion. Vous

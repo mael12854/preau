@@ -1389,6 +1389,19 @@ export type Database = {
         Returns: Database["public"]["Enums"]["payment_status"]
       }
       link_guardian: { Args: { p_guardian: string; p_student: string }; Returns: undefined }
+      link_profile_account: { Args: { p_profile: string; p_user: string }; Returns: undefined }
+      account_id_by_email: { Args: { p_email: string }; Returns: string }
+      my_profiles: {
+        Args: never
+        Returns: {
+          detail: string
+          display_name: string
+          id: string
+          is_primary: boolean
+          kind: Database["public"]["Enums"]["person_kind"]
+          school: string
+        }[]
+      }
       manageable_person: { Args: { p_profile: string }; Returns: string }
       post_liaison_note: {
         Args: { p_body: string; p_class: string; p_requires_signature?: boolean; p_title: string }

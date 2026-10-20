@@ -5,8 +5,14 @@ import { cache } from "react";
 import { now } from "@/lib/clock";
 import { isoDay } from "@/lib/format";
 import type { Grading } from "@/lib/grading";
-import { PRIMARY_PROFILES, PROFILES, type ModuleKey, type Profile, type ProfileId } from "@/lib/navigation";
-import { createClient } from "@/lib/supabase/server";
+import {
+  PRIMARY_PROFILES,
+  PROFILES,
+  type ModuleKey,
+  type Profile,
+  type ProfileId,
+} from "@/lib/navigation";
+import { createClient, PROFILE_COOKIE } from "@/lib/supabase/server";
 
 /** Élève suivi : l'élève connecté, ou l'enfant d'un responsable. */
 export type FollowedStudent = {
@@ -35,12 +41,17 @@ export type Viewer = Profile & {
   /** Mode de notation de l'établissement : compétences, ou note sur 20 (sans moyenne). */
   grading: Grading;
   counts: Partial<Record<ModuleKey, number>>;
+  /** Les espaces du compte (élève, parent…) quand il en a plusieurs ; l'espace actif est marqué. */
+  spaces: { id: string; label: string; active: boolean }[];
 };
 
 /** Cookie de l'enfant affiché pour un responsable (identifiant d'élève, vérifié à chaque lecture). */
 export const CHILD_COOKIE = "preau-enfant";
 
-const NAV = Object.fromEntries(PROFILES.map((p) => [p.id, p])) as Record<ProfileId, Profile>;
+const NAV = Object.fromEntries(PROFILES.map((p) => [p.id, p])) as Record<
+  ProfileId,
+  Profile
+>;
 
 /** Lit la session et le profil (une seule fois par requête). */
 export const getViewer = cache(async (): Promise<Viewer | null> => {
@@ -48,10 +59,37 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   const { data: auth } = await supabase.auth.getUser();
   if (!auth.user) return null;
 
+  // Fiche active : celle du cookie si elle appartient au compte, sinon la fiche principale.
+  // La base applique la même règle (en-tête x-preau-profile) pour toutes les autorisations.
+  const { data: mine } = await supabase.rpc("my_profiles");
+  const wanted = (await cookies()).get(PROFILE_COOKIE)?.value;
+  const active =
+    mine?.find((p) => p.id === wanted) ??
+    mine?.find((p) => p.is_primary) ??
+    mine?.[0];
+  if (!active) return null;
+  const KIND: Record<string, string> = {
+    eleve: "Élève",
+    parent: "Parent",
+    prof: "Enseignant",
+    cpe: "Vie scolaire",
+    direction: "Direction",
+    secretariat: "Secrétariat",
+  };
+  const spaces = (mine ?? []).map((p) => ({
+    id: p.id,
+    label: [KIND[p.kind] ?? p.kind, p.detail, p.school]
+      .filter(Boolean)
+      .join(" · "),
+    active: p.id === active.id,
+  }));
+
   const { data: me } = await supabase
     .from("profiles")
-    .select("id, kind, first_name, last_name, civility, display_name, initials, role_label, specialities, schools(name, year_label, domain, grading)")
-    .eq("user_id", auth.user.id)
+    .select(
+      "id, kind, first_name, last_name, civility, display_name, initials, role_label, specialities, schools(name, year_label, domain, grading)",
+    )
+    .eq("id", active.id)
     .maybeSingle();
   if (!me) return null;
 
@@ -62,14 +100,29 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     me.kind === "eleve"
       ? [me.id]
       : me.kind === "parent"
-        ? ((await supabase.from("guardians").select("student_id").eq("guardian_id", me.id)).data ?? []).map((g) => g.student_id)
+        ? (
+            (
+              await supabase
+                .from("guardians")
+                .select("student_id")
+                .eq("guardian_id", me.id)
+            ).data ?? []
+          ).map((g) => g.student_id)
         : [];
   const levels = new Map<string, Level>();
   let children: FollowedStudent[] = [];
   if (ids.length) {
     const [{ data: rows }, { data: extra }] = await Promise.all([
-      supabase.from("students").select("profile_id, class_id, classes!students_class_id_fkey(name, level), profiles!students_profile_id_fkey(first_name, display_name)").in("profile_id", ids),
-      supabase.from("class_members").select("student_id, class_id, classes(name)").in("student_id", ids),
+      supabase
+        .from("students")
+        .select(
+          "profile_id, class_id, classes!students_class_id_fkey(name, level), profiles!students_profile_id_fkey(first_name, display_name)",
+        )
+        .in("profile_id", ids),
+      supabase
+        .from("class_members")
+        .select("student_id, class_id, classes(name)")
+        .in("student_id", ids),
     ]);
     children = (rows ?? [])
       .filter((s) => s.classes && s.profiles)
@@ -81,8 +134,15 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
           name: s.profiles!.display_name,
           classId: s.class_id,
           className: s.classes!.name,
-          classIds: [s.class_id, ...(extra ?? []).filter((m) => m.student_id === s.profile_id).map((m) => m.class_id)],
-          extraClasses: (extra ?? []).filter((m) => m.student_id === s.profile_id).map((m) => m.classes?.name ?? ""),
+          classIds: [
+            s.class_id,
+            ...(extra ?? [])
+              .filter((m) => m.student_id === s.profile_id)
+              .map((m) => m.class_id),
+          ],
+          extraClasses: (extra ?? [])
+            .filter((m) => m.student_id === s.profile_id)
+            .map((m) => m.classes?.name ?? ""),
         };
       })
       .sort((a, b) => a.firstName.localeCompare(b.firstName, "fr"));
@@ -96,32 +156,63 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
   let primaryClass: string | null = null;
   if (me.kind === "prof") {
     const [{ data: t }, { data: own }] = await Promise.all([
-      supabase.from("teachings").select("classes(level)").eq("teacher_id", me.id),
-      supabase.from("classes").select("name").eq("teacher_id", me.id).eq("level", "primaire").order("name"),
+      supabase
+        .from("teachings")
+        .select("classes(level)")
+        .eq("teacher_id", me.id),
+      supabase
+        .from("classes")
+        .select("name")
+        .eq("teacher_id", me.id)
+        .eq("level", "primaire")
+        .order("name"),
     ]);
     // Titulaire d'une ou deux classes : leurs noms ; de plus : leur nombre (« 7 classes »).
     const names = (own ?? []).map((c) => c.name);
-    primaryClass = names.length > 2 ? `${names.length} classes` : names.length ? names.join(" et ") : null;
-    primaryTeacher = names.length > 0 && (t ?? []).every((x) => x.classes?.level === "primaire");
+    primaryClass =
+      names.length > 2
+        ? `${names.length} classes`
+        : names.length
+          ? names.join(" et ")
+          : null;
+    primaryTeacher =
+      names.length > 0 &&
+      (t ?? []).every((x) => x.classes?.level === "primaire");
   }
   // Administration d'une école primaire : toutes les classes de l'établissement sont du primaire.
   let primarySchool = false;
-  if (me.kind === "cpe" || me.kind === "direction" || me.kind === "secretariat") {
+  if (
+    me.kind === "cpe" ||
+    me.kind === "direction" ||
+    me.kind === "secretariat"
+  ) {
     const { data: levels } = await supabase.from("classes").select("level");
-    primarySchool = !!levels?.length && levels.every((c) => c.level === "primaire");
+    primarySchool =
+      !!levels?.length && levels.every((c) => c.level === "primaire");
   }
   const variant: ProfileId =
     me.kind === "eleve"
       ? level
       : me.kind === "parent"
-        ? level === "primaire" ? "parent-primaire" : "parent"
+        ? level === "primaire"
+          ? "parent-primaire"
+          : "parent"
         : me.kind === "prof" && primaryTeacher
           ? "enseignant-primaire"
           : me.kind;
   const base = NAV[variant];
-  const fullName = [me.first_name, me.last_name].filter(Boolean).join(" ") || me.display_name;
-  const civility = me.civility === "madame" ? "Madame" : me.civility === "monsieur" ? "Monsieur" : "";
-  const hello = me.kind === "eleve" ? `Bonjour ${me.first_name}` : `Bonjour ${civility} ${me.last_name ?? ""}`.replace(/\s+/g, " ").trim();
+  const fullName =
+    [me.first_name, me.last_name].filter(Boolean).join(" ") || me.display_name;
+  const civility =
+    me.civility === "madame"
+      ? "Madame"
+      : me.civility === "monsieur"
+        ? "Monsieur"
+        : "";
+  const hello =
+    me.kind === "eleve"
+      ? `Bonjour ${me.first_name}`
+      : `Bonjour ${civility} ${me.last_name ?? ""}`.replace(/\s+/g, " ").trim();
   const role =
     me.kind === "eleve"
       ? [student?.className, me.specialities].filter(Boolean).join(" · ")
@@ -140,12 +231,26 @@ export const getViewer = cache(async (): Promise<Viewer | null> => {
     email: auth.user.email ?? "",
     profileId: me.id,
     userId: auth.user.id,
-    school: { name: me.schools?.name ?? "", year: me.schools?.year_label ?? "", domain: me.schools?.domain ?? "" },
+    school: {
+      name: me.schools?.name ?? "",
+      year: me.schools?.year_label ?? "",
+      domain: me.schools?.domain ?? "",
+    },
     student,
     children: me.kind === "parent" ? children : [],
-    scale: PRIMARY_PROFILES.includes(variant) || primarySchool ? "primaire" : "college",
+    scale:
+      PRIMARY_PROFILES.includes(variant) || primarySchool
+        ? "primaire"
+        : "college",
     grading: me.schools?.grading ?? "competences",
-    counts: await navCounts(supabase, me.id, student, me.kind === "eleve" || me.kind === "parent", auth.user.id),
+    spaces: spaces.length > 1 ? spaces : [],
+    counts: await navCounts(
+      supabase,
+      me.id,
+      student,
+      me.kind === "eleve" || me.kind === "parent",
+      auth.user.id,
+    ),
   };
 });
 
@@ -158,12 +263,25 @@ async function navCounts(
 ): Promise<Partial<Record<ModuleKey, number>>> {
   const today = isoDay(now());
   const [{ count: unread }, homework, done] = await Promise.all([
-    supabase.from("message_recipients").select("message_id", { count: "exact", head: true })
-      .eq("recipient_id", profileId).is("read_at", null).is("archived_at", null),
+    supabase
+      .from("message_recipients")
+      .select("message_id", { count: "exact", head: true })
+      .eq("recipient_id", profileId)
+      .is("read_at", null)
+      .is("archived_at", null),
     family && student
-      ? supabase.from("homework").select("id").in("class_id", student.classIds).gt("due_on", today)
+      ? supabase
+          .from("homework")
+          .select("id")
+          .in("class_id", student.classIds)
+          .gt("due_on", today)
       : Promise.resolve({ data: [] as { id: string }[] }),
-    family ? supabase.from("homework_done").select("homework_id").eq("user_id", userId) : Promise.resolve({ data: [] as { homework_id: string }[] }),
+    family
+      ? supabase
+          .from("homework_done")
+          .select("homework_id")
+          .eq("user_id", userId)
+      : Promise.resolve({ data: [] as { homework_id: string }[] }),
   ]);
   const doneIds = new Set((done.data ?? []).map((d) => d.homework_id));
   const todo = (homework.data ?? []).filter((h) => !doneIds.has(h.id)).length;

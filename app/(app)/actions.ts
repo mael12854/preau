@@ -2,12 +2,13 @@
 
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 import { DOCUMENT_TYPES, storage } from "@/lib/documents";
 import { createCheckout } from "@/lib/payments";
 import type { EvalValue } from "@/lib/evaluation";
 import { CHILD_COOKIE, getViewer } from "@/lib/session";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, PROFILE_COOKIE } from "@/lib/supabase/server";
 
 /** Résultat d'une action : message lisible en cas d'échec (jamais de code d'erreur brut). */
 export type ActionResult = { ok: true } | { ok: false; error: string };
@@ -99,6 +100,23 @@ export async function setSkillLevels(
       }),
     [],
   );
+}
+
+/** Compte à plusieurs rôles : changer d'espace (élève, parent…). Seule une fiche du compte est acceptée. */
+export async function selectSpace(profileId: string): Promise<void> {
+  const viewer = await getViewer();
+  if (!viewer?.spaces.some((s) => s.id === profileId)) return;
+  const store = await cookies();
+  store.set(PROFILE_COOKIE, profileId, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: true,
+    path: "/",
+    maxAge: 60 * 60 * 24 * 365,
+  });
+  store.delete(CHILD_COOKIE);
+  revalidatePath("/", "layout");
+  redirect("/accueil");
 }
 
 /** Responsable : choisir l'enfant affiché. Seul un enfant dont on est responsable est accepté. */
@@ -405,7 +423,11 @@ export type NewPerson = {
   teachings: { classId: string; subjectId: string | null }[];
 };
 export type CreatedPerson =
-  | { ok: true; password: string | null }
+  | {
+      ok: true;
+      password: string | null;
+      /** Rattachée à un compte existant (même adresse). */ linked?: boolean;
+    }
   | { ok: false; error: string };
 
 /** Mot de passe provisoire lisible : 4 groupes de 4 majuscules et chiffres, sans caractère ambigu (0/O, 1/I). */
@@ -523,12 +545,29 @@ export async function createPerson(p: NewPerson): Promise<CreatedPerson> {
         email_confirm: true,
       });
     if (authError || !created.user) {
-      return {
-        ok: false,
-        error: /already|exists|registered/i.test(authError?.message ?? "")
-          ? "Personne ajoutée, mais cette adresse e-mail a déjà un compte."
-          : "Personne ajoutée, mais le compte n'a pas pu être créé.",
-      };
+      if (!/already|exists|registered/i.test(authError?.message ?? ""))
+        return {
+          ok: false,
+          error: "Personne ajoutée, mais le compte n'a pas pu être créé.",
+        };
+      // Adresse déjà utilisée : la nouvelle fiche devient un espace de plus de ce compte (élève et parent…).
+      const { data: existing } = await admin!.rpc("account_id_by_email", {
+        p_email: address,
+      });
+      const { error: linkError } = existing
+        ? await supabase.rpc("link_profile_account", {
+            p_profile: id,
+            p_user: existing,
+          })
+        : { error: { message: "" } };
+      if (linkError)
+        return {
+          ok: false,
+          error:
+            "Personne ajoutée, mais son compte existant n'a pas pu être rattaché.",
+        };
+      revalidatePath("/annuaire");
+      return { ok: true, password: null, linked: true };
     }
     // La fiche vient d'être créée par cet utilisateur (create_person a vérifié ses droits) : on y rattache le compte.
     await admin!
