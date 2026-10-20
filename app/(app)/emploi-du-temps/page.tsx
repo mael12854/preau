@@ -100,7 +100,8 @@ export default async function EdtPage({
         (() => {
           let q = supabase
             .from("lessons")
-            .select("starts_at")
+            .select("starts_at, classes!inner(hidden)")
+            .eq("classes.hidden", false)
             .gte("starts_at", `${addDays(week.monday, 7)}T00:00:00Z`)
             .order("starts_at")
             .limit(1);

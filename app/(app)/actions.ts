@@ -34,6 +34,52 @@ async function run(
   return { ok: true };
 }
 
+/** Devoirs : donner un devoir ou annoncer un contrôle (enseignant de la classe). */
+export async function giveHomework(h: {
+  classId: string;
+  subjectId: string;
+  content: string;
+  due: string;
+  exam: boolean;
+}): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("give_homework", {
+        p_class: h.classId,
+        p_subject: h.subjectId,
+        p_content: h.content,
+        p_due: h.due,
+        p_is_exam: h.exam,
+      }),
+    ["/devoirs", "/accueil"],
+  );
+}
+
+/** Devoirs : modifier un devoir qu'on a donné. */
+export async function updateHomework(
+  id: string,
+  h: { content: string; due: string; exam: boolean },
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("update_homework", {
+        p_id: id,
+        p_content: h.content,
+        p_due: h.due,
+        p_is_exam: h.exam,
+      }),
+    ["/devoirs", "/accueil"],
+  );
+}
+
+/** Devoirs : retirer un devoir qu'on a donné. */
+export async function removeHomework(id: string): Promise<ActionResult> {
+  return run((s) => s.rpc("remove_homework", { p_id: id }), [
+    "/devoirs",
+    "/accueil",
+  ]);
+}
+
 /** Coche personnelle d'un devoir. */
 export async function setHomeworkDone(
   homeworkId: string,

@@ -12,14 +12,19 @@ export default async function Page() {
   const supabase = await createClient();
   const [people, { data: classes }, { data: subjects }] = await Promise.all([
     getDirectory(supabase),
-    supabase.from("classes").select("id, name, level").order("name"),
+    supabase.from("classes").select("id, name, level, hidden").order("name"),
     supabase.from("subjects").select("id, name").order("name"),
   ]);
   return (
     <AppShell profile={profile} module="annuaire">
       <DirectoryScreen
         people={people}
-        classes={classes ?? []}
+        // Classes masquées : gardées pour y inscrire des élèves, signalées comme telles.
+        classes={(classes ?? []).map((c) => ({
+          id: c.id,
+          level: c.level,
+          name: c.hidden ? `${c.name} (masquée)` : c.name,
+        }))}
         subjects={subjects ?? []}
         canAddDirection={profile.id === "direction"}
       />

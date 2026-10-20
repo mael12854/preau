@@ -320,6 +320,7 @@ export type Database = {
       }
       classes: {
         Row: {
+          hidden: boolean
           id: string
           level: Database["public"]["Enums"]["school_level"]
           name: string
@@ -327,6 +328,7 @@ export type Database = {
           teacher_id: string | null
         }
         Insert: {
+          hidden?: boolean
           id?: string
           level: Database["public"]["Enums"]["school_level"]
           name: string
@@ -334,6 +336,7 @@ export type Database = {
           teacher_id?: string | null
         }
         Update: {
+          hidden?: boolean
           id?: string
           level?: Database["public"]["Enums"]["school_level"]
           name?: string
@@ -1385,6 +1388,18 @@ export type Database = {
           p_title: string
         }
         Returns: { id: string; storage_path: string }[]
+      }
+      give_homework: {
+        Args: { p_class: string; p_content: string; p_due: string; p_is_exam: boolean; p_subject: string }
+        Returns: string
+      }
+      update_homework: {
+        Args: { p_content: string; p_due: string; p_id: string; p_is_exam: boolean }
+        Returns: undefined
+      }
+      remove_homework: {
+        Args: { p_id: string }
+        Returns: undefined
       }
       create_class_groups: {
         Args: { p_class: string; p_family: string; p_names: string[] }

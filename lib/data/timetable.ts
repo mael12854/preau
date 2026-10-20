@@ -36,8 +36,9 @@ export async function getWeekLessons(
   let q = supabase
     .from("lessons")
     .select(
-      "id, room, starts_at, ends_at, cancelled, series_id, teacher_id, group_id, subjects(id, name, hue), profiles!lessons_teacher_id_fkey(display_name), classes(name), class_groups(name)",
+      "id, room, starts_at, ends_at, cancelled, series_id, teacher_id, group_id, subjects(id, name, hue), profiles!lessons_teacher_id_fkey(display_name), classes!inner(name), class_groups(name)",
     )
+    .eq("classes.hidden", false)
     .gte("starts_at", from)
     .lt("starts_at", to)
     .order("starts_at");

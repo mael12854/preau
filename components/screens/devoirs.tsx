@@ -7,12 +7,26 @@ import { SubjectChip } from "@/components/ui/subject-chip";
 import { cn } from "@/lib/cn";
 import type { HomeworkDayView } from "@/lib/data/types";
 import { useDone } from "@/lib/use-done";
+import { HomeworkActions } from "./devoirs-editor";
 
 /**
  * Devoirs, groupés par jour d'échéance. La coche « fait » est personnelle :
  * le professeur (« Cahier de textes ») ne la voit pas.
  */
-export function DevoirsScreen({ staff, days, initialDone }: { staff: boolean; days: HomeworkDayView[]; initialDone: string[] }) {
+export function DevoirsScreen({
+  staff,
+  days,
+  initialDone,
+  editable = false,
+  today = "",
+}: {
+  staff: boolean;
+  days: HomeworkDayView[];
+  initialDone: string[];
+  /** Enseignant : modifier ou retirer ses devoirs. */
+  editable?: boolean;
+  today?: string;
+}) {
   const [done, toggle] = useDone(initialDone);
   const all = days.flatMap((d) => d.items);
   const n = all.filter((h) => done.includes(h.id)).length;
@@ -59,7 +73,10 @@ export function DevoirsScreen({ staff, days, initialDone }: { staff: boolean; da
                         </a>
                       )}
                     </div>
-                    <span className="text-meta text-ink-muted">Donné le {h.given}</span>
+                    <div className="flex flex-col items-end gap-2">
+                      <span className="text-meta text-ink-muted">Donné le {h.given}</span>
+                      {editable && <HomeworkActions item={h} today={today} />}
+                    </div>
                   </li>
                 );
               })}

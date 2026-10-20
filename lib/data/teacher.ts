@@ -35,8 +35,9 @@ async function todayLessons(
   const { data } = await supabase
     .from("lessons")
     .select(
-      "id, starts_at, ends_at, room, cancelled, attendance_validated_at, class_id, group_id, classes(name), subjects(name), class_groups(name)",
+      "id, starts_at, ends_at, room, cancelled, attendance_validated_at, class_id, group_id, classes!inner(name), subjects(name), class_groups(name)",
     )
+    .eq("classes.hidden", false)
     .eq("teacher_id", teacherId)
     .gte(
       "starts_at",

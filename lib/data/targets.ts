@@ -27,6 +27,7 @@ export async function getPublishTargets(
     const { data } = await supabase
       .from("classes")
       .select("id, name")
+      .eq("hidden", false)
       .order("name");
     return { classes: data ?? [], wholeSchool: true, teacher: false };
   }
@@ -34,12 +35,14 @@ export async function getPublishTargets(
   const [{ data: t }, { data: own }] = await Promise.all([
     supabase
       .from("teachings")
-      .select("classes(id, name)")
-      .eq("teacher_id", profile.profileId),
+      .select("classes!inner(id, name)")
+      .eq("teacher_id", profile.profileId)
+      .eq("classes.hidden", false),
     supabase
       .from("classes")
       .select("id, name")
-      .eq("teacher_id", profile.profileId),
+      .eq("teacher_id", profile.profileId)
+      .eq("hidden", false),
   ]);
   const all = [
     ...(t ?? []).flatMap((x) => (x.classes ? [x.classes] : [])),

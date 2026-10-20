@@ -61,3 +61,61 @@ export async function getDoneHomework(
     .eq("user_id", userId);
   return (data ?? []).map((d) => d.homework_id);
 }
+
+export type HomeworkChoice = {
+  classId: string;
+  subjectId: string;
+  label: string;
+  /** Date (ISO) du prochain cours de cette matière dans la classe, après aujourd'hui. */
+  next: string | null;
+};
+
+/** Classes et matières où l'enseignant peut donner un devoir, avec la date de son prochain cours. */
+export async function getHomeworkChoices(
+  supabase: SupabaseServer,
+  teacherId: string,
+  reference: Date,
+): Promise<HomeworkChoice[]> {
+  const today = isoDay(reference);
+  const [{ data: lessons }, { data: teachings }] = await Promise.all([
+    supabase
+      .from("lessons")
+      .select("class_id, subject_id, starts_at, classes!inner(name), subjects(name)")
+      .eq("teacher_id", teacherId)
+      .eq("classes.hidden", false)
+      .eq("cancelled", false)
+      .gte("starts_at", reference.toISOString())
+      .order("starts_at")
+      .limit(3000),
+    supabase
+      .from("teachings")
+      .select("class_id, subject_id, classes!inner(name), subjects(name)")
+      .eq("teacher_id", teacherId)
+      .eq("classes.hidden", false),
+  ]);
+  const map = new Map<string, HomeworkChoice>();
+  for (const l of lessons ?? []) {
+    const key = `${l.class_id}|${l.subject_id}`;
+    const day = isoDay(l.starts_at);
+    const c = map.get(key);
+    if (!c)
+      map.set(key, {
+        classId: l.class_id,
+        subjectId: l.subject_id,
+        label: `${l.classes?.name ?? ""} · ${l.subjects?.name ?? ""}`,
+        next: day > today ? day : null,
+      });
+    else if (!c.next && day > today) c.next = day;
+  }
+  for (const t of teachings ?? []) {
+    const key = `${t.class_id}|${t.subject_id}`;
+    if (!map.has(key))
+      map.set(key, {
+        classId: t.class_id,
+        subjectId: t.subject_id,
+        label: `${t.classes?.name ?? ""} · ${t.subjects?.name ?? ""}`,
+        next: null,
+      });
+  }
+  return [...map.values()].sort((a, b) => a.label.localeCompare(b.label, "fr"));
+}

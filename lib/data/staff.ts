@@ -97,8 +97,9 @@ async function cpe(
     supabase
       .from("lessons")
       .select(
-        "id, starts_at, cancelled, attendance_validated_at, classes(name), profiles!lessons_teacher_id_fkey(display_name)",
+        "id, starts_at, cancelled, attendance_validated_at, classes!inner(name), profiles!lessons_teacher_id_fkey(display_name)",
       )
+      .eq("classes.hidden", false)
       .gte("starts_at", from)
       .lt("starts_at", to)
       .order("starts_at"),
@@ -170,7 +171,7 @@ async function direction(
     supabase
       .from("students")
       .select("profile_id", { count: "exact", head: true }),
-    supabase.from("classes").select("id", { count: "exact", head: true }),
+    supabase.from("classes").select("id", { count: "exact", head: true }).eq("hidden", false),
     supabase
       .from("life_events")
       .select("id", { count: "exact", head: true })
