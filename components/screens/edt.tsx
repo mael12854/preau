@@ -91,7 +91,7 @@ export function EdtScreen({
           >
             {nav.label}
           </h2>
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 print:hidden">
             <Link
               href={nav.prev}
               aria-label="Semaine précédente"
@@ -115,7 +115,7 @@ export function EdtScreen({
           </div>
         </div>
       )}
-      <div className="overflow-hidden rounded-card border border-line bg-surface">
+      <div className="edt-print overflow-hidden rounded-card border border-line bg-surface">
         {/* La grille 2D défile horizontalement sur petit écran (exception de redistribution RGAA). */}
         <div
           className="relative overflow-x-auto"

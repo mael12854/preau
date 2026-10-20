@@ -519,4 +519,19 @@
   body {
     background: #fff;
   }
+  /* Emploi du temps : A4 paysage, la semaine entière sur une page. */
+  .edt-page {
+    page: edt;
+  }
+  .edt-print {
+    zoom: 0.7;
+    break-inside: avoid;
+  }
+  .edt-print [data-scroll-x] {
+    overflow: visible !important;
+  }
+}
+@page edt {
+  size: A4 landscape;
+  margin: 10mm;
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { EdtScreen } from "@/components/screens/edt";
+import { EdtExport } from "@/components/screens/edt-export";
 import {
   AddLessonSeries,
   WeekLessonList,
@@ -149,9 +150,9 @@ export default async function EdtPage({
 
   return (
     <AppShell profile={profile} module="edt">
-      <div className="flex flex-col gap-4">
+      <div className="edt-page flex flex-col gap-4">
         {admin && (
-          <div className="flex flex-wrap items-end justify-between gap-3">
+          <div className="flex flex-wrap items-end justify-between gap-3 print:hidden">
             {classes.length ? (
               <div className="flex flex-wrap items-end gap-3">
                 <SelectLink
@@ -211,6 +212,21 @@ export default async function EdtPage({
             )}
           </div>
         )}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {/* Impression : titre de l'emploi du temps (nom, classe, école). */}
+          <h1 className="m-0 hidden font-display text-h2 font-bold print:block">
+            Emploi du temps ·{" "}
+            {profile.student
+              ? `${profile.student.name} (${[profile.student.className, ...profile.student.extraClasses].join(" + ")})`
+              : admin
+                ? [className, pupil?.name].filter(Boolean).join(" · ")
+                : profile.name}{" "}
+            · {profile.school.name}
+          </h1>
+          <EdtExport
+            pdfHref={`/emploi-du-temps/pdf?semaine=${monday}${classId ? `&classe=${classId}` : ""}${pupil ? `&eleve=${pupil.id}` : ""}`}
+          />
+        </div>
         <EdtScreen
           days={week.days}
           todayIndex={week.todayIndex}
@@ -274,6 +290,7 @@ export default async function EdtPage({
           </p>
         )}
         {manage && (
+          <div className="print:hidden">
           <ClassGroupsEditor
             classId={classId}
             className={className}
@@ -288,8 +305,10 @@ export default async function EdtPage({
               ),
             }))}
           />
+          </div>
         )}
         {!profile.student && (
+          <div className="print:hidden">
           <WeekLessonList
             lessons={week.lessons}
             days={week.days}
@@ -298,6 +317,7 @@ export default async function EdtPage({
             me={profile.profileId}
             mine={profile.general ?? undefined}
           />
+          </div>
         )}
       </div>
     </AppShell>
