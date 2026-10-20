@@ -993,6 +993,32 @@ export type Database = {
           },
         ]
       }
+      profile_links: {
+        Row: {
+          added_at: string
+          profile_id: string
+          user_id: string
+        }
+        Insert: {
+          added_at?: string
+          profile_id: string
+          user_id: string
+        }
+        Update: {
+          added_at?: string
+          profile_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profile_links_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profile_private: {
         Row: {
           credit_domestique_account: string | null

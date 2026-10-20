@@ -7,7 +7,6 @@ import {
   updatePersonEmail,
   updatePersonName,
 } from "@/app/(app)/actions";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextField } from "@/components/ui/field";
@@ -292,11 +291,11 @@ export function DirectoryScreen({
                   <div className="flex min-w-0 flex-1 flex-col">
                     <b className="text-ui">{p.displayName}</b>
                     <span className="text-caption text-ink-muted">
-                      {[p.detail, p.email].filter(Boolean).join(" · ") ||
-                        "Aucune adresse"}
+                      {[p.detail, p.email, p.sameAccount]
+                        .filter(Boolean)
+                        .join(" · ") || "Aucune adresse"}
                     </span>
                   </div>
-                  {!p.hasAccount && <Badge tone="neutral">Sans compte</Badge>}
                   <EditPerson person={p} context={context} />
                 </li>
               ))}
