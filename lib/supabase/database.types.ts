@@ -1389,6 +1389,16 @@ export type Database = {
         }
         Returns: { id: string; storage_path: string }[]
       }
+      message_email_targets: {
+        Args: { p_message: string }
+        Returns: {
+          email: string
+          recipient_name: string
+          school_name: string
+          sender_name: string
+          subject: string
+        }[]
+      }
       my_teaching_lessons: {
         Args: { p_from: string; p_to: string }
         Returns: {

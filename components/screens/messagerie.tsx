@@ -22,8 +22,11 @@ const FOLDERS: { key: Folder | "brouillons"; label: string }[] = [
 function Compose({ recipients }: { recipients: { value: string; label: string }[] }) {
   const toast = useToast();
   const [open, setOpen] = useState(false);
-  const [to, setTo] = useState<string>();
+  // Plusieurs destinataires : chacun ajouté depuis la liste, retirable.
+  const [to, setTo] = useState<string[]>([]);
+  const [picker, setPicker] = useState(0);
   const [error, setError] = useState<string>();
+  const labelOf = (id: string) => recipients.find((r) => r.value === id)?.label ?? id;
   const [pending, start] = useTransition();
   return (
     <Dialog
@@ -31,6 +34,7 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
       onOpenChange={(o) => {
         setOpen(o);
         setError(undefined);
+        if (!o) setTo([]);
       }}
       title="Nouveau message"
       trigger={
@@ -44,16 +48,45 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
         onSubmit={(e) => {
           e.preventDefault();
           const f = new FormData(e.currentTarget);
-          if (!to) return setError("Choisissez un destinataire.");
+          if (!to.length) return setError("Choisissez au moins un destinataire.");
           start(async () => {
-            const r = await sendMessage([to], String(f.get("objet")), String(f.get("texte")));
+            const r = await sendMessage(to, String(f.get("objet")), String(f.get("texte")));
             if (!r.ok) return setError(r.error);
             setOpen(false);
-            toast({ title: "Message envoyé" });
+            toast({ title: to.length > 1 ? `Message envoyé à ${to.length} destinataires` : "Message envoyé" });
+            setTo([]);
           });
         }}
       >
-        <SelectField label="Destinataire" placeholder="Choisir une personne" options={recipients} value={to} onValueChange={setTo} />
+        <div className="flex flex-col gap-2">
+          <SelectField
+            key={picker}
+            label={to.length ? "Ajouter un destinataire" : "Destinataires"}
+            placeholder="Choisir une personne"
+            options={recipients.filter((r) => !to.includes(r.value))}
+            onValueChange={(v) => {
+              setTo((t) => (t.includes(v) ? t : [...t, v]));
+              setPicker((n) => n + 1);
+            }}
+          />
+          {to.length > 0 && (
+            <ul aria-label="Destinataires choisis" className="m-0 flex list-none flex-wrap gap-2 p-0">
+              {to.map((id) => (
+                <li key={id} className="flex items-center gap-1 rounded-full border border-line bg-brand-tint py-1 pr-1 pl-3 text-label">
+                  {labelOf(id)}
+                  <button
+                    type="button"
+                    onClick={() => setTo((t) => t.filter((x) => x !== id))}
+                    aria-label={`Retirer ${labelOf(id)}`}
+                    className="flex size-7 items-center justify-center rounded-full hover:bg-surface"
+                  >
+                    ×
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
         <TextField label="Objet" name="objet" required maxLength={200} />
         <TextAreaField label="Message" name="texte" required rows={6} />
         {error && <p role="alert" className="m-0 text-label text-danger">{error}</p>}

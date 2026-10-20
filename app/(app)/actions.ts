@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { DOCUMENT_TYPES, storage } from "@/lib/documents";
+import { notifyNewMessage } from "@/lib/email";
 import { createCheckout } from "@/lib/payments";
 import type { EvalValue } from "@/lib/evaluation";
 import { CHILD_COOKIE, getViewer } from "@/lib/session";
@@ -891,16 +893,25 @@ export async function sendMessage(
   if (!body.trim())
     return { ok: false, error: "Écrivez votre message avant de l'envoyer." };
   if (!subject.trim()) return { ok: false, error: "Indiquez un objet." };
-  return run(
-    (s) =>
-      s.rpc("send_message", {
-        p_recipients: recipients,
+  if (!recipients.length) return { ok: false, error: "Choisissez au moins un destinataire." };
+  let id: string | null = null;
+  const r = await run(
+    async (s) => {
+      const res = await s.rpc("send_message", {
+        p_recipients: [...new Set(recipients)],
         p_subject: subject,
         p_body: body,
         p_reply_to: replyTo,
-      }),
+      });
+      id = res.data;
+      return res;
+    },
     ["/messagerie"],
   );
+  // E-mail « Vous avez un message sur Préau », après la réponse (n'attend pas Brevo).
+  const sent = id;
+  if (r.ok && sent) after(() => notifyNewMessage(sent));
+  return r;
 }
 
 export async function markRead(messageId: string): Promise<ActionResult> {
