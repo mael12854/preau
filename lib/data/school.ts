@@ -195,6 +195,7 @@ const TERM = ["1er", "2e", "3e"];
 export async function getReportCards(
   supabase: SupabaseServer,
   reference: Date,
+  grading: "competences" | "note20" = "competences",
 ): Promise<ReportPeriodView[]> {
   const today = isoDay(reference);
   const { data } = await supabase
@@ -218,8 +219,16 @@ export async function getReportCards(
       headTeacher: rc.head_teacher,
       lines: [...rc.report_card_lines]
         .sort((x, y) => x.position - y.position)
-        // Sans positionnement (établissement noté sur 20), la ligne garde son appréciation seule.
-        .filter((l) => l.level !== "ABS" && l.level !== "DISP")
+        // Une matière compte dès qu'elle est positionnée (« Non positionné » = NE : elle n'apparaît pas).
+        // Établissements notés sur 20, sans positionnement : c'est l'appréciation qui la fait apparaître.
+        .filter((l) =>
+          grading === "note20"
+            ? l.comment.trim() !== ""
+            : l.level === "MI" ||
+              l.level === "MF" ||
+              l.level === "MS" ||
+              l.level === "TB",
+        )
         .map((l) => ({
           subject: {
             id: l.subjects!.id,

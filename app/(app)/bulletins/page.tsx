@@ -32,7 +32,7 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ c
     );
   }
 
-  const periods = await getReportCards(supabase, reference);
+  const periods = await getReportCards(supabase, reference, profile.grading);
   return (
     <AppShell profile={profile} module="bulletins">
       <BulletinsScreen periods={periods} showStudent={profile.staff} scale={profile.scale} grading={profile.grading} />

@@ -88,7 +88,14 @@ function StudentReport({
         <span className="flex items-center gap-2 text-caption text-ink-muted">
           {card ? (
             <>
-              {Object.keys(student.lines).length}/{view.subjects.length} matière
+              {
+                Object.values(student.lines).filter((l) =>
+                  grading === "note20"
+                    ? l.comment.trim() !== ""
+                    : l.level !== null,
+                ).length
+              }
+              /{view.subjects.length} matière
               {view.subjects.length > 1 ? "s" : ""} remplie
               {view.subjects.length > 1 ? "s" : ""}
               {student.publishOn &&
@@ -128,7 +135,10 @@ function StudentReport({
                   <SelectField
                     label="Positionnement"
                     options={[
-                      { value: "aucun", label: "Non positionné" },
+                      {
+                        value: "aucun",
+                        label: "Non positionné (la matière n'apparaît pas)",
+                      },
                       ...EVAL_LEVELS.map((l) => ({
                         value: l,
                         label: evalText(l, scale).label,
@@ -142,7 +152,11 @@ function StudentReport({
                 )}
                 <TextAreaField
                   label="Appréciation"
-                  hint="Laisser vide retire la matière du bulletin."
+                  hint={
+                    positioning
+                      ? "Facultative."
+                      : "Laisser vide retire la matière du bulletin."
+                  }
                   value={line.comment}
                   maxLength={1000}
                   onChange={(e) => set({ comment: e.target.value })}
