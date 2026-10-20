@@ -1389,6 +1389,26 @@ export type Database = {
         }
         Returns: { id: string; storage_path: string }[]
       }
+      my_teaching_lessons: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          cancelled: boolean
+          class_name: string
+          ends_at: string
+          group_id: string | null
+          group_name: string | null
+          id: string
+          room: string
+          school_name: string
+          series_id: string | null
+          starts_at: string
+          subject_hue: number
+          subject_id: string
+          subject_name: string
+          teacher_id: string
+          teacher_name: string
+        }[]
+      }
       give_homework: {
         Args: { p_class: string; p_content: string; p_due: string; p_is_exam: boolean; p_subject: string }
         Returns: string

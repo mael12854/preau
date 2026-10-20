@@ -33,6 +33,32 @@ export async function getWeekLessons(
   // Fenêtre large en UTC (décalage de Paris), puis filtrage exact sur les jours de la semaine.
   const from = new Date(new Date(`${monday}T00:00:00Z`).getTime() - 3 * 3600_000).toISOString();
   const to = `${addDays(monday, 7)}T03:00:00Z`;
+  // Enseignant : EDT général, cours de toutes ses fiches d'enseignant (un compte, plusieurs établissements).
+  if ("teacherId" in scope) {
+    const { data } = await supabase.rpc("my_teaching_lessons", { p_from: from, p_to: to });
+    const rows = (data ?? []).filter(
+      (l) => isoDay(l.starts_at) >= monday && isoDay(l.starts_at) <= sunday,
+    );
+    const schools = new Set(rows.map((l) => l.school_name));
+    const lessons: LessonView[] = rows.map((l) => ({
+      id: l.id,
+      subject: { id: l.subject_id, name: l.subject_name, hue: l.subject_hue },
+      room: l.room,
+      teacher: l.teacher_name,
+      className: schools.size > 1 ? `${l.class_name} · ${l.school_name}` : l.class_name,
+      start: hoursOf(l.starts_at),
+      end: hoursOf(l.ends_at),
+      day: (paris(l.starts_at).weekday + 6) % 7,
+      cancelled: l.cancelled,
+      now: new Date(l.starts_at) <= reference && reference < new Date(l.ends_at),
+      seriesId: l.series_id,
+      teacherId: l.teacher_id,
+      groupId: l.group_id,
+      group: l.group_name,
+    }));
+    return finish(lessons);
+  }
+
   let q = supabase
     .from("lessons")
     .select(
@@ -42,8 +68,8 @@ export async function getWeekLessons(
     .gte("starts_at", from)
     .lt("starts_at", to)
     .order("starts_at");
-  q = "classId" in scope ? q.in("class_id", ([] as string[]).concat(scope.classId)) : q.eq("teacher_id", scope.teacherId);
-  const studentId = "classId" in scope ? scope.studentId : undefined;
+  q = q.in("class_id", ([] as string[]).concat(scope.classId));
+  const studentId = scope.studentId;
   const [{ data }, groups] = await Promise.all([
     q,
     studentId
@@ -74,10 +100,14 @@ export async function getWeekLessons(
       groupId: l.group_id,
       group: l.class_groups?.name ?? null,
     }));
-  const days = Array.from({ length: 7 }, (_, i) => formatDateShort(addDays(monday, i)));
-  const today = isoDay(reference);
-  const todayIndex = today >= monday && today <= sunday ? (paris(reference).weekday + 6) % 7 : -1;
-  return { days, todayIndex, lessons, monday };
+  return finish(lessons);
+
+  function finish(lessons: LessonView[]) {
+    const days = Array.from({ length: 7 }, (_, i) => formatDateShort(addDays(monday, i)));
+    const today = isoDay(reference);
+    const todayIndex = today >= monday && today <= sunday ? (paris(reference).weekday + 6) % 7 : -1;
+    return { days, todayIndex, lessons, monday };
+  }
 }
 
 /** Cours du jour (tableau de bord). */
