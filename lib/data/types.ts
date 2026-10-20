@@ -101,6 +101,8 @@ export type MessageView = {
   date: string;
   body: string;
   unread: boolean;
+  /** Envoi programmé, pas encore parti (Envoyés). */
+  scheduled?: boolean;
 };
 
 export type DocumentView = {

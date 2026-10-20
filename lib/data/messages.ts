@@ -35,6 +35,7 @@ export async function getMessages(
         subject: m.subject,
         body: m.body,
         unread: false,
+        scheduled: new Date(m.sent_at) > reference,
         // Envoi programmé : pas encore visible des destinataires.
         date:
           new Date(m.sent_at) > reference

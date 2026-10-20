@@ -939,6 +939,11 @@ export async function scheduleMessage(
   );
 }
 
+/** Messagerie : annuler un message programmé avant son envoi (son expéditeur). */
+export async function cancelScheduledMessage(messageId: string): Promise<ActionResult> {
+  return run((s) => s.rpc("cancel_scheduled_message", { p_message: messageId }), ["/messagerie"]);
+}
+
 export async function markRead(messageId: string): Promise<ActionResult> {
   const viewer = await getViewer();
   if (!viewer) return { ok: false, error: FAILED };

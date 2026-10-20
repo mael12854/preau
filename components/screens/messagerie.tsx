@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useOptimistic, useRef, useState, useTransition } from "react";
-import { markRead, scheduleMessage, sendMessage } from "@/app/(app)/actions";
+import { cancelScheduledMessage, markRead, scheduleMessage, sendMessage } from "@/app/(app)/actions";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/choice";
@@ -246,6 +246,28 @@ export function MessagerieScreen({
             </div>
           </div>
           <div className="max-w-[38.75rem] text-lg leading-relaxed whitespace-pre-line">{m.body}</div>
+          {folder === "envoyes" && m.scheduled && (
+            <div className="flex flex-wrap items-center gap-3 rounded-alert border border-line bg-surface-2 px-4 py-3">
+              <span className="flex-1 text-label text-ink-2">
+                Pas encore envoyé : les destinataires le recevront à la date prévue.
+              </span>
+              <Button
+                variant="secondary"
+                disabled={pending}
+                className="h-10 px-4 text-label"
+                onClick={() => {
+                  if (!window.confirm(`Annuler l'envoi de « ${m.subject} » ? Le message sera supprimé.`)) return;
+                  start(async () => {
+                    const r = await cancelScheduledMessage(m.id);
+                    toast({ title: r.ok ? "Envoi annulé" : (r.error ?? "") });
+                    if (r.ok) setCurrent(0);
+                  });
+                }}
+              >
+                Annuler l&apos;envoi
+              </Button>
+            </div>
+          )}
           {folder !== "envoyes" && (
             <form
               className="mt-auto flex items-end gap-3 rounded-alert border-[1.5px] border-line-strong p-3.5 focus-within:border-brand has-[textarea:focus-visible]:outline-[3px] has-[textarea:focus-visible]:outline-offset-2 has-[textarea:focus-visible]:outline-accent has-[textarea:focus-visible]:outline-solid"

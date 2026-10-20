@@ -1400,6 +1400,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      cancel_scheduled_message: {
+        Args: { p_message: string }
+        Returns: undefined
+      }
       schedule_message: {
         Args: { p_body: string; p_recipients: string[]; p_send_at: string; p_subject: string }
         Returns: string
