@@ -15,8 +15,14 @@ export async function notifyNewMessage(messageId: string) {
   const key = process.env.BREVO_API_KEY;
   const from = process.env.PREAU_MAIL_FROM;
   const admin = createAdminClient();
-  if (!key || !from || !admin) return;
+  if (!key || !from || !admin) {
+    console.warn("[préau] e-mail de notification non envoyé : configuration incomplète", {
+      brevo: !!key, expediteur: !!from, serviceRole: !!admin,
+    });
+    return;
+  }
   const { data: targets, error } = await admin.rpc("message_email_targets", { p_message: messageId });
+  if (error) console.error("[préau] destinataires de la notification introuvables", error.message);
   if (error || !targets?.length) return;
 
   await Promise.all(
@@ -42,7 +48,12 @@ export async function notifyNewMessage(messageId: string) {
           htmlContent: html,
           textContent: `Bonjour ${t.recipient_name},\n\nVous avez un nouveau message de ${t.sender_name} sur Préau : « ${t.subject} ».\nLisez-le sur ${SITE}/messagerie\n\nPour ne plus recevoir ces e-mails, décochez « Messages » dans Mon compte.`,
         }),
-      }).catch(() => undefined);
+      })
+        .then(async (res) => {
+          if (!res.ok) console.error("[préau] Brevo a refusé l'e-mail", res.status, (await res.text()).slice(0, 300));
+          else console.log("[préau] e-mail de notification envoyé", res.status);
+        })
+        .catch((e) => console.error("[préau] Brevo injoignable", String(e)));
     }),
   );
 }
