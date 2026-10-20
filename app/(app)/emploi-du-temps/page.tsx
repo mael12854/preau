@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { EdtScreen } from "@/components/screens/edt";
 import {
   AddLessonSeries,
@@ -81,6 +82,35 @@ export default async function EdtPage({
     getWeekLessons(supabase, scope, reference, weekOf),
     supabase.from("schools").select("week_a_monday").limit(1).maybeSingle(),
   ]);
+
+  // Semaine vide : vacances en cours et semaine du prochain cours.
+  const [holiday, nextLesson] = week.lessons.length
+    ? [null, null]
+    : await Promise.all([
+        supabase
+          .from("agenda_events")
+          .select("title")
+          .eq("is_holiday", true)
+          .is("class_id", null)
+          .lte("starts_on", addDays(week.monday, 6))
+          .gte("ends_on", week.monday)
+          .limit(1)
+          .maybeSingle()
+          .then((r) => r.data?.title ?? null),
+        (() => {
+          let q = supabase
+            .from("lessons")
+            .select("starts_at")
+            .gte("starts_at", `${addDays(week.monday, 7)}T00:00:00Z`)
+            .order("starts_at")
+            .limit(1);
+          q =
+            "classId" in scope && scope.classId !== undefined
+              ? q.in("class_id", ([] as string[]).concat(scope.classId))
+              : q.eq("teacher_id", profile.profileId);
+          return q.maybeSingle().then((r) => r.data?.starts_at ?? null);
+        })(),
+      ]);
 
   const href = (day: string) =>
     `/emploi-du-temps?semaine=${day}${classId ? `&classe=${classId}` : ""}${pupil ? `&eleve=${pupil.id}` : ""}`;
@@ -220,11 +250,25 @@ export default async function EdtPage({
         />
         {week.lessons.length === 0 && (
           <p className="m-0 text-ui text-ink-2">
-            {admin
-              ? "Aucun cours cette semaine pour cette classe."
-              : profile.student
-                ? "Aucun cours cette semaine."
-                : "Aucun cours à votre nom cette semaine."}
+            {holiday
+              ? `${holiday} : pas de cours cette semaine.`
+              : admin
+                ? "Aucun cours cette semaine pour cette classe."
+                : profile.student
+                  ? "Aucun cours cette semaine."
+                  : "Aucun cours à votre nom cette semaine."}
+            {nextLesson && (
+              <>
+                {" "}
+                <Link
+                  href={href(mondayOf(isoDay(nextLesson)))}
+                  className="font-bold text-brand"
+                >
+                  Voir la semaine du prochain cours (
+                  {formatDateShort(mondayOf(isoDay(nextLesson)))})
+                </Link>
+              </>
+            )}
           </p>
         )}
         {manage && (
