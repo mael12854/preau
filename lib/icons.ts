@@ -4,6 +4,12 @@
  * ajoutez ici toute nouvelle icône avant de l'utiliser.
  */
 export const ICON_NAMES = [
+  "visibility_off",
+  "link",
+  "open_in_new",
+  "content_copy",
+  "cast_for_education",
+  "apps",
   "add",
   "arrow_forward",
   "article",

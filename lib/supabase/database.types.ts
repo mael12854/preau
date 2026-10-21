@@ -318,6 +318,83 @@ export type Database = {
           },
         ]
       }
+      class_links: {
+        Row: {
+          class_id: string
+          code: string | null
+          created_by: string | null
+          id: string
+          kind: string
+          label: string
+          removed: boolean
+          updated_at: string
+          url: string | null
+        }
+        Insert: {
+          class_id: string
+          code?: string | null
+          created_by?: string | null
+          id?: string
+          kind: string
+          label: string
+          removed?: boolean
+          updated_at?: string
+          url?: string | null
+        }
+        Update: {
+          class_id?: string
+          code?: string | null
+          created_by?: string | null
+          id?: string
+          kind?: string
+          label?: string
+          removed?: boolean
+          updated_at?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_links_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      my_apps: {
+        Row: {
+          app_key: string | null
+          created_at: string
+          hidden: boolean
+          id: string
+          login: string | null
+          name: string | null
+          url: string | null
+          user_id: string
+        }
+        Insert: {
+          app_key?: string | null
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          login?: string | null
+          name?: string | null
+          url?: string | null
+          user_id?: string
+        }
+        Update: {
+          app_key?: string | null
+          created_at?: string
+          hidden?: boolean
+          id?: string
+          login?: string | null
+          name?: string | null
+          url?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       classes: {
         Row: {
           hidden: boolean
@@ -1604,7 +1681,19 @@ export type Database = {
         Returns: string
       }
       publish_assessment: { Args: { p_assessment: string }; Returns: undefined }
+      remove_class_link: { Args: { p_id: string }; Returns: undefined }
       remove_class_member: { Args: { p_class: string; p_student: string }; Returns: undefined }
+      save_class_link: {
+        Args: {
+          p_class: string | null
+          p_code: string | null
+          p_id: string | null
+          p_kind: string
+          p_label: string
+          p_url: string | null
+        }
+        Returns: string
+      }
       send_message: {
         Args: {
           p_body: string

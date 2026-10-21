@@ -1213,3 +1213,66 @@ export async function updateCreditDomestiqueAccount(
     ["/compte", "/paiements"],
   );
 }
+
+/** Mes classes en ligne : ajouter ou modifier un lien de classe (professeur de la classe, administration). */
+export async function saveClassLink(input: {
+  id: string | null;
+  classId: string;
+  kind: "meet" | "duolingo" | "kahoot" | "autre";
+  label: string;
+  url: string;
+  code: string;
+}): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("save_class_link", {
+        p_id: input.id,
+        p_class: input.classId,
+        p_kind: input.kind,
+        p_label: input.label,
+        p_url: input.url,
+        p_code: input.code,
+      }),
+    ["/classes-en-ligne"],
+  );
+}
+
+export async function removeClassLink(id: string): Promise<ActionResult> {
+  return run((s) => s.rpc("remove_class_link", { p_id: id }), ["/classes-en-ligne"]);
+}
+
+/** Mes applis : identifiant retenu pour une appli du catalogue (jamais de mot de passe), ou appli masquée. */
+export async function saveAppLogin(appKey: string, login: string, hidden = false): Promise<ActionResult> {
+  const value = login.trim().slice(0, 120) || null;
+  return run(
+    (s) => s.from("my_apps").upsert({ app_key: appKey, login: value, hidden }, { onConflict: "user_id,app_key" }),
+    ["/applis"],
+  );
+}
+
+/** Mes applis : ajouter sa propre appli (nom et lien https), avec son identifiant. */
+export async function addCustomApp(name: string, url: string, login: string): Promise<ActionResult> {
+  const n = name.trim().slice(0, 60);
+  const u = url.trim();
+  if (!n) return { ok: false, error: "Donnez un nom à l'appli." };
+  if (!/^https:\/\/[^\s]+\.[^\s]+/.test(u)) return { ok: false, error: "Le lien doit commencer par https://" };
+  return run(
+    (s) => s.from("my_apps").insert({ name: n, url: u, login: login.trim().slice(0, 120) || null }),
+    ["/applis"],
+  );
+}
+
+/** Mes applis : modifier l'identifiant d'une appli ajoutée, ou la retirer (masquée). */
+export async function updateCustomApp(id: string, patch: { login?: string; hidden?: boolean }): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s
+        .from("my_apps")
+        .update({
+          ...(patch.login !== undefined ? { login: patch.login.trim().slice(0, 120) || null } : {}),
+          ...(patch.hidden !== undefined ? { hidden: patch.hidden } : {}),
+        })
+        .eq("id", id),
+    ["/applis"],
+  );
+}
