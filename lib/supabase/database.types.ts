@@ -1445,6 +1445,16 @@ export type Database = {
         Args: { p_class: string; p_content: string; p_due: string; p_is_exam: boolean; p_subject: string }
         Returns: string
       }
+      update_assessment: {
+        Args: {
+          p_assessment: string
+          p_held_on: string
+          p_skills?: string[]
+          p_term: number
+          p_title: string
+        }
+        Returns: undefined
+      }
       update_homework: {
         Args: { p_content: string; p_due: string; p_id: string; p_is_exam: boolean }
         Returns: undefined

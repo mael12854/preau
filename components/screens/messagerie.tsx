@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/choice";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
+import type { Recipient } from "@/lib/data/messages";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
 import type { MessageView } from "@/lib/data/types";
@@ -20,7 +21,7 @@ const FOLDERS: { key: Folder | "brouillons"; label: string }[] = [
   { key: "archives", label: "Archivés" },
 ];
 
-function Compose({ recipients }: { recipients: { value: string; label: string }[] }) {
+function Compose({ recipients }: { recipients: Recipient[] }) {
   const toast = useToast();
   const [open, setOpen] = useState(false);
   // Plusieurs destinataires : chacun ajouté depuis la liste, retirable.
@@ -31,6 +32,8 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
   const [at, setAt] = useState("");
   const [error, setError] = useState<string>();
   const labelOf = (id: string) => recipients.find((r) => r.value === id)?.label ?? id;
+  // Un groupe part à chacun de ses membres ; une personne présente deux fois ne reçoit qu'un message.
+  const people = [...new Set(to.flatMap((id) => recipients.find((r) => r.value === id)?.members ?? [id]))];
   const [pending, start] = useTransition();
   return (
     <Dialog
@@ -64,15 +67,15 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
             const subject = String(f.get("objet"));
             const text = String(f.get("texte"));
             const r = when
-              ? await scheduleMessage(to, subject, text, when.toISOString())
-              : await sendMessage(to, subject, text);
+              ? await scheduleMessage(people, subject, text, when.toISOString())
+              : await sendMessage(people, subject, text);
             if (!r.ok) return setError(r.error);
             setOpen(false);
             toast({
               title: when
                 ? `Envoi programmé le ${when.toLocaleDateString("fr-FR", { day: "numeric", month: "long" })} à ${when.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`
-                : to.length > 1
-                  ? `Message envoyé à ${to.length} destinataires`
+                : people.length > 1
+                  ? `Message envoyé à ${people.length} destinataires`
                   : "Message envoyé",
             });
             setTo([]);
@@ -83,7 +86,7 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
           <SelectField
             key={picker}
             label={to.length ? "Ajouter un destinataire" : "Destinataires"}
-            placeholder="Choisir une personne"
+            placeholder="Choisir une personne ou un groupe"
             options={recipients.filter((r) => !to.includes(r.value))}
             onValueChange={(v) => {
               setTo((t) => (t.includes(v) ? t : [...t, v]));
@@ -106,6 +109,11 @@ function Compose({ recipients }: { recipients: { value: string; label: string }[
                 </li>
               ))}
             </ul>
+          )}
+          {people.length > to.length && (
+            <p className="m-0 text-caption text-ink-muted">
+              {people.length} personnes recevront ce message.
+            </p>
           )}
         </div>
         <TextField label="Objet" name="objet" required maxLength={200} />
@@ -147,7 +155,7 @@ export function MessagerieScreen({
 }: {
   folder: Folder | "brouillons";
   messages: MessageView[];
-  recipients: { value: string; label: string }[];
+  recipients: Recipient[];
   unreadCount: number;
 }) {
   const toast = useToast();

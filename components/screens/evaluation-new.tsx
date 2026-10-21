@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { createAssessment, deleteAssessment } from "@/app/(app)/actions";
+import { createAssessment, deleteAssessment, updateAssessment } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
@@ -174,5 +174,110 @@ export function DeleteAssessment({ id, title }: { id: string; title: string }) {
     >
       {pending ? "Suppression…" : "Supprimer"}
     </Button>
+  );
+}
+
+/** Modifier l'évaluation affichée : titre, date, période, compétences (les pastilles suivent leur compétence). */
+export function EditAssessment({
+  assessment,
+  grading,
+}: {
+  assessment: { id: string; title: string; heldOn: string; term: number; skills: string[] };
+  grading: Grading;
+}) {
+  const toast = useToast();
+  const router = useRouter();
+  const competences = grading !== "note20";
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(assessment.title);
+  const [heldOn, setHeldOn] = useState(assessment.heldOn);
+  const [term, setTerm] = useState(String(assessment.term));
+  const [skills, setSkills] = useState(assessment.skills.join("\n"));
+  const [error, setError] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        if (o) {
+          setTitle(assessment.title);
+          setHeldOn(assessment.heldOn);
+          setTerm(String(assessment.term));
+          setSkills(assessment.skills.join("\n"));
+          setError(null);
+        }
+      }}
+      title="Modifier l'évaluation"
+      description={
+        competences
+          ? "Les pastilles déjà saisies restent attachées à leur compétence. Une compétence retirée perd ses pastilles."
+          : undefined
+      }
+      trigger={
+        <Button type="button" variant="secondary" icon="edit" className="h-10 px-4 text-label">
+          Modifier
+        </Button>
+      }
+    >
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const list = skills.split("\n").map((s) => s.trim()).filter(Boolean);
+          if (!title.trim()) return setError("Donnez un titre à l'évaluation.");
+          if (!heldOn) return setError("Indiquez la date de l'évaluation.");
+          if (competences && list.length === 0) return setError("Ajoutez au moins une compétence évaluée.");
+          const removed = assessment.skills.filter((s) => !list.includes(s));
+          if (
+            competences &&
+            removed.length &&
+            !window.confirm(`Retirer ${removed.map((s) => `« ${s} »`).join(", ")} ? Les pastilles de ${removed.length > 1 ? "ces compétences" : "cette compétence"} seront perdues.`)
+          )
+            return;
+          setError(null);
+          start(async () => {
+            const r = await updateAssessment({
+              id: assessment.id,
+              title: title.trim(),
+              heldOn,
+              term: Number(term),
+              skills: competences ? list : [],
+            });
+            if (!r.ok) return setError(r.error ?? "");
+            toast({ title: "Évaluation modifiée" });
+            setOpen(false);
+            router.refresh();
+          });
+        }}
+      >
+        <TextField label="Titre" value={title} maxLength={120} onChange={(e) => setTitle(e.target.value)} required />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <TextField label="Date" type="date" value={heldOn} onChange={(e) => setHeldOn(e.target.value)} required />
+          <SelectField label="Période" options={TERMS} value={term} onValueChange={setTerm} />
+        </div>
+        {competences && (
+          <TextAreaField
+            label="Compétences évaluées"
+            hint="Une par ligne, 12 au plus."
+            value={skills}
+            rows={4}
+            maxLength={1200}
+            onChange={(e) => setSkills(e.target.value)}
+          />
+        )}
+        {error && (
+          <p role="alert" className="m-0 text-label text-danger">
+            {error}
+          </p>
+        )}
+        <div className="flex justify-end">
+          <Button type="submit" disabled={pending} className="h-10 px-4 text-label">
+            {pending ? "Enregistrement…" : "Enregistrer"}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
   );
 }

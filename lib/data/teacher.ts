@@ -162,6 +162,8 @@ export type AppelData = {
     id: string;
     title: string;
     label: string;
+    heldOn: string;
+    term: number;
     skills: string[];
     grid: Record<string, EvalValue[]>;
     /** Notes sur 20 par élève (établissements notés sur 20). */
@@ -236,7 +238,7 @@ export async function getAppel(
     ? await supabase
         .from("assessments")
         .select(
-          "id, title, skills, published_at, class_id, classes(name), subjects(name), assessment_results(student_id, skill_levels, score, level)",
+          "id, title, held_on, term, skills, published_at, class_id, classes(name), subjects(name), assessment_results(student_id, skill_levels, score, level)",
         )
         .eq("id", chosen.id)
         .maybeSingle()
@@ -266,6 +268,8 @@ export async function getAppel(
       id: a.id,
       title: a.title,
       label: `${a.classes?.name} · ${a.subjects?.name}`,
+      heldOn: a.held_on,
+      term: a.term,
       skills: a.skills,
       grid,
       scores,

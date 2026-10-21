@@ -1,4 +1,7 @@
 import "server-only";
+import { classStudents } from "./common";
+import { getPublishTargets } from "./targets";
+import type { Viewer } from "@/lib/session";
 import { formatDateShort, formatRelative, formatTimeText } from "@/lib/format";
 import type { SupabaseServer } from "@/lib/supabase/server";
 import type { MessageView } from "./types";
@@ -70,23 +73,71 @@ export async function getMessages(
     );
 }
 
-/** Destinataires possibles : le personnel de l'établissement (et les familles pour le personnel). */
-export async function getRecipients(
-  supabase: SupabaseServer,
-  profileId: string,
-  staff: boolean,
-) {
-  let q = supabase
+export type Recipient = {
+  value: string;
+  label: string;
+  /** Groupe (classe, demi-groupe, LV2…) : les personnes à qui le message part réellement. */
+  members?: string[];
+};
+
+/**
+ * Destinataires possibles. Tous : le personnel. Personnel : aussi les familles et les élèves,
+ * et des groupes par classe (élèves, familles) et par groupe de classe (demi-groupe, LV2…).
+ */
+export async function getRecipients(supabase: SupabaseServer, viewer: Viewer): Promise<Recipient[]> {
+  const kinds: ("prof" | "cpe" | "direction" | "secretariat" | "parent" | "eleve")[] = viewer.staff
+    ? ["prof", "cpe", "direction", "secretariat", "parent", "eleve"]
+    : ["prof", "cpe", "direction", "secretariat"];
+  const { data } = await supabase
     .from("profiles")
     .select("id, display_name, title, kind")
-    .neq("id", profileId)
+    .neq("id", viewer.profileId)
+    .in("kind", kinds)
     .order("display_name");
-  q = staff
-    ? q.in("kind", ["prof", "cpe", "direction", "secretariat", "parent"])
-    : q.in("kind", ["prof", "cpe", "direction", "secretariat"]);
-  const { data } = await q;
-  return (data ?? []).map((p) => ({
+  const people: Recipient[] = (data ?? []).map((p) => ({
     value: p.id,
-    label: p.title ? `${p.display_name} · ${p.title}` : p.display_name,
+    label:
+      p.kind === "eleve"
+        ? `${p.display_name} · élève`
+        : p.title
+          ? `${p.display_name} · ${p.title}`
+          : p.display_name,
   }));
+  if (!viewer.staff) return people;
+
+  const targets = await getPublishTargets(supabase, viewer);
+  const classes = targets?.classes ?? [];
+  if (!classes.length) return people;
+  const rosters = await Promise.all(classes.map((c) => classStudents(supabase, c.id)));
+  const studentIds = [...new Set(rosters.flat().map((s) => s.id))];
+  const [{ data: guardians }, { data: groups }] = await Promise.all([
+    studentIds.length
+      ? supabase.from("guardians").select("student_id, guardian_id").in("student_id", studentIds)
+      : Promise.resolve({ data: [] as { student_id: string; guardian_id: string }[] }),
+    supabase
+      .from("class_groups")
+      .select("id, name, class_id, student_class_groups(student_id)")
+      .in(
+        "class_id",
+        classes.map((c) => c.id),
+      )
+      .order("name"),
+  ]);
+  const familyOf = (ids: string[]) => [
+    ...new Set((guardians ?? []).filter((g) => ids.includes(g.student_id)).map((g) => g.guardian_id)),
+  ];
+
+  const groupOptions: Recipient[] = [];
+  classes.forEach((c, i) => {
+    const ids = rosters[i].map((s) => s.id);
+    if (!ids.length) return;
+    groupOptions.push({ value: `classe:${c.id}:eleves`, label: `${c.name} · tous les élèves`, members: ids });
+    const fam = familyOf(ids);
+    if (fam.length) groupOptions.push({ value: `classe:${c.id}:familles`, label: `${c.name} · toutes les familles`, members: fam });
+    for (const g of (groups ?? []).filter((x) => x.class_id === c.id)) {
+      const gIds = g.student_class_groups.map((m) => m.student_id).filter((id) => ids.includes(id));
+      if (gIds.length) groupOptions.push({ value: `groupe:${g.id}`, label: `${c.name} · ${g.name} (élèves)`, members: gIds });
+    }
+  });
+  return [...groupOptions, ...people];
 }

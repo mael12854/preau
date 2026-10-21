@@ -915,6 +915,27 @@ export async function createAssessment(input: {
   return { ok: true, id: data };
 }
 
+/** Modifier une de ses évaluations : titre, date, trimestre, compétences (professeur). */
+export async function updateAssessment(input: {
+  id: string;
+  title: string;
+  heldOn: string;
+  term: number;
+  skills: string[];
+}): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("update_assessment", {
+        p_assessment: input.id,
+        p_title: input.title,
+        p_held_on: input.heldOn,
+        p_term: input.term,
+        p_skills: input.skills,
+      }),
+    ["/appel", "/accueil", "/evaluations"],
+  );
+}
+
 /** Supprimer une de ses évaluations, avec les résultats saisis (professeur). */
 export async function deleteAssessment(assessmentId: string): Promise<ActionResult> {
   return run(

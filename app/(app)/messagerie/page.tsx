@@ -17,7 +17,7 @@ export default async function MessageriePage({ searchParams }: { searchParams: P
     sections.map(({ viewer, supabase }) =>
       Promise.all([
         folder === "brouillons" ? [] : getMessages(supabase, viewer.profileId, folder as Folder, now()),
-        getRecipients(supabase, viewer.profileId, viewer.staff),
+        getRecipients(supabase, viewer),
       ]),
     ),
   );
