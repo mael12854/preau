@@ -362,6 +362,200 @@ export type Database = {
           },
         ]
       }
+      quizzes: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          removed: boolean
+          school_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          removed?: boolean
+          school_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          removed?: boolean
+          school_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_questions: {
+        Row: {
+          choices: string[]
+          correct: number
+          id: string
+          position: number
+          prompt: string
+          quiz_id: string
+          removed: boolean
+          seconds: number
+        }
+        Insert: {
+          choices?: string[]
+          correct?: number
+          id?: string
+          position?: number
+          prompt?: string
+          quiz_id?: string
+          removed?: boolean
+          seconds?: number
+        }
+        Update: {
+          choices?: string[]
+          correct?: number
+          id?: string
+          position?: number
+          prompt?: string
+          quiz_id?: string
+          removed?: boolean
+          seconds?: number
+        }
+        Relationships: [
+          { foreignKeyName: "quiz_questions_quiz_id_fkey"; columns: ["quiz_id"]; isOneToOne: false; referencedRelation: "quizzes"; referencedColumns: ["id"] },
+        ]
+      }
+      quiz_sessions: {
+        Row: {
+          assessment_id: string | null
+          class_id: string
+          created_at: string
+          current: number
+          host_id: string
+          id: string
+          question_started_at: string | null
+          quiz_id: string
+          status: string
+        }
+        Insert: {
+          assessment_id?: string | null
+          class_id?: string
+          created_at?: string
+          current?: number
+          host_id?: string
+          id?: string
+          question_started_at?: string | null
+          quiz_id?: string
+          status?: string
+        }
+        Update: {
+          assessment_id?: string | null
+          class_id?: string
+          created_at?: string
+          current?: number
+          host_id?: string
+          id?: string
+          question_started_at?: string | null
+          quiz_id?: string
+          status?: string
+        }
+        Relationships: [
+          { foreignKeyName: "quiz_sessions_quiz_id_fkey"; columns: ["quiz_id"]; isOneToOne: false; referencedRelation: "quizzes"; referencedColumns: ["id"] },
+          { foreignKeyName: "quiz_sessions_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+        ]
+      }
+      vocab_decks: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          owner_id: string
+          removed: boolean
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          removed?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          removed?: boolean
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          { foreignKeyName: "vocab_decks_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+        ]
+      }
+      vocab_cards: {
+        Row: {
+          back: string
+          deck_id: string
+          front: string
+          id: string
+          position: number
+          removed: boolean
+        }
+        Insert: {
+          back?: string
+          deck_id?: string
+          front?: string
+          id?: string
+          position?: number
+          removed?: boolean
+        }
+        Update: {
+          back?: string
+          deck_id?: string
+          front?: string
+          id?: string
+          position?: number
+          removed?: boolean
+        }
+        Relationships: [
+          { foreignKeyName: "vocab_cards_deck_id_fkey"; columns: ["deck_id"]; isOneToOne: false; referencedRelation: "vocab_decks"; referencedColumns: ["id"] },
+        ]
+      }
+      vocab_progress: {
+        Row: {
+          box: number
+          card_id: string
+          due: string
+          last_seen: string
+          reviews: number
+          student_id: string
+        }
+        Insert: {
+          box?: number
+          card_id?: string
+          due?: string
+          last_seen?: string
+          reviews?: number
+          student_id?: string
+        }
+        Update: {
+          box?: number
+          card_id?: string
+          due?: string
+          last_seen?: string
+          reviews?: number
+          student_id?: string
+        }
+        Relationships: [
+          { foreignKeyName: "vocab_progress_card_id_fkey"; columns: ["card_id"]; isOneToOne: false; referencedRelation: "vocab_cards"; referencedColumns: ["id"] },
+        ]
+      }
       my_apps: {
         Row: {
           app_key: string | null
@@ -1679,6 +1873,20 @@ export type Database = {
       post_liaison_note: {
         Args: { p_body: string; p_class: string; p_requires_signature?: boolean; p_title: string }
         Returns: string
+      }
+      answer_quiz: { Args: { p_choice: number; p_session: string }; Returns: undefined }
+      quiz_state: { Args: { p_session: string }; Returns: Json }
+      quiz_step: { Args: { p_action: string; p_session: string }; Returns: undefined }
+      quiz_to_assessment: { Args: { p_session: string; p_skill: string; p_subject: string }; Returns: string }
+      remove_quiz: { Args: { p_id: string }; Returns: undefined }
+      remove_vocab_deck: { Args: { p_id: string }; Returns: undefined }
+      review_vocab_card: { Args: { p_card: string; p_known: boolean }; Returns: undefined }
+      save_quiz: { Args: { p_id: string | null; p_questions: Json; p_title: string }; Returns: string }
+      save_vocab_deck: { Args: { p_cards: Json; p_class: string | null; p_id: string | null; p_title: string }; Returns: string }
+      start_quiz_session: { Args: { p_class: string; p_quiz: string }; Returns: string }
+      vocab_deck_stats: {
+        Args: { p_deck: string }
+        Returns: { known: number; last_seen: string | null; name: string; seen: number; student_id: string; total: number }[]
       }
       publish_assessment: { Args: { p_assessment: string }; Returns: undefined }
       remove_class_link: { Args: { p_id: string }; Returns: undefined }

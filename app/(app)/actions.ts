@@ -1276,3 +1276,74 @@ export async function updateCustomApp(id: string, patch: { login?: string; hidde
     ["/applis"],
   );
 }
+
+// ===== Outils : quiz en direct =====
+type QuizQuestionInput = { prompt: string; choices: string[]; correct: number; seconds: number };
+
+export async function saveQuiz(id: string | null, title: string, questions: QuizQuestionInput[]): Promise<ActionResult & { id?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("save_quiz", { p_id: id, p_title: title, p_questions: questions });
+  if (error) return { ok: false, error: readableError(error.message) };
+  revalidatePath("/outils/quiz");
+  return { ok: true, id: data };
+}
+
+export async function removeQuiz(id: string): Promise<ActionResult> {
+  return run((s) => s.rpc("remove_quiz", { p_id: id }), ["/outils/quiz"]);
+}
+
+export async function startQuiz(quizId: string, classId: string): Promise<ActionResult & { id?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("start_quiz_session", { p_quiz: quizId, p_class: classId });
+  if (error) return { ok: false, error: readableError(error.message) };
+  return { ok: true, id: data };
+}
+
+export async function quizStep(sessionId: string, action: "next" | "reveal" | "end"): Promise<ActionResult> {
+  return run((s) => s.rpc("quiz_step", { p_session: sessionId, p_action: action }), []);
+}
+
+export async function answerQuiz(sessionId: string, choice: number): Promise<ActionResult> {
+  return run((s) => s.rpc("answer_quiz", { p_session: sessionId, p_choice: choice }), []);
+}
+
+/** État de la partie (lu toutes les secondes par l'écran du quiz). */
+export async function getQuizState(sessionId: string): Promise<{ ok: true; state: unknown } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("quiz_state", { p_session: sessionId });
+  if (error) return { ok: false, error: readableError(error.message) };
+  return { ok: true, state: data };
+}
+
+export async function quizToAssessment(sessionId: string, subjectId: string, skill: string): Promise<ActionResult & { id?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("quiz_to_assessment", { p_session: sessionId, p_subject: subjectId, p_skill: skill });
+  if (error) return { ok: false, error: readableError(error.message) };
+  revalidatePath("/appel");
+  return { ok: true, id: data };
+}
+
+// ===== Outils : cartes de vocabulaire =====
+export async function saveVocabDeck(
+  id: string | null,
+  classId: string | null,
+  title: string,
+  cards: { front: string; back: string }[],
+): Promise<ActionResult> {
+  return run((s) => s.rpc("save_vocab_deck", { p_id: id, p_class: classId, p_title: title, p_cards: cards }), ["/outils/vocabulaire"]);
+}
+
+export async function removeVocabDeck(id: string): Promise<ActionResult> {
+  return run((s) => s.rpc("remove_vocab_deck", { p_id: id }), ["/outils/vocabulaire"]);
+}
+
+export async function reviewVocabCard(cardId: string, known: boolean): Promise<ActionResult> {
+  return run((s) => s.rpc("review_vocab_card", { p_card: cardId, p_known: known }), []);
+}
+
+export async function getVocabStats(deckId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("vocab_deck_stats", { p_deck: deckId });
+  if (error) return { ok: false as const, error: readableError(error.message) };
+  return { ok: true as const, rows: data ?? [] };
+}
