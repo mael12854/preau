@@ -133,10 +133,17 @@ export async function getRecipients(supabase: SupabaseServer, viewer: Viewer): P
     if (!ids.length) return;
     groupOptions.push({ value: `classe:${c.id}:eleves`, label: `${c.name} · tous les élèves`, members: ids });
     const fam = familyOf(ids);
-    if (fam.length) groupOptions.push({ value: `classe:${c.id}:familles`, label: `${c.name} · toutes les familles`, members: fam });
+    if (fam.length) {
+      groupOptions.push({ value: `classe:${c.id}:familles`, label: `${c.name} · toutes les familles`, members: fam });
+      groupOptions.push({ value: `classe:${c.id}:tous`, label: `${c.name} · élèves et familles`, members: [...ids, ...fam] });
+    }
     for (const g of (groups ?? []).filter((x) => x.class_id === c.id)) {
       const gIds = g.student_class_groups.map((m) => m.student_id).filter((id) => ids.includes(id));
-      if (gIds.length) groupOptions.push({ value: `groupe:${g.id}`, label: `${c.name} · ${g.name} (élèves)`, members: gIds });
+      if (!gIds.length) continue;
+      groupOptions.push({ value: `groupe:${g.id}`, label: `${c.name} · ${g.name} (élèves)`, members: gIds });
+      const gFam = familyOf(gIds);
+      if (gFam.length)
+        groupOptions.push({ value: `groupe:${g.id}:tous`, label: `${c.name} · ${g.name} (élèves et familles)`, members: [...gIds, ...gFam] });
     }
   });
   return [...groupOptions, ...people];
