@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { createAssessment } from "@/app/(app)/actions";
+import { createAssessment, deleteAssessment } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
@@ -143,5 +143,36 @@ export function AssessmentPicker({ options, value }: { options: { id: string; la
       onValueChange={(v) => router.push(`${path}?evaluation=${v}`)}
       className="min-w-0 flex-1 sm:max-w-md"
     />
+  );
+}
+
+/** Supprimer l'évaluation affichée, après confirmation. */
+export function DeleteAssessment({ id, title }: { id: string; title: string }) {
+  const toast = useToast();
+  const router = useRouter();
+  const path = usePathname();
+  const [pending, start] = useTransition();
+  return (
+    <Button
+      type="button"
+      variant="secondary"
+      icon="delete"
+      disabled={pending}
+      className="h-10 px-4 text-label"
+      onClick={() => {
+        if (!window.confirm(`Supprimer l'évaluation « ${title} » ? Les résultats saisis seront perdus, y compris pour les élèves et les familles si elle est publiée.`))
+          return;
+        start(async () => {
+          const r = await deleteAssessment(id);
+          toast({ title: r.ok ? "Évaluation supprimée" : r.error });
+          if (r.ok) {
+            router.push(path);
+            router.refresh();
+          }
+        });
+      }}
+    >
+      {pending ? "Suppression…" : "Supprimer"}
+    </Button>
   );
 }

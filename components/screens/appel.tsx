@@ -5,7 +5,7 @@ import { publishAssessment, setScore, setSkillLevels, validateAttendance } from 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PastilleDot } from "@/components/ui/pastille";
-import { AssessmentPicker, NewAssessment } from "@/components/screens/evaluation-new";
+import { AssessmentPicker, DeleteAssessment, NewAssessment } from "@/components/screens/evaluation-new";
 import { SegmentedTabs } from "@/components/ui/segmented";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
@@ -305,7 +305,10 @@ function EvalPanel({
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <AssessmentPicker options={data.assessments} value={id} />
-        <NewAssessment choices={choices} today={today} grading={grading} />
+        <div className="flex flex-wrap gap-2">
+          {data.assessment && <DeleteAssessment id={data.assessment.id} title={data.assessment.title} />}
+          <NewAssessment choices={choices} today={today} grading={grading} />
+        </div>
       </div>
       {grading === "note20" ? <ScoreTab key={id} data={data} /> : <EvaluationTab key={id} data={data} scale={scale} />}
     </div>

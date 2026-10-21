@@ -915,6 +915,14 @@ export async function createAssessment(input: {
   return { ok: true, id: data };
 }
 
+/** Supprimer une de ses évaluations, avec les résultats saisis (professeur). */
+export async function deleteAssessment(assessmentId: string): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("delete_assessment", { p_assessment: assessmentId }),
+    ["/appel", "/accueil", "/evaluations"],
+  );
+}
+
 export async function publishAssessment(
   assessmentId: string,
 ): Promise<ActionResult> {

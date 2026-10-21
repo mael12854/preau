@@ -1540,6 +1540,7 @@ export type Database = {
       }
       delete_report_card: { Args: { p_report_card: string }; Returns: undefined }
       delete_report_cards: { Args: { p_class: string; p_term: number }; Returns: number }
+      delete_assessment: { Args: { p_assessment: string }; Returns: undefined }
       delete_lesson: { Args: { p_lesson: string }; Returns: undefined }
       delete_lesson_series: { Args: { p_from: string; p_series: string }; Returns: number }
       delete_agenda_event: { Args: { p_event: string }; Returns: undefined }
