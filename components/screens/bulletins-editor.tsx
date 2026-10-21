@@ -8,6 +8,7 @@ import {
   prepareReportCards,
   saveReportCouncil,
   saveReportLine,
+  saveReportScore,
 } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +22,7 @@ import {
   type EvalScale,
 } from "@/lib/evaluation";
 import { formatDateShort } from "@/lib/format";
-import type { Grading } from "@/lib/grading";
+import { formatScore, parseScore, type Grading } from "@/lib/grading";
 
 type Student = ReportEditorView["students"][number];
 const TERMS = [
@@ -45,6 +46,13 @@ function StudentReport({
   const toast = useToast();
   const router = useRouter();
   const [lines, setLines] = useState(student.lines);
+  // Note sur 20 du bulletin (saisie libre, indépendante des évaluations), en texte pendant la saisie.
+  const [scores, setScores] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      Object.entries(student.lines).map(([id, l]) => [id, l.score === null ? "" : formatScore(l.score)]),
+    ),
+  );
+  const [invalid, setInvalid] = useState<Record<string, boolean>>({});
   const [council, setCouncil] = useState(student.council);
   const [pending, start] = useTransition();
   const positioning = grading !== "note20";
@@ -53,9 +61,21 @@ function StudentReport({
   const save = () =>
     start(async () => {
       if (!card) return;
+      if (!positioning) {
+        const bad = view.subjects.filter((s) => parseScore(scores[s.id] ?? "") === undefined);
+        setInvalid(Object.fromEntries(bad.map((s) => [s.id, true])));
+        if (bad.length) return toast({ title: `${bad[0].name} : note entre 0 et 20, au demi-point` });
+      }
       for (const s of view.subjects) {
-        const now = lines[s.id] ?? { level: null, comment: "" };
-        const before = student.lines[s.id] ?? { level: null, comment: "" };
+        const now = lines[s.id] ?? { level: null, comment: "", score: null };
+        const before = student.lines[s.id] ?? { level: null, comment: "", score: null };
+        if (!positioning) {
+          const score = parseScore(scores[s.id] ?? "") ?? null;
+          if (score !== before.score) {
+            const r = await saveReportScore(card, s.id, score);
+            if (!r.ok) return toast({ title: `${s.name} : ${r.error}` });
+          }
+        }
         if (
           now.level === before.level &&
           now.comment.trim() === before.comment.trim()
@@ -91,7 +111,7 @@ function StudentReport({
               {
                 Object.values(student.lines).filter((l) =>
                   grading === "note20"
-                    ? l.comment.trim() !== ""
+                    ? l.comment.trim() !== "" || l.score !== null
                     : l.level !== null,
                 ).length
               }
@@ -120,7 +140,8 @@ function StudentReport({
             </p>
           )}
           {view.subjects.map((s) => {
-            const line = lines[s.id] ?? { level: null, comment: "" };
+            const line = lines[s.id] ?? { level: null, comment: "", score: null };
+            const scoreId = `bulletin-note-${student.id}-${s.id}`;
             const set = (patch: Partial<typeof line>) =>
               setLines((l) => ({ ...l, [s.id]: { ...line, ...patch } }));
             return (
@@ -150,12 +171,47 @@ function StudentReport({
                     }
                   />
                 )}
+                {!positioning && (
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor={scoreId} className="text-label font-bold">
+                      Note du trimestre
+                    </label>
+                    <div className="flex items-center gap-1.5">
+                      <input
+                        id={scoreId}
+                        inputMode="decimal"
+                        autoComplete="off"
+                        placeholder="—"
+                        aria-invalid={invalid[s.id] || undefined}
+                        aria-describedby={`${scoreId}-aide`}
+                        value={scores[s.id] ?? ""}
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          setScores((x) => ({ ...x, [s.id]: v }));
+                          setInvalid((x) => ({ ...x, [s.id]: false }));
+                        }}
+                        className="h-11 w-24 rounded-control border border-line bg-surface px-2.5 text-right text-ui tabular aria-invalid:border-danger"
+                      />
+                      <span aria-hidden="true" className="text-label text-ink-muted">
+                        sur 20
+                      </span>
+                    </div>
+                    <p
+                      id={`${scoreId}-aide`}
+                      className={`m-0 text-caption ${invalid[s.id] ? "text-danger" : "text-ink-muted"}`}
+                    >
+                      {invalid[s.id]
+                        ? "Saisissez une note entre 0 et 20, au demi-point (par exemple 14,5)."
+                        : "Facultative, au demi-point. Elle ne dépend pas des évaluations."}
+                    </p>
+                  </div>
+                )}
                 <TextAreaField
                   label="Appréciation"
                   hint={
                     positioning
                       ? "Facultative."
-                      : "Laisser vide retire la matière du bulletin."
+                      : "Facultative. Sans note ni appréciation, la matière n'apparaît pas."
                   }
                   value={line.comment}
                   maxLength={1000}

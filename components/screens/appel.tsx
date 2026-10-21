@@ -5,9 +5,11 @@ import { publishAssessment, setScore, setSkillLevels, validateAttendance } from 
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { PastilleDot } from "@/components/ui/pastille";
+import { AssessmentPicker, NewAssessment } from "@/components/screens/evaluation-new";
 import { SegmentedTabs } from "@/components/ui/segmented";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
+import type { HomeworkChoice } from "@/lib/data/homework";
 import type { AppelData } from "@/lib/data/teacher";
 import { evalText, nextEvalValue, type EvalScale, type EvalValue } from "@/lib/evaluation";
 import { formatScore, parseScore, type Grading } from "@/lib/grading";
@@ -89,7 +91,7 @@ function EvaluationTab({ data, scale }: { data: AppelData; scale: EvalScale }) {
   const [published, setPublished] = useState(a?.published ?? false);
   const [announce, setAnnounce] = useState("");
   const [pending, start] = useTransition();
-  if (!a) return <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">Aucune évaluation en cours de saisie.</p>;
+  if (!a) return <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">Aucune évaluation pour l&apos;instant. Créez-en une avec « Nouvelle évaluation ».</p>;
 
   const cycle = (studentId: string, name: string, j: number, v: EvalValue) => {
     const next = nextEvalValue(v);
@@ -194,7 +196,7 @@ function ScoreTab({ data }: { data: AppelData }) {
   const [invalid, setInvalid] = useState<Record<string, boolean>>({});
   const [published, setPublished] = useState(a?.published ?? false);
   const [pending, start] = useTransition();
-  if (!a) return <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">Aucune évaluation en cours de saisie.</p>;
+  if (!a) return <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">Aucune évaluation pour l&apos;instant. Créez-en une avec « Nouvelle évaluation ».</p>;
 
   const save = (studentId: string, value: string, st: Status) => {
     const score = st === "NE" ? parseScore(value) : null;
@@ -284,12 +286,52 @@ function ScoreTab({ data }: { data: AppelData }) {
   );
 }
 
+/** Onglet Évaluation : créer une évaluation, choisir celle à saisir, puis la saisie. */
+function EvalPanel({
+  data,
+  choices,
+  today,
+  scale,
+  grading,
+}: {
+  data: AppelData;
+  choices: HomeworkChoice[];
+  today: string;
+  scale: EvalScale;
+  grading: Grading;
+}) {
+  const id = data.assessment?.id ?? null;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <AssessmentPicker options={data.assessments} value={id} />
+        <NewAssessment choices={choices} today={today} grading={grading} />
+      </div>
+      {grading === "note20" ? <ScoreTab key={id} data={data} /> : <EvaluationTab key={id} data={data} scale={scale} />}
+    </div>
+  );
+}
+
 /** Appel & évaluation (professeur), enregistrés dans Supabase. */
-export function AppelScreen({ data, scale = "college", grading = "competences" }: { data: AppelData; scale?: EvalScale; grading?: Grading }) {
+export function AppelScreen({
+  data,
+  choices = [],
+  today = "",
+  scale = "college",
+  grading = "competences",
+  initialTab = "appel",
+}: {
+  data: AppelData;
+  choices?: HomeworkChoice[];
+  today?: string;
+  scale?: EvalScale;
+  grading?: Grading;
+  initialTab?: "appel" | "eval";
+}) {
   return (
     <SegmentedTabs
       aria-label="Saisie"
-      defaultValue="appel"
+      defaultValue={initialTab}
       aside={
         data.lesson && (
           <p className="m-0 text-label text-ink-2">
@@ -299,7 +341,7 @@ export function AppelScreen({ data, scale = "college", grading = "competences" }
       }
       tabs={[
         { value: "appel", label: "Appel", content: <AppelTab data={data} /> },
-        { value: "eval", label: "Évaluation", content: grading === "note20" ? <ScoreTab data={data} /> : <EvaluationTab data={data} scale={scale} /> },
+        { value: "eval", label: "Évaluation", content: <EvalPanel data={data} choices={choices} today={today} scale={scale} grading={grading} /> },
       ]}
     />
   );

@@ -6,7 +6,7 @@ import { Icon } from "@/components/ui/icon";
 import { SubjectDot } from "@/components/ui/subject-chip";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
-import type { Grading } from "@/lib/grading";
+import { scoreLabel, scoreShort, type Grading } from "@/lib/grading";
 import {
   EVAL_LEVELS,
   EVAL_META,
@@ -16,7 +16,7 @@ import {
 import type { ReportPeriodView } from "@/lib/data/types";
 
 const COLS = "@2xl:grid-cols-[10.625rem_4fr_6fr]";
-const COLS_NO_LEVEL = "@2xl:grid-cols-[10.625rem_minmax(0,1fr)]";
+const COLS_NO_LEVEL = "@2xl:grid-cols-[10.625rem_5rem_minmax(0,1fr)]";
 
 /** Bulletins : périodes, positionnement sur 4 cases, appréciations, mention du conseil. */
 export function BulletinsScreen({
@@ -132,7 +132,7 @@ export function BulletinsScreen({
               )}
             >
               <span>Matière</span>
-              {positioning && <span>Positionnement</span>}
+              {positioning ? <span>Positionnement</span> : <span>Note</span>}
               <span>Appréciation</span>
             </div>
             <ul className="m-0 list-none p-0">
@@ -178,6 +178,14 @@ export function BulletinsScreen({
                           Non positionné
                         </span>
                       ))}
+                    {!positioning && (
+                      <span
+                        className="text-ui font-bold tabular"
+                        aria-label={r.score === null ? "Pas de note" : `Note : ${scoreLabel(r.score, "NE")}`}
+                      >
+                        {r.score === null ? "—" : scoreShort(r.score, "NE")}
+                      </span>
+                    )}
                     <p className="m-0 text-label leading-[1.45] text-ink-2">
                       {r.comment}
                     </p>

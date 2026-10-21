@@ -19,7 +19,7 @@ export type ReportEditorView = {
     name: string;
     reportCardId: string | null;
     publishOn: string | null;
-    lines: Record<string, { level: EvalLevel | null; comment: string }>;
+    lines: Record<string, { level: EvalLevel | null; comment: string; score: number | null }>;
     council: { mention: string; text: string };
   }[];
 };
@@ -83,7 +83,7 @@ export async function getReportEditor(
     ? await supabase
         .from("report_cards")
         .select(
-          "id, student_id, publish_on, council_mention, council_text, report_card_lines(subject_id, level, comment)",
+          "id, student_id, publish_on, council_mention, council_text, report_card_lines(subject_id, level, comment, score)",
         )
         .in("student_id", ids)
         .eq("school_year", year)
@@ -114,6 +114,7 @@ export async function getReportEditor(
                   ? l.level
                   : null,
               comment: l.comment,
+              score: l.score === null ? null : Number(l.score),
             },
           ]),
         ),

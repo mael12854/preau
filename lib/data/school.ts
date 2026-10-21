@@ -201,7 +201,7 @@ export async function getReportCards(
   const { data } = await supabase
     .from("report_cards")
     .select(
-      "id, school_year, term, class_name, head_teacher, publish_on, council_mention, council_text, students(profiles!students_profile_id_fkey(display_name)), report_card_lines(level, comment, position, subjects(id, name, hue))",
+      "id, school_year, term, class_name, head_teacher, publish_on, council_mention, council_text, students(profiles!students_profile_id_fkey(display_name)), report_card_lines(level, comment, score, position, subjects(id, name, hue))",
     )
     .order("publish_on", { ascending: false });
   return (data ?? []).map((rc) => {
@@ -220,10 +220,10 @@ export async function getReportCards(
       lines: [...rc.report_card_lines]
         .sort((x, y) => x.position - y.position)
         // Une matière compte dès qu'elle est positionnée (« Non positionné » = NE : elle n'apparaît pas).
-        // Établissements notés sur 20, sans positionnement : c'est l'appréciation qui la fait apparaître.
+        // Établissements notés sur 20, sans positionnement : une note ou une appréciation la fait apparaître.
         .filter((l) =>
           grading === "note20"
-            ? l.comment.trim() !== ""
+            ? l.comment.trim() !== "" || l.score !== null
             : l.level === "MI" ||
               l.level === "MF" ||
               l.level === "MS" ||
@@ -238,6 +238,7 @@ export async function getReportCards(
           level:
             l.level === "NE" ? null : (l.level as "MI" | "MF" | "MS" | "TB"),
           comment: l.comment,
+          score: l.score === null ? null : Number(l.score),
         })),
       council: rc.council_mention
         ? { title: rc.council_mention, text: rc.council_text ?? "" }

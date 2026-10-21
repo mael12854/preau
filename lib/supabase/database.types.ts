@@ -1172,10 +1172,12 @@ export type Database = {
           level: Database["public"]["Enums"]["eval_value"]
           position: number
           report_card_id: string
+          score: number | null
           subject_id: string
         }
         Insert: {
           updated_by?: string | null
+          score?: number | null
           comment: string
           level: Database["public"]["Enums"]["eval_value"]
           position?: number
@@ -1188,6 +1190,7 @@ export type Database = {
           level?: Database["public"]["Enums"]["eval_value"]
           position?: number
           report_card_id?: string
+          score?: number | null
           subject_id?: string
         }
         Relationships: [
@@ -1450,6 +1453,17 @@ export type Database = {
         Args: { p_id: string }
         Returns: undefined
       }
+      create_assessment: {
+        Args: {
+          p_class: string
+          p_held_on: string
+          p_skills?: string[]
+          p_subject: string
+          p_term: number
+          p_title: string
+        }
+        Returns: string
+      }
       create_class_groups: {
         Args: { p_class: string; p_family: string; p_names: string[] }
         Returns: number
@@ -1610,6 +1624,10 @@ export type Database = {
       set_lesson_cancelled: { Args: { p_cancelled: boolean; p_lesson: string }; Returns: undefined }
       set_report_council: {
         Args: { p_mention: string; p_report_card: string; p_text: string }
+        Returns: undefined
+      }
+      set_report_score: {
+        Args: { p_report_card: string; p_score: number | null; p_subject: string }
         Returns: undefined
       }
       set_report_line: {

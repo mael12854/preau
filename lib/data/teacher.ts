@@ -169,6 +169,8 @@ export type AppelData = {
     published: boolean;
   } | null;
   evalStudents: StudentRow[];
+  /** Évaluations du professeur, pour choisir celle à saisir (la plus récente non publiée d'abord). */
+  assessments: { id: string; label: string }[];
 };
 
 /** Élèves de la classe, y compris ceux qui la suivent en classe supplémentaire. */
@@ -186,6 +188,7 @@ export async function getAppel(
   supabase: SupabaseServer,
   teacherId: string,
   reference: Date,
+  assessmentId?: string,
 ): Promise<AppelData> {
   const lessons = (await todayLessons(supabase, teacherId, reference)).filter(
     (l) => !l.cancelled,
@@ -221,16 +224,23 @@ export async function getAppel(
     (data ?? []).forEach((a) => (attendance[a.student_id] = a.status));
   }
 
-  const { data: a } = await supabase
+  const { data: list } = await supabase
     .from("assessments")
-    .select(
-      "id, title, skills, published_at, class_id, classes(name), subjects(name), assessment_results(student_id, skill_levels, score, level)",
-    )
+    .select("id, title, held_on, published_at, classes(name), subjects(name)")
     .eq("teacher_id", teacherId)
     .order("published_at", { ascending: false, nullsFirst: true })
     .order("held_on", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+    .limit(100);
+  const chosen = list?.find((x) => x.id === assessmentId) ?? list?.[0];
+  const { data: a } = chosen
+    ? await supabase
+        .from("assessments")
+        .select(
+          "id, title, skills, published_at, class_id, classes(name), subjects(name), assessment_results(student_id, skill_levels, score, level)",
+        )
+        .eq("id", chosen.id)
+        .maybeSingle()
+    : { data: null };
   let evalStudents: StudentRow[] = [];
   let assessment: AppelData["assessment"] = null;
   if (a) {
@@ -274,5 +284,9 @@ export async function getAppel(
     attendance,
     assessment,
     evalStudents,
+    assessments: (list ?? []).map((x) => ({
+      id: x.id,
+      label: `${x.title} · ${x.classes?.name ?? ""} · ${x.subjects?.name ?? ""} · ${formatDateShort(x.held_on)}${x.published_at ? " · publiée" : ""}`,
+    })),
   };
 }

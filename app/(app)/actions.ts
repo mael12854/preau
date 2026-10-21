@@ -17,6 +17,12 @@ export type ActionResult = { ok: true } | { ok: false; error: string };
 
 const FAILED = "L'enregistrement n'a pas abouti. Réessayez dans un instant.";
 
+/** Les messages des fonctions SQL sont rédigés pour l'utilisateur ; les autres restent génériques. */
+function readableError(message: string) {
+  const readable = /^[A-ZÉÈ][^:]*\.?$/.test(message) && !/permission|violates|syntax/i.test(message);
+  return readable ? message : FAILED;
+}
+
 async function run(
   fn: (
     supabase: Awaited<ReturnType<typeof createClient>>,
@@ -25,13 +31,7 @@ async function run(
 ): Promise<ActionResult> {
   const supabase = await createClient();
   const { error } = await fn(supabase);
-  if (error) {
-    // Les messages des fonctions SQL sont rédigés pour l'utilisateur ; les autres restent génériques.
-    const readable =
-      /^[A-ZÉÈ][^:]*\.?$/.test(error.message) &&
-      !/permission|violates|syntax/i.test(error.message);
-    return { ok: false, error: readable ? error.message : FAILED };
-  }
+  if (error) return { ok: false, error: readableError(error.message) };
   paths.forEach((p) => revalidatePath(p));
   return { ok: true };
 }
@@ -422,6 +422,23 @@ export async function saveReportLine(
         p_subject: subjectId,
         p_level: level as "MI",
         p_comment: comment,
+      }),
+    ["/bulletins"],
+  );
+}
+
+/** Bulletin noté sur 20 : note de la matière (au demi-point), ou null pour l'effacer. */
+export async function saveReportScore(
+  reportCardId: string,
+  subjectId: string,
+  score: number | null,
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("set_report_score", {
+        p_report_card: reportCardId,
+        p_subject: subjectId,
+        p_score: score,
       }),
     ["/bulletins"],
   );
@@ -873,6 +890,29 @@ export async function setScore(
       }),
     [],
   );
+}
+
+/** Nouvelle évaluation (professeur) : classe et matière enseignées, compétences si l'établissement en évalue. */
+export async function createAssessment(input: {
+  classId: string;
+  subjectId: string;
+  title: string;
+  heldOn: string;
+  term: number;
+  skills: string[];
+}): Promise<ActionResult & { id?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_assessment", {
+    p_class: input.classId,
+    p_subject: input.subjectId,
+    p_title: input.title,
+    p_held_on: input.heldOn,
+    p_term: input.term,
+    p_skills: input.skills,
+  });
+  if (error) return { ok: false, error: readableError(error.message) };
+  revalidatePath("/appel");
+  return { ok: true, id: data };
 }
 
 export async function publishAssessment(

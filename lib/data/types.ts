@@ -157,7 +157,7 @@ export type ReportPeriodView = {
   student: string;
   className: string;
   headTeacher: string | null;
-  lines: { subject: SubjectRef; level: EvalLevel | null; comment: string }[];
+  lines: { subject: SubjectRef; level: EvalLevel | null; comment: string; score: number | null }[];
   council: { title: string; text: string } | null;
 };
 
