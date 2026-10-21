@@ -108,7 +108,10 @@ export async function getRecipients(supabase: SupabaseServer, viewer: Viewer): P
   // Groupes du personnel (sans soi-même) : tout le personnel, et les seuls professeurs.
   const staffIds = (data ?? []).filter((p) => p.kind !== "eleve" && p.kind !== "parent").map((p) => p.id);
   const teacherIds = (data ?? []).filter((p) => p.kind === "prof").map((p) => p.id);
+  // Toute l'école : le personnel, les élèves et les familles que l'on peut joindre.
+  const everyone = (data ?? []).map((p) => p.id);
   const staffOptions: Recipient[] = [
+    ...(everyone.length > staffIds.length ? [{ value: "ecole", label: "Toute l'école (personnel, élèves et familles)", members: everyone }] : []),
     ...(staffIds.length ? [{ value: "personnel", label: "Tout le personnel", members: staffIds }] : []),
     ...(teacherIds.length > 1 ? [{ value: "professeurs", label: "Tous les professeurs", members: teacherIds }] : []),
   ];
