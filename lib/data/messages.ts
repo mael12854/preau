@@ -105,9 +105,17 @@ export async function getRecipients(supabase: SupabaseServer, viewer: Viewer): P
   }));
   if (!viewer.staff) return people;
 
+  // Groupes du personnel (sans soi-même) : tout le personnel, et les seuls professeurs.
+  const staffIds = (data ?? []).filter((p) => p.kind !== "eleve" && p.kind !== "parent").map((p) => p.id);
+  const teacherIds = (data ?? []).filter((p) => p.kind === "prof").map((p) => p.id);
+  const staffOptions: Recipient[] = [
+    ...(staffIds.length ? [{ value: "personnel", label: "Tout le personnel", members: staffIds }] : []),
+    ...(teacherIds.length > 1 ? [{ value: "professeurs", label: "Tous les professeurs", members: teacherIds }] : []),
+  ];
+
   const targets = await getPublishTargets(supabase, viewer);
   const classes = targets?.classes ?? [];
-  if (!classes.length) return people;
+  if (!classes.length) return [...staffOptions, ...people];
   const rosters = await Promise.all(classes.map((c) => classStudents(supabase, c.id)));
   const studentIds = [...new Set(rosters.flat().map((s) => s.id))];
   const [{ data: guardians }, { data: groups }] = await Promise.all([
@@ -146,5 +154,5 @@ export async function getRecipients(supabase: SupabaseServer, viewer: Viewer): P
         groupOptions.push({ value: `groupe:${g.id}:tous`, label: `${c.name} · ${g.name} (élèves et familles)`, members: [...gIds, ...gFam] });
     }
   });
-  return [...groupOptions, ...people];
+  return [...staffOptions, ...groupOptions, ...people];
 }
