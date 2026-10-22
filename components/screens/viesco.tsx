@@ -1,14 +1,38 @@
+"use client";
+
+import { useState } from "react";
 import { Badge, TONE_CLASSES } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import type { LifeEventView, LifeStatsView } from "@/lib/data/types";
 import { Stat } from "./greeting";
-import { JustifyButton } from "./justify-dialog";
+import { SelectField } from "@/components/ui/field";
+import { JustifyButton, ReviewButtons } from "./justify-dialog";
 
 /** Vie scolaire : 4 compteurs, événements avec statut et « Justifier ». */
 const plural = (n: number, one: string, many: string) => (n > 1 ? many : one);
 
-export function VieScolaireScreen({ events, stats }: { events: LifeEventView[]; stats: LifeStatsView }) {
+export function VieScolaireScreen({
+  events: all,
+  stats,
+  staff = false,
+  canValidate = false,
+}: {
+  events: LifeEventView[];
+  stats: LifeStatsView;
+  /** Personnel : filtres par classe et « à traiter ». */
+  staff?: boolean;
+  /** Vie scolaire, direction, secrétariat : justification validée tout de suite. */
+  canValidate?: boolean;
+}) {
+  const [klass, setKlass] = useState("toutes");
+  const [show, setShow] = useState<"tout" | "a-traiter" | "absences">(staff ? "a-traiter" : "tout");
+  const classes = [...new Set(all.map((e) => e.className).filter(Boolean))] as string[];
+  const events = all.filter(
+    (e) =>
+      (klass === "toutes" || e.className === klass) &&
+      (show === "tout" || (show === "a-traiter" ? e.pending : e.kind === "absence" || e.kind === "retard")),
+  );
   const SCHOOL_LIFE_STATS = [
     { value: String(stats.absences), label: `${plural(stats.absences, "Absence", "Absences")}${stats.toJustify ? ` · ${stats.toJustify} à justifier` : ""}` },
     { value: String(stats.lates), label: `${plural(stats.lates, "Retard", "Retards")}${stats.lateMinutes ? ` · ${stats.lateMinutes} min au total` : ""}` },
@@ -24,11 +48,39 @@ export function VieScolaireScreen({ events, stats }: { events: LifeEventView[]; 
           </li>
         ))}
       </ul>
+      {staff && (
+        <div className="flex flex-wrap gap-3">
+          {classes.length > 1 && (
+            <SelectField
+              label="Classe"
+              options={[{ value: "toutes", label: "Toutes les classes" }, ...classes.sort().map((c) => ({ value: c, label: c }))]}
+              value={klass}
+              onValueChange={setKlass}
+              className="min-w-44"
+            />
+          )}
+          <SelectField
+            label="Afficher"
+            options={[
+              { value: "a-traiter", label: "À traiter (à justifier, justificatifs reçus)" },
+              { value: "absences", label: "Absences et retards" },
+              { value: "tout", label: "Tout" },
+            ]}
+            value={show}
+            onValueChange={(v) => setShow(v as typeof show)}
+            className="min-w-64"
+          />
+        </div>
+      )}
       <section aria-labelledby="viesco-events" className="@container overflow-hidden rounded-card border border-line bg-surface">
         <h2 id="viesco-events" className="sr-only">
           Événements
         </h2>
-        {events.length === 0 && <p className="m-0 px-5 py-10 text-center text-ui text-ink-2">Aucun événement pour l&apos;instant.</p>}
+        {events.length === 0 && (
+          <p className="m-0 px-5 py-10 text-center text-ui text-ink-2">
+            {staff && show === "a-traiter" ? "Rien à traiter : toutes les absences sont justifiées." : "Aucun événement pour l'instant."}
+          </p>
+        )}
         <ul className="m-0 list-none p-0">
           {events.map((e) => {
             return (
@@ -44,14 +96,26 @@ export function VieScolaireScreen({ events, stats }: { events: LifeEventView[]; 
                     {e.type}
                     {e.student && <span className="font-normal text-ink-2"> · {e.student}</span>}
                   </h3>
+                  {e.className && staff && <span className="text-caption text-ink-muted">{e.className}</span>}
                   <span className="text-caption text-ink-muted">{e.date}</span>
                 </div>
-                <span className="col-start-2 text-ui text-ink-2 @3xl:col-start-auto">{e.detail}</span>
+                <span className="col-start-2 flex flex-col text-ui text-ink-2 @3xl:col-start-auto">
+                  {e.detail}
+                  {e.reason && <span className="text-caption text-ink-muted">Motif : {e.reason}{e.comment ? ` · ${e.comment}` : ""}</span>}
+                  {e.reviewComment && e.status === "À justifier" && (
+                    <span className="text-caption text-danger">Justificatif refusé : {e.reviewComment}</span>
+                  )}
+                </span>
                 <div className="col-start-2 @3xl:col-start-auto">
                   <Badge tone={e.statusTone}>{e.status}</Badge>
                 </div>
                 <div className="col-start-2 @3xl:col-start-auto">
-                  {e.canJustify && <JustifyButton eventId={e.id} what={`${e.type} · ${e.date}`} />}
+                  <span className="flex flex-wrap gap-2">
+                    {e.canReview && <ReviewButtons eventId={e.id} what={`${e.type} · ${e.student ?? ""} · ${e.date}`} reason={e.reason} comment={e.comment} />}
+                    {e.canJustify && !e.canReview && (
+                      <JustifyButton eventId={e.id} what={`${e.type} · ${e.date}`} staff={canValidate} late={e.kind === "retard"} />
+                    )}
+                  </span>
                 </div>
               </li>
             );

@@ -125,6 +125,14 @@ export async function justifyEvent(
   );
 }
 
+/** Accepter ou refuser le justificatif envoyé par la famille (vie scolaire, direction, secrétariat). */
+export async function reviewJustification(eventId: string, accept: boolean, comment: string): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("review_justification", { p_event: eventId, p_accept: accept, p_comment: comment }),
+    ["/vie-scolaire", "/accueil"],
+  );
+}
+
 export async function validateAttendance(
   lessonId: string,
   statuses: Record<string, "present" | "absent" | "late">,

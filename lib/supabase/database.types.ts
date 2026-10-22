@@ -1067,6 +1067,9 @@ export type Database = {
           justified_at: string | null
           justified_by: string | null
           kind: Database["public"]["Enums"]["life_event_kind"]
+          lesson_id: string | null
+          review_comment: string | null
+          voided: boolean
           minutes: number | null
           occurred_at: string
           status: Database["public"]["Enums"]["life_event_status"]
@@ -1082,6 +1085,9 @@ export type Database = {
           justified_at?: string | null
           justified_by?: string | null
           kind: Database["public"]["Enums"]["life_event_kind"]
+          lesson_id?: string | null
+          review_comment?: string | null
+          voided?: boolean
           minutes?: number | null
           occurred_at: string
           status: Database["public"]["Enums"]["life_event_status"]
@@ -1097,6 +1103,9 @@ export type Database = {
           justified_at?: string | null
           justified_by?: string | null
           kind?: Database["public"]["Enums"]["life_event_kind"]
+          lesson_id?: string | null
+          review_comment?: string | null
+          voided?: boolean
           minutes?: number | null
           occurred_at?: string
           status?: Database["public"]["Enums"]["life_event_status"]
@@ -1982,6 +1991,10 @@ export type Database = {
           p_last_name: string
           p_profile: string
         }
+        Returns: undefined
+      }
+      review_justification: {
+        Args: { p_accept: boolean; p_comment?: string; p_event: string }
         Returns: undefined
       }
       validate_attendance: {

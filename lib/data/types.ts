@@ -79,7 +79,17 @@ export type LifeEventView = {
   status: string;
   statusTone: Tone;
   canJustify: boolean;
+  /** Justificatif envoyé par la famille, à accepter ou refuser (vie scolaire, direction, secrétariat). */
+  canReview: boolean;
   student?: string;
+  className?: string;
+  /** Motif et commentaire de la justification, réponse de l'établissement en cas de refus. */
+  reason?: string;
+  comment?: string;
+  reviewComment?: string;
+  /** « à traiter » : à justifier ou justificatif en attente. */
+  pending: boolean;
+  kind: string;
 };
 
 export type LifeStatsView = {

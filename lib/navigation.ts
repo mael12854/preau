@@ -69,7 +69,7 @@ export const PROFILES: Profile[] = [
   {
     id: "enseignant-primaire", label: "Enseignant · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: true,
     labels: { devoirs: "Cahier de textes", bulletins: "Livret scolaire" },
-    nav: ["dash", "liaison", "saisie", "edt", "devoirs", "bulletins", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "liaison", "saisie", "edt", "devoirs", "viesco", "bulletins", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   { id: "college", label: "Élève · collège", name: "Léa Martin", role: "4e B", initials: "LM", hello: "Bonjour Léa", email: "lea.martin@jean-moulin.preau.fr", staff: false, nav: ELEVE },
   { id: "lycee", label: "Élève · lycée", name: "Hugo Benali", role: "1re 3 · Spé. Maths, SES", initials: "HB", hello: "Bonjour Hugo", email: "hugo.benali@preau.fr", staff: false, nav: ELEVE },
@@ -80,7 +80,7 @@ export const PROFILES: Profile[] = [
   {
     id: "prof", label: "Professeur", name: "Marc Durand", role: "Mathématiques", initials: "MD", hello: "Bonjour Monsieur Durand", email: "marc.durand@ac-academie.fr", staff: true,
     labels: { devoirs: "Cahier de textes" },
-    nav: ["dash", "saisie", "edt", "devoirs", "bulletins", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "saisie", "edt", "devoirs", "viesco", "bulletins", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   {
     id: "cpe", label: "Vie scolaire / CPE", name: "Nadia Kader", role: "Conseillère principale d'éducation", initials: "NK", hello: "Bonjour Madame Kader", email: "nadia.kader@ac-academie.fr", staff: true,
@@ -92,7 +92,7 @@ export const PROFILES: Profile[] = [
   },
   {
     id: "secretariat", label: "Secrétariat", name: "Claire Roux", role: "Secrétariat de direction", initials: "CR", hello: "Bonjour Madame Roux", email: "secretariat@jean-moulin.preau.fr", staff: true,
-    nav: ["dash", "edt", "paiements", "bulletins", "documents", "messages", "agenda", "annuaire", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "edt", "viesco", "paiements", "bulletins", "documents", "messages", "agenda", "annuaire", "outils", "enligne", "applis", "compte"],
   },
 ];
 

@@ -32,12 +32,14 @@ export async function getLifeEvents(
   supabase: SupabaseServer,
   studentId: string | null,
   canJustify: boolean,
+  canReview = false,
 ) {
   let q = supabase
     .from("life_events")
     .select(
-      "id, kind, occurred_at, whole_day, detail, status, minutes, students(profiles!students_profile_id_fkey(display_name))",
+      "id, kind, occurred_at, whole_day, detail, status, minutes, justification_reason, justification_comment, review_comment, students(classes(name), profiles!students_profile_id_fkey(display_name))",
     )
+    .eq("voided", false)
     .order("occurred_at", { ascending: false });
   if (studentId) q = q.eq("student_id", studentId);
   const { data } = await q;
@@ -60,8 +62,16 @@ export async function getLifeEvents(
       tone: k.tone,
       status: st.label,
       statusTone: st.tone,
-      canJustify: canJustify && e.status === "a_justifier",
+      // La famille justifie ce qui est à justifier ; l'établissement peut aussi justifier directement un justificatif en attente.
+      canJustify: canJustify && (e.status === "a_justifier" || (canReview && e.status === "justificatif_envoye")),
+      canReview: canReview && e.status === "justificatif_envoye",
       student: studentId ? undefined : e.students?.profiles?.display_name,
+      className: e.students?.classes?.name ?? undefined,
+      reason: e.justification_reason ?? undefined,
+      comment: e.justification_comment ?? undefined,
+      reviewComment: e.review_comment ?? undefined,
+      pending: e.status === "a_justifier" || e.status === "justificatif_envoye",
+      kind: e.kind,
     };
   });
   const stats: LifeStatsView = {
