@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
+import { Icon } from "@/components/ui/icon";
 import { SelectField, TextField } from "@/components/ui/field";
 import { setActAs } from "@/components/shell/act-as";
 import { useToast } from "@/components/ui/toast";
@@ -426,6 +428,15 @@ export function LessonDialog({
       title={label}
       description={`${WEEKDAYS[lesson.day]} ${options.dates[lesson.day] ? options.dates[lesson.day].split("-").reverse().join("/") : ""} · ${formatTimeGrid(lesson.start)}–${formatTimeGrid(lesson.end)} · ${lesson.teacher}`}
     >
+      {(options.mine ?? [options.me]).includes(lesson.teacherId) && !lesson.cancelled && (
+        <Link
+          href={`/appel?cours=${lesson.id}`}
+          className="inline-flex h-11 w-fit items-center gap-2 rounded-control bg-brand px-4 text-label font-bold text-on-brand hover:opacity-90"
+        >
+          <Icon name="fact_check" size={20} />
+          Faire l&apos;appel de ce cours
+        </Link>
+      )}
       {manage ? (
         <form
           className="flex flex-col gap-4"

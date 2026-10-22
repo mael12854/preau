@@ -10,13 +10,13 @@ import { getSections, requireModule } from "@/lib/session";
 
 export const metadata: Metadata = { title: "Appel & évaluation" };
 
-export default async function AppelPage({ searchParams }: { searchParams: Promise<{ evaluation?: string }> }) {
+export default async function AppelPage({ searchParams }: { searchParams: Promise<{ evaluation?: string; cours?: string }> }) {
   const profile = await requireModule("saisie");
-  const { evaluation } = await searchParams;
+  const { evaluation, cours } = await searchParams;
   const reference = now();
   const sections = await getSections(profile, "saisie");
   const [data, choices] = await Promise.all([
-    Promise.all(sections.map((s) => getAppel(s.supabase, s.viewer.profileId, reference, evaluation))),
+    Promise.all(sections.map((s) => getAppel(s.supabase, s.viewer.profileId, reference, evaluation, cours))),
     Promise.all(sections.map((s) => getHomeworkChoices(s.supabase, s.viewer.profileId, reference))),
   ]);
   return (

@@ -1,9 +1,11 @@
 "use client";
 
+import { usePathname, useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { publishAssessment, setScore, setSkillLevels, validateAttendance } from "@/app/(app)/actions";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { SelectField } from "@/components/ui/field";
 import { PastilleDot } from "@/components/ui/pastille";
 import { AssessmentPicker, DeleteAssessment, EditAssessment, NewAssessment } from "@/components/screens/evaluation-new";
 import { SegmentedTabs } from "@/components/ui/segmented";
@@ -286,6 +288,30 @@ function ScoreTab({ data }: { data: AppelData }) {
   );
 }
 
+/** Cours affiché, et choix d'un autre cours du jour : chaque cours a son lien (/appel?cours=…). */
+function LessonPicker({ data }: { data: AppelData }) {
+  const router = useRouter();
+  const path = usePathname();
+  const lesson = data.lesson!;
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <p className="m-0 text-label text-ink-2">
+        <b className="text-ink">{lesson.label}</b> · {lesson.detail}
+      </p>
+      {data.todayLessons.length > 1 && (
+        <SelectField
+          label="Autre cours"
+          hideLabel
+          options={data.todayLessons.map((l) => ({ value: l.id, label: l.label }))}
+          value={lesson.id}
+          onValueChange={(v) => router.push(`${path}?cours=${v}`)}
+          className="min-w-56"
+        />
+      )}
+    </div>
+  );
+}
+
 /** Onglet Évaluation : créer une évaluation, choisir celle à saisir, puis la saisie. */
 function EvalPanel({
   data,
@@ -336,15 +362,9 @@ export function AppelScreen({
     <SegmentedTabs
       aria-label="Saisie"
       defaultValue={initialTab}
-      aside={
-        data.lesson && (
-          <p className="m-0 text-label text-ink-2">
-            <b className="text-ink">{data.lesson.label}</b> · {data.lesson.detail}
-          </p>
-        )
-      }
+      aside={data.lesson && <LessonPicker data={data} />}
       tabs={[
-        { value: "appel", label: "Appel", content: <AppelTab data={data} /> },
+        { value: "appel", label: "Appel", content: <AppelTab key={data.lesson?.id ?? "aucun"} data={data} /> },
         { value: "eval", label: "Évaluation", content: <EvalPanel data={data} choices={choices} today={today} scale={scale} grading={grading} /> },
       ]}
     />

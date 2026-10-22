@@ -116,14 +116,20 @@ export async function getTeacherDashboard(
       if (l.cancelled)
         return { ...base, tone: "neutral" as const, status: "Annulé" };
       if (l.attendance_validated_at)
-        return { ...base, tone: "ok" as const, status: "Appel fait" };
+        return {
+          ...base,
+          tone: "ok" as const,
+          status: "Appel fait",
+          action: "Revoir l'appel",
+          href: `/appel?cours=${l.id}`,
+        };
       if (started)
         return {
           ...base,
           tone: "danger" as const,
           status: "Appel à faire",
           action: "Faire l'appel",
-          href: "/appel",
+          href: `/appel?cours=${l.id}`,
         };
       return { ...base, tone: "neutral" as const, status: "À venir" };
     }),
@@ -156,6 +162,8 @@ export type AppelData = {
     detail: string;
     validated: boolean;
   } | null;
+  /** Cours du jour du professeur, pour passer de l'un à l'autre. */
+  todayLessons: { id: string; label: string }[];
   students: StudentRow[];
   attendance: Record<string, "present" | "absent" | "late">;
   assessment: {
@@ -191,11 +199,24 @@ export async function getAppel(
   teacherId: string,
   reference: Date,
   assessmentId?: string,
+  lessonId?: string,
 ): Promise<AppelData> {
   const lessons = (await todayLessons(supabase, teacherId, reference)).filter(
     (l) => !l.cancelled,
   );
+  // Cours demandé par son lien (tableau de bord, emploi du temps), même un autre jour ; sinon le cours en cours.
+  const { data: asked } = lessonId
+    ? await supabase
+        .from("lessons")
+        .select(
+          "id, starts_at, ends_at, room, cancelled, attendance_validated_at, class_id, group_id, classes!inner(name), subjects(name), class_groups(name)",
+        )
+        .eq("id", lessonId)
+        .eq("teacher_id", teacherId)
+        .maybeSingle()
+    : { data: null };
   const current =
+    (asked as Lesson | null) ??
     lessons.find(
       (l) =>
         new Date(l.starts_at) <= reference && reference < new Date(l.ends_at),
@@ -277,7 +298,14 @@ export async function getAppel(
     };
   }
 
+  const lessonLabel = (l: Lesson) =>
+    `${formatTimeText(l.starts_at)} · ${l.classes?.name}${l.class_groups ? ` (${l.class_groups.name})` : ""} · ${l.subjects?.name}${l.attendance_validated_at ? " · appel fait" : ""}`;
+  const choices = lessons.some((l) => l.id === current?.id) || !current ? lessons : [current, ...lessons];
   return {
+    todayLessons: choices.map((l) => ({
+      id: l.id,
+      label: l.id === current?.id && !lessons.some((x) => x.id === l.id) ? `${formatDateShort(l.starts_at)} ${lessonLabel(l)}` : lessonLabel(l),
+    })),
     lesson: current && {
       id: current.id,
       label: `${current.classes?.name}${current.class_groups ? ` (${current.class_groups.name})` : ""} · ${current.subjects?.name}`,
