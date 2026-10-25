@@ -23,7 +23,7 @@ export function AppShell({ profile, module, children }: AppShellProps) {
   return (
     <>
       <SkipLink />
-      <div className="min-h-dvh lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
+      <div data-aide-menu="" className="min-h-dvh lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
         <aside aria-label="Menu" className="hidden bg-sidebar lg:block">
           <div className="sticky top-0 h-dvh">
             <SidebarContent profile={profile} active={module} />

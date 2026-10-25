@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Icon } from "@/components/ui/icon";
 import { Logo } from "@/components/ui/logo";
 import { signOut } from "@/app/actions";
+import { HelpChatButton } from "./help-chat";
 import type { ModuleKey } from "@/lib/navigation";
 import type { Viewer } from "@/lib/session";
 import { Nav } from "./nav";
@@ -40,6 +41,7 @@ export function SidebarContent({
             <span className="truncate text-sidebar-muted">{profile.role}</span>
           </div>
         </div>
+        <HelpChatButton />
         <form action={signOut}>
           <button
             type="submit"

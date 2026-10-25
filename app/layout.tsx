@@ -60,6 +60,11 @@ function tawkSnippet(visitor: { name: string; email: string } | null) {
   return [
     "var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();",
     visitor ? `Tawk_API.visitor=${json(visitor)};` : "",
+    // Petit écran, dans l'application : pas de bulle par-dessus le contenu ; le chat s'ouvre depuis le menu
+    // (« J'ai un problème avec le site ») et se masque de nouveau quand on le réduit.
+    "var preauSansBulle=function(){return window.matchMedia('(max-width: 1023px)').matches&&!!document.querySelector('[data-aide-menu]');};",
+    "Tawk_API.onLoad=function(){if(preauSansBulle())Tawk_API.hideWidget();};",
+    "Tawk_API.onChatMinimized=function(){if(preauSansBulle())Tawk_API.hideWidget();};",
     "(function(){var s1=document.createElement('script'),s0=document.getElementsByTagName('script')[0];",
     `s1.async=true;s1.src=${json(TAWK_SRC)};s1.charset='UTF-8';s1.setAttribute('crossorigin','*');`,
     "s0.parentNode.insertBefore(s1,s0);})();",
