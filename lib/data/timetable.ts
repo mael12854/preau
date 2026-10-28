@@ -16,7 +16,9 @@ import type { LessonView } from "./types";
  */
 type Scope =
   | { classId: string | string[]; studentId?: string }
-  | { teacherId: string };
+  | { teacherId: string }
+  /** EDT général du compte : toutes ses fiches (prof, élève, enfants suivis), toutes écoles. */
+  | { all: true };
 
 /**
  * Cours d'une semaine (lundi → dimanche), pour une classe ou un professeur.
@@ -34,6 +36,31 @@ export async function getWeekLessons(
   const from = new Date(new Date(`${monday}T00:00:00Z`).getTime() - 3 * 3600_000).toISOString();
   const to = `${addDays(monday, 7)}T03:00:00Z`;
   // Enseignant : EDT général, cours de toutes ses fiches d'enseignant (un compte, plusieurs établissements).
+  if ("all" in scope) {
+    const { data } = await supabase.rpc("my_all_lessons", { p_from: from, p_to: to });
+    const rows = (data ?? []).filter((l) => isoDay(l.starts_at) >= monday && isoDay(l.starts_at) <= sunday);
+    // Un même cours vu à deux titres (ex. élève et responsable) n'apparaît qu'une fois.
+    const seen = new Set<string>();
+    const lessons: LessonView[] = rows
+      .filter((l) => (seen.has(l.id) ? false : (seen.add(l.id), true)))
+      .map((l) => ({
+        id: l.id,
+        subject: { id: l.subject_id, name: l.subject_name, hue: l.subject_hue },
+        room: l.room,
+        teacher: l.teacher_name,
+        className: [l.role === "prof" ? "Cours donné" : (l.who ?? "Élève"), l.class_name, l.school_name].join(" · "),
+        start: hoursOf(l.starts_at),
+        end: hoursOf(l.ends_at),
+        day: (paris(l.starts_at).weekday + 6) % 7,
+        cancelled: l.cancelled,
+        now: new Date(l.starts_at) <= reference && reference < new Date(l.ends_at),
+        seriesId: l.series_id,
+        teacherId: l.teacher_id,
+        groupId: l.group_id,
+        group: l.group_name,
+      }));
+    return finish(lessons);
+  }
   if ("teacherId" in scope) {
     const { data } = await supabase.rpc("my_teaching_lessons", { p_from: from, p_to: to });
     const rows = (data ?? []).filter(

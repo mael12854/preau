@@ -37,18 +37,21 @@ function endOfSchoolYear(today: string) {
 export default async function EdtPage({
   searchParams,
 }: {
-  searchParams: Promise<{ semaine?: string; classe?: string; eleve?: string }>;
+  searchParams: Promise<{ semaine?: string; classe?: string; eleve?: string; vue?: string }>;
 }) {
   const profile = await requireModule("edt");
   const supabase = await createClient();
   const reference = now();
-  const { semaine, classe, eleve } = await searchParams;
+  const { semaine, classe, eleve, vue } = await searchParams;
+  // Compte à plusieurs fiches : EDT général (toutes ses fiches, toutes écoles), en lecture.
+  const manySpaces = profile.spaces.filter((s) => s.id !== "general").length > 1;
+  const all = manySpaces && vue === "general";
   const weekOf = /^\d{4}-\d{2}-\d{2}$/.test(semaine ?? "")
     ? semaine
     : undefined;
 
   // Administration : emploi du temps d'une classe au choix. Famille : ses classes. Professeur : ses cours.
-  const admin = isAdminStaff(profile);
+  const admin = !all && isAdminStaff(profile);
   const classes = admin
     ? ((await getPublishTargets(supabase, profile))?.classes ?? [])
     : [];
@@ -74,7 +77,9 @@ export default async function EdtPage({
       : [[], { data: [] }, { data: [] }];
   const pupil = roster.find((s) => s.id === eleve) ?? null;
   // EDT nominatif (élève, famille, ou élève choisi par l'administration) : classe entière + ses groupes.
-  const scope = profile.student
+  const scope = all
+    ? ({ all: true } as const)
+    : profile.student
     ? { classId: profile.student.classIds, studentId: profile.student.id }
     : admin
       ? { classId: classId ?? "", studentId: pupil?.id }
@@ -106,6 +111,7 @@ export default async function EdtPage({
             .gte("starts_at", `${addDays(week.monday, 7)}T00:00:00Z`)
             .order("starts_at")
             .limit(1);
+          if ("all" in scope) return Promise.resolve(null);
           q =
             "classId" in scope && scope.classId !== undefined
               ? q.in("class_id", ([] as string[]).concat(scope.classId))
@@ -115,7 +121,7 @@ export default async function EdtPage({
       ]);
 
   const href = (day: string) =>
-    `/emploi-du-temps?semaine=${day}${classId ? `&classe=${classId}` : ""}${pupil ? `&eleve=${pupil.id}` : ""}`;
+    `/emploi-du-temps?semaine=${day}${classId ? `&classe=${classId}` : ""}${pupil ? `&eleve=${pupil.id}` : ""}${all ? "&vue=general" : ""}`;
   const monday = week.monday;
   const nav = {
     label: `${pupil ? `${pupil.name} · ` : ""}Semaine du ${formatDateShort(monday)}${school ? ` · semaine ${weekAB(monday, school.week_a_monday)}` : ""}`,
@@ -126,7 +132,7 @@ export default async function EdtPage({
   const dates = Array.from({ length: 7 }, (_, i) => addDays(monday, i));
 
   // Seul le secrétariat construit l'emploi du temps ; la direction et la vie scolaire le consultent.
-  const manage = profile.id === "secretariat" && classId;
+  const manage = !all && profile.id === "secretariat" && classId;
   const [{ data: subjects }, { data: teachers }, { data: klass }] = manage
     ? await Promise.all([
         supabase.from("subjects").select("id, name").order("name"),
@@ -151,6 +157,18 @@ export default async function EdtPage({
   return (
     <AppShell profile={profile} module="edt">
       <div className="edt-page flex flex-col gap-4">
+        {manySpaces && (
+          <div className="print:hidden">
+            <SelectLink
+              label="Afficher"
+              value={all ? "general" : "espace"}
+              options={[
+                { value: "espace", label: "Cet espace seulement", href: `/emploi-du-temps?semaine=${monday}` },
+                { value: "general", label: "EDT général (toutes mes fiches)", href: `/emploi-du-temps?semaine=${monday}&vue=general` },
+              ]}
+            />
+          </div>
+        )}
         {admin && (
           <div className="flex flex-wrap items-end justify-between gap-3 print:hidden">
             {classes.length ? (
@@ -216,25 +234,29 @@ export default async function EdtPage({
           {/* Impression : titre de l'emploi du temps (nom, classe, école). */}
           <h1 className="m-0 hidden font-display text-h2 font-bold print:block">
             Emploi du temps ·{" "}
-            {profile.student
+            {all
+              ? `${profile.name} · général`
+              : profile.student
               ? `${profile.student.name} (${[profile.student.className, ...profile.student.extraClasses].join(" + ")})`
               : admin
                 ? [className, pupil?.name].filter(Boolean).join(" · ")
                 : profile.name}{" "}
-            · {profile.school.name}
+            · {all ? "toutes les écoles" : profile.school.name}
           </h1>
           <EdtExport
-            pdfHref={`/emploi-du-temps/pdf?semaine=${monday}${classId ? `&classe=${classId}` : ""}${pupil ? `&eleve=${pupil.id}` : ""}`}
+            pdfHref={`/emploi-du-temps/pdf?semaine=${monday}${classId ? `&classe=${classId}` : ""}${pupil ? `&eleve=${pupil.id}` : ""}${all ? "&vue=general" : ""}`}
           />
         </div>
         <EdtScreen
           days={week.days}
           todayIndex={week.todayIndex}
           lessons={week.lessons}
-          showClass={!profile.student}
+          showClass={all || !profile.student}
           nav={nav}
           edit={
-            manage
+            all
+              ? undefined
+              : manage
               ? {
                   mode: "manage",
                   me: profile.profileId,
@@ -270,7 +292,9 @@ export default async function EdtPage({
           <p className="m-0 text-ui text-ink-2">
             {holiday
               ? `${holiday} : pas de cours cette semaine.`
-              : admin
+              : all
+                ? "Aucun cours cette semaine, toutes fiches confondues."
+                : admin
                 ? "Aucun cours cette semaine pour cette classe."
                 : profile.student
                   ? "Aucun cours cette semaine."
@@ -307,7 +331,7 @@ export default async function EdtPage({
           />
           </div>
         )}
-        {!profile.student && (
+        {!profile.student && !all && (
           <div className="print:hidden">
           <WeekLessonList
             lessons={week.lessons}

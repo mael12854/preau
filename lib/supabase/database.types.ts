@@ -1701,6 +1701,28 @@ export type Database = {
           subject: string
         }[]
       }
+      my_all_lessons: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          cancelled: boolean
+          class_name: string
+          ends_at: string
+          group_id: string | null
+          group_name: string | null
+          id: string
+          role: string
+          room: string
+          school_name: string
+          series_id: string | null
+          starts_at: string
+          subject_hue: number
+          subject_id: string
+          subject_name: string
+          teacher_id: string
+          teacher_name: string
+          who: string | null
+        }[]
+      }
       my_teaching_lessons: {
         Args: { p_from: string; p_to: string }
         Returns: {

@@ -15,19 +15,24 @@ export async function GET(request: Request) {
   const semaine = params.get("semaine") ?? "";
   const weekOf = /^\d{4}-\d{2}-\d{2}$/.test(semaine) ? semaine : undefined;
 
-  const admin = isAdminStaff(profile);
+  const all = params.get("vue") === "general" && profile.spaces.filter((s) => s.id !== "general").length > 1;
+  const admin = !all && isAdminStaff(profile);
   const classes = admin ? ((await getPublishTargets(supabase, profile))?.classes ?? []) : [];
   const klass = admin ? (classes.find((c) => c.id === params.get("classe")) ?? classes[0] ?? null) : null;
   const roster = admin && klass ? await classStudents(supabase, klass.id) : [];
   const pupil = roster.find((s) => s.id === params.get("eleve")) ?? null;
-  const scope = profile.student
+  const scope = all
+    ? ({ all: true } as const)
+    : profile.student
     ? { classId: profile.student.classIds, studentId: profile.student.id }
     : admin
       ? { classId: klass?.id ?? "", studentId: pupil?.id }
       : { teacherId: profile.profileId };
   const week = await getWeekLessons(supabase, scope, reference, weekOf);
 
-  const who = profile.student
+  const who = all
+    ? `${profile.name} · emploi du temps général`
+    : profile.student
     ? `${profile.student.name} · ${[profile.student.className, ...profile.student.extraClasses].join(" + ")}`
     : admin
       ? [klass?.name, pupil?.name].filter(Boolean).join(" · ") || "Classe"
@@ -35,10 +40,10 @@ export async function GET(request: Request) {
 
   const bytes = await renderEdtPdf({
     who,
-    school: profile.school.name,
+    school: all ? "Toutes les écoles" : profile.school.name,
     week,
     reference,
-    showClass: !profile.student,
+    showClass: all || !profile.student,
   });
   return new Response(Buffer.from(bytes), {
     headers: {
