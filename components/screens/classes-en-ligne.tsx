@@ -11,13 +11,21 @@ import { useToast } from "@/components/ui/toast";
 import type { ClassLink, LinkKind, OnlineClass } from "@/lib/data/online";
 import type { IconName } from "@/lib/icons";
 
-const KINDS: { value: LinkKind; label: string; name: string; icon: IconName; urlHint: string; codeLabel: string }[] = [
+/** Types proposés. Tinkercad est enregistré comme « autre » et reconnu à son lien ou à son nom. */
+type UiKind = LinkKind | "tinkercad";
+const TINKERCAD_JOIN = "https://www.tinkercad.com/joinclass";
+const KINDS: { value: UiKind; label: string; name: string; icon: IconName; urlHint: string; codeLabel: string }[] = [
   { value: "meet", label: "Google Meet", name: "Classe virtuelle", icon: "cast_for_education", urlHint: "https://meet.google.com/abc-defg-hij", codeLabel: "Code de la réunion (facultatif)" },
   { value: "kahoot", label: "Kahoot!", name: "Kahoot", icon: "apps", urlHint: "https://kahoot.it", codeLabel: "Code PIN" },
   { value: "duolingo", label: "Duolingo", name: "Classe Duolingo", icon: "apps", urlHint: "https://www.duolingo.com/classroom/…", codeLabel: "Code de classe" },
+  { value: "tinkercad", label: "Tinkercad", name: "Classe Tinkercad", icon: "extension", urlHint: TINKERCAD_JOIN, codeLabel: "Code de classe" },
   { value: "autre", label: "Autre", name: "", icon: "link", urlHint: "https://…", codeLabel: "Code (facultatif)" },
 ];
-const kindOf = (k: LinkKind) => KINDS.find((x) => x.value === k)!;
+const kindOf = (k: UiKind) => KINDS.find((x) => x.value === k)!;
+const uiKind = (l: ClassLink): UiKind =>
+  l.kind === "autre" && (/tinkercad\.com/i.test(l.url ?? "") || /^tinkercad|tinkercad$/i.test(l.label.trim()) || /classe tinkercad/i.test(l.label))
+    ? "tinkercad"
+    : l.kind;
 
 /** Copier un code, avec un retour pour les lecteurs d'écran. */
 function CopyCode({ code }: { code: string }) {
@@ -44,7 +52,7 @@ function LinkDialog({ classId, link, trigger }: { classId: string; link?: ClassL
   const toast = useToast();
   const router = useRouter();
   const [open, setOpen] = useState(false);
-  const [kind, setKind] = useState<LinkKind>(link?.kind ?? "meet");
+  const [kind, setKind] = useState<UiKind>(link ? uiKind(link) : "meet");
   const [label, setLabel] = useState(link?.label ?? KINDS[0].name);
   const [url, setUrl] = useState(link?.url ?? "");
   const [code, setCode] = useState(link?.code ?? "");
@@ -62,7 +70,16 @@ function LinkDialog({ classId, link, trigger }: { classId: string; link?: ClassL
           if (url.trim() && !url.trim().startsWith("https://")) return setError("Le lien doit commencer par https://");
           setError(null);
           start(async () => {
-            const r = await saveClassLink({ id: link?.id ?? null, classId, kind, label: label.trim(), url: url.trim(), code: code.trim() });
+            // Tinkercad : type « autre » ; sans lien, celui de la page « Rejoindre une classe ».
+            const finalUrl = kind === "tinkercad" && !url.trim() ? TINKERCAD_JOIN : url.trim();
+            const r = await saveClassLink({
+              id: link?.id ?? null,
+              classId,
+              kind: kind === "tinkercad" ? "autre" : kind,
+              label: label.trim(),
+              url: finalUrl,
+              code: code.trim(),
+            });
             if (!r.ok) return setError(r.error ?? "");
             toast({ title: link ? "Lien modifié" : "Lien ajouté" });
             setOpen(false);
@@ -79,7 +96,7 @@ function LinkDialog({ classId, link, trigger }: { classId: string; link?: ClassL
           options={KINDS.map((x) => ({ value: x.value, label: x.label }))}
           value={kind}
           onValueChange={(v) => {
-            const next = v as LinkKind;
+            const next = v as UiKind;
             if (!label.trim() || KINDS.some((x) => x.name === label)) setLabel(kindOf(next).name);
             setKind(next);
           }}
@@ -106,7 +123,7 @@ function LinkRow({ link, classId, editable }: { link: ClassLink; classId: string
   const toast = useToast();
   const router = useRouter();
   const [pending, start] = useTransition();
-  const k = kindOf(link.kind);
+  const k = kindOf(uiKind(link));
   return (
     <li className="flex flex-wrap items-center gap-3 border-b border-line-soft px-5 py-3 last:border-b-0">
       <Icon name={k.icon} size={22} className="text-brand" />
