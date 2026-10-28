@@ -1561,6 +1561,12 @@ export type Database = {
         }
         Relationships: []
       }
+      student_app_logins: {
+        Row: { app_key: string; login: string; set_by: string | null; student_id: string; updated_at: string }
+        Insert: { app_key: string; login: string; set_by?: string | null; student_id: string; updated_at?: string }
+        Update: { app_key?: string; login?: string; set_by?: string | null; student_id?: string; updated_at?: string }
+        Relationships: []
+      }
       students: {
         Row: {
           class_id: string
@@ -1942,6 +1948,7 @@ export type Database = {
         }
         Returns: string
       }
+      set_student_app_login: { Args: { p_app: string; p_login: string; p_student: string }; Returns: undefined }
       set_assessment_result: {
         Args: {
           p_assessment: string

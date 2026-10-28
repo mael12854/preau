@@ -92,6 +92,27 @@ function AppCard({ app }: { app: MyApp }) {
         </button>
       </div>
       {app.sso && <Badge tone="info">Connexion avec {app.sso}</Badge>}
+      {app.given.map((g) => (
+        <div key={`${g.who}-${g.login}`} className="flex items-center justify-between gap-2 rounded-control bg-brand-tint px-3 py-2">
+          <span className="flex min-w-0 flex-col">
+            <span className="text-caption text-ink-2">Donné par l&apos;établissement{g.who ? ` · ${g.who}` : ""}</span>
+            <b className="truncate font-mono text-ui">{g.login}</b>
+          </span>
+          <button
+            type="button"
+            aria-label={`Copier l'identifiant ${app.name}${g.who ? ` de ${g.who}` : ""}`}
+            onClick={() =>
+              navigator.clipboard?.writeText(g.login).then(
+                () => toast({ title: "Identifiant copié" }),
+                () => toast({ title: "La copie n'a pas abouti." }),
+              )
+            }
+            className="flex size-9 shrink-0 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
+          >
+            <Icon name="content_copy" size={18} />
+          </button>
+        </div>
+      ))}
       <LoginField app={app} />
       <div className="mt-auto flex flex-wrap gap-2">
         <a

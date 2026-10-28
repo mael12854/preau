@@ -2,13 +2,14 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { removeClassLink, saveClassLink } from "@/app/(app)/actions";
+import { removeClassLink, saveClassLink, setStudentAppLogin } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { SelectField, TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import type { ClassLink, LinkKind, OnlineClass } from "@/lib/data/online";
+import { CATALOG } from "@/lib/apps";
 import type { IconName } from "@/lib/icons";
 
 /** Types proposés. Tinkercad est enregistré comme « autre » et reconnu à son lien ou à son nom. */
@@ -177,6 +178,83 @@ function LinkRow({ link, classId, editable }: { link: ClassLink; classId: string
   );
 }
 
+/** Identifiants d'une appli (ex. Scratch) pour chaque élève de la classe : saisis par le professeur, vus par l'élève dans « Mes applis ». */
+function StudentLogins({
+  classId,
+  students,
+  logins,
+}: {
+  classId: string;
+  students: { id: string; name: string }[];
+  logins: Record<string, Record<string, string>>;
+}) {
+  const toast = useToast();
+  const [app, setApp] = useState("scratch");
+  const [values, setValues] = useState(logins);
+  const [, start] = useTransition();
+  const appName = CATALOG.find((a) => a.key === app)?.name ?? app;
+  const filled = Object.keys(values[app] ?? {}).length;
+  const save = (studentId: string, name: string, login: string) => {
+    if ((logins[app]?.[studentId] ?? "") === login.trim()) return;
+    start(async () => {
+      const r = await setStudentAppLogin(studentId, app, login);
+      if (!r.ok) return toast({ title: r.error });
+      logins[app] = { ...(logins[app] ?? {}), [studentId]: login.trim() };
+      toast({ title: login.trim() ? `${appName} : identifiant de ${name} enregistré` : `${appName} : identifiant de ${name} effacé` });
+    });
+  };
+  return (
+    <details className="border-b border-line">
+      <summary className="flex min-h-12 cursor-pointer items-center gap-2 px-5 py-2 text-label font-bold">
+        <Icon name="badge" size={20} className="text-brand" />
+        Identifiants des élèves
+        <span className="font-normal text-ink-muted">
+          · {appName} : {filled}/{students.length}
+        </span>
+      </summary>
+      <div className="flex flex-col gap-3 px-5 pb-4">
+        <p className="m-0 text-caption leading-[1.45] text-ink-2">
+          Chaque élève (et sa famille) retrouve son identifiant dans « Mes applis ». Jamais de mot de passe ici : donnez-le
+          à l&apos;élève en classe.
+        </p>
+        <SelectField
+          label="Appli"
+          options={CATALOG.map((a) => ({ value: a.key, label: a.name }))}
+          value={app}
+          onValueChange={setApp}
+          className="max-w-64"
+        />
+        <ul className="m-0 flex list-none flex-col gap-2 p-0">
+          {students.map((st) => {
+            const id = `login-${classId}-${app}-${st.id}`;
+            return (
+              <li key={`${app}-${st.id}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,14rem)] items-center gap-3">
+                <label htmlFor={id} className="truncate text-ui">
+                  {st.name}
+                </label>
+                <input
+                  id={id}
+                  defaultValue={values[app]?.[st.id] ?? ""}
+                  maxLength={120}
+                  autoComplete="off"
+                  placeholder={`Identifiant ${appName}`}
+                  onBlur={(e) => {
+                    const v = e.target.value;
+                    setValues((x) => ({ ...x, [app]: { ...(x[app] ?? {}), ...(v.trim() ? { [st.id]: v.trim() } : {}) } }));
+                    save(st.id, st.name, v);
+                  }}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), (e.target as HTMLInputElement).blur())}
+                  className="h-10 rounded-control border border-line bg-surface px-2.5 text-label"
+                />
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+    </details>
+  );
+}
+
 /** Mes classes en ligne : Meet, Kahoot, Duolingo… de chaque classe. Les professeurs de la classe les tiennent à jour. */
 export function ClassesEnLigneScreen({ classes }: { classes: OnlineClass[] }) {
   if (!classes.length)
@@ -204,6 +282,9 @@ export function ClassesEnLigneScreen({ classes }: { classes: OnlineClass[] }) {
               />
             )}
           </header>
+          {c.editable && c.students && c.students.length > 0 && (
+            <StudentLogins classId={c.id} students={c.students} logins={c.logins ?? {}} />
+          )}
           {c.links.length ? (
             <ul className="m-0 list-none p-0">
               {c.links.map((l) => (

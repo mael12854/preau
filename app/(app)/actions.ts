@@ -1355,3 +1355,11 @@ export async function getVocabStats(deckId: string) {
   if (error) return { ok: false as const, error: readableError(error.message) };
   return { ok: true as const, rows: data ?? [] };
 }
+
+/** Identifiant d'appli donné à un élève (ex. compte Scratch) ; vide pour l'effacer. Professeur de l'élève, administration. */
+export async function setStudentAppLogin(studentId: string, appKey: string, login: string): Promise<ActionResult> {
+  return run((s) => s.rpc("set_student_app_login", { p_student: studentId, p_app: appKey, p_login: login }), [
+    "/classes-en-ligne",
+    "/applis",
+  ]);
+}
