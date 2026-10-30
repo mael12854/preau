@@ -5,6 +5,7 @@ import { signOut } from "@/app/actions";
 import { HelpChatButton } from "./help-chat";
 import type { ModuleKey } from "@/lib/navigation";
 import type { Viewer } from "@/lib/session";
+import { schoolLogo } from "@/lib/school-logos";
 import { Nav } from "./nav";
 import { SpaceSwitcher } from "./space-switcher";
 
@@ -16,16 +17,23 @@ export function SidebarContent({
   profile: Viewer;
   active: ModuleKey;
 }) {
+  const logo = profile.general ? null : schoolLogo(profile.school.domain);
   return (
     <div className="flex h-full flex-col gap-5 overflow-y-auto px-3.5 py-5 text-sidebar-ink">
       <Link href="/accueil" className="flex px-2 text-sidebar-ink no-underline">
         <Logo size={30} wordmarkSize={20} inverse />
       </Link>
-      <p className="m-0 border-y border-sidebar-line px-2 py-2.5 text-caption text-sidebar-muted">
-        {profile.school.name}
-        <br />
-        <span className="text-sidebar-ink">{profile.school.year}</span>
-      </p>
+      <div className="flex items-center gap-2.5 border-y border-sidebar-line px-2 py-2.5">
+        {logo && (
+          // eslint-disable-next-line @next/next/no-img-element -- petit SVG statique
+          <img src={logo} alt="" width={32} height={32} className="size-8 shrink-0 rounded-[8px]" />
+        )}
+        <p className="m-0 text-caption text-sidebar-muted">
+          {profile.school.name}
+          <br />
+          <span className="text-sidebar-ink">{profile.school.year}</span>
+        </p>
+      </div>
       {profile.spaces.length > 1 && <SpaceSwitcher spaces={profile.spaces} />}
       <Nav profile={profile} active={active} />
       <div className="flex flex-col gap-1 border-t border-sidebar-line px-2 pt-2.5">
