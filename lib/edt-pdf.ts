@@ -14,7 +14,7 @@ function hsl(h: number, s: number, l: number) {
 }
 
 /** Texte encodable par les polices standard (WinAnsi), coupé avec « … » pour tenir dans la largeur. */
-function fit(text: string, font: PDFFont, size: number, width: number) {
+export function fit(text: string, font: PDFFont, size: number, width: number) {
   const safe = [...text.replace(/[’‘]/g, "'").replace(/[“”]/g, '"')]
     .map((c) => {
       try {

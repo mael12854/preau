@@ -8,6 +8,7 @@ import {
 } from "@/components/screens/edt-editor";
 import { ClassGroupsEditor } from "@/components/screens/edt-groups";
 import { SelectLink } from "@/components/screens/select-link";
+import { Icon } from "@/components/ui/icon";
 import { AppShell } from "@/components/shell/app-shell";
 import { now } from "@/lib/clock";
 import { classStudents } from "@/lib/data/common";
@@ -182,6 +183,16 @@ export default async function EdtPage({
                     href: `/emploi-du-temps?semaine=${monday}&classe=${c.id}`,
                   }))}
                 />
+                {classId && (
+                  <a
+                    href={`/liste-de-classe?classe=${classId}`}
+                    download
+                    className="inline-flex h-12 items-center gap-2 rounded-control border border-line bg-surface px-4 text-label font-bold text-ink hover:border-line-strong"
+                  >
+                    <Icon name="picture_as_pdf" size={20} />
+                    Liste de classe (PDF)
+                  </a>
+                )}
                 {roster.length > 0 && (
                   <SelectLink
                     label="Emploi du temps"

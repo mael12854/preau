@@ -272,6 +272,16 @@ export function ClassesEnLigneScreen({ classes }: { classes: OnlineClass[] }) {
               {c.name}
             </h2>
             {c.editable && (
+              <span className="flex flex-wrap gap-2">
+              <a
+                href={`/liste-de-classe?classe=${c.id}`}
+                download
+                className="inline-flex h-9 items-center gap-1.5 rounded-control border border-line bg-surface px-3 text-label font-bold text-ink hover:border-line-strong"
+              >
+                <Icon name="picture_as_pdf" size={18} />
+                Liste de classe
+                <span className="sr-only"> de {c.name} (PDF)</span>
+              </a>
               <LinkDialog
                 classId={c.id}
                 trigger={
@@ -280,6 +290,7 @@ export function ClassesEnLigneScreen({ classes }: { classes: OnlineClass[] }) {
                   </Button>
                 }
               />
+              </span>
             )}
           </header>
           {c.editable && c.students && c.students.length > 0 && (
