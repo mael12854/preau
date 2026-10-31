@@ -1363,3 +1363,13 @@ export async function setStudentAppLogin(studentId: string, appKey: string, logi
     "/applis",
   ]);
 }
+
+/** Demander un justificatif pour une absence ou un retard (n'importe quelle date) : message à la famille. */
+export async function requestJustification(eventId: string, note: string): Promise<ActionResult> {
+  return run((s) => s.rpc("request_justification", { p_event: eventId, p_note: note }), ["/vie-scolaire"]);
+}
+
+/** Demander les justificatifs de toutes les absences non justifiées d'un élève, en un seul message. */
+export async function requestStudentJustifications(studentId: string, note: string): Promise<ActionResult> {
+  return run((s) => s.rpc("request_student_justifications", { p_student: studentId, p_note: note }), ["/vie-scolaire"]);
+}

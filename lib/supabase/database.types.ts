@@ -2022,6 +2022,8 @@ export type Database = {
         }
         Returns: undefined
       }
+      request_justification: { Args: { p_event: string; p_note?: string }; Returns: undefined }
+      request_student_justifications: { Args: { p_note?: string; p_student: string }; Returns: number }
       review_justification: {
         Args: { p_accept: boolean; p_comment?: string; p_event: string }
         Returns: undefined

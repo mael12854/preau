@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { justifyEvent, reviewJustification } from "@/app/(app)/actions";
+import { justifyEvent, requestJustification, requestStudentJustifications, reviewJustification } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField } from "@/components/ui/field";
@@ -132,6 +132,75 @@ export function ReviewButtons({ eventId, what, reason, comment }: { eventId: str
           </Button>
         </div>
       </div>
+    </Dialog>
+  );
+}
+
+/** Établissement : demander un justificatif (une absence, ou toutes celles non justifiées d'un élève). */
+export function RequestButton({
+  eventId,
+  studentId,
+  what,
+  label = "Demander un justificatif",
+  variant = "secondary",
+}: {
+  eventId?: string;
+  studentId?: string;
+  what: string;
+  label?: string;
+  variant?: "primary" | "secondary";
+}) {
+  const toast = useToast();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [note, setNote] = useState("");
+  const [error, setError] = useState<string>();
+  const [pending, start] = useTransition();
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        setError(undefined);
+      }}
+      title={label}
+      description={what}
+      trigger={
+        <Button size="sm" variant={variant}>
+          {label}
+        </Button>
+      }
+    >
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          start(async () => {
+            const r = eventId ? await requestJustification(eventId, note) : await requestStudentJustifications(studentId!, note);
+            if (!r.ok) return setError(r.error);
+            setOpen(false);
+            setNote("");
+            toast({ title: "Demande envoyée à la famille" });
+            router.refresh();
+          });
+        }}
+      >
+        <p className="m-0 text-label text-ink-2">
+          {eventId
+            ? "L'absence repasse « à justifier » (même si elle était justifiée) et la famille reçoit un message, ou l'élève lui-même s'il n'a pas de responsable."
+            : "Un seul message liste toutes ses absences et retards à justifier."}
+        </p>
+        <TextAreaField label="Précision (facultatif)" hint="Par exemple : certificat médical attendu." value={note} onChange={(e) => setNote(e.target.value)} />
+        {error && <p role="alert" className="m-0 text-label text-danger">{error}</p>}
+        <div className="flex flex-wrap justify-end gap-2.5">
+          <Button variant="secondary" onClick={() => setOpen(false)}>
+            Annuler
+          </Button>
+          <Button type="submit" icon="send" disabled={pending}>
+            {pending ? "Envoi…" : "Envoyer la demande"}
+          </Button>
+        </div>
+      </form>
     </Dialog>
   );
 }

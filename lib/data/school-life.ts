@@ -37,7 +37,7 @@ export async function getLifeEvents(
   let q = supabase
     .from("life_events")
     .select(
-      "id, kind, occurred_at, whole_day, detail, status, minutes, justification_reason, justification_comment, review_comment, students(classes(name), profiles!students_profile_id_fkey(display_name))",
+      "id, student_id, kind, occurred_at, whole_day, detail, status, minutes, justification_reason, justification_comment, review_comment, students(classes(name), profiles!students_profile_id_fkey(display_name))",
     )
     .eq("voided", false)
     .order("occurred_at", { ascending: false });
@@ -71,6 +71,7 @@ export async function getLifeEvents(
       comment: e.justification_comment ?? undefined,
       reviewComment: e.review_comment ?? undefined,
       pending: e.status === "a_justifier" || e.status === "justificatif_envoye",
+      studentId: e.student_id,
       kind: e.kind,
     };
   });

@@ -89,6 +89,7 @@ export type LifeEventView = {
   reviewComment?: string;
   /** « à traiter » : à justifier ou justificatif en attente. */
   pending: boolean;
+  studentId: string;
   kind: string;
 };
 
