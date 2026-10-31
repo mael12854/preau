@@ -37,12 +37,13 @@ export async function getLifeEvents(
   let q = supabase
     .from("life_events")
     .select(
-      "id, student_id, kind, occurred_at, whole_day, detail, status, minutes, justification_reason, justification_comment, review_comment, students(classes(name), profiles!students_profile_id_fkey(display_name))",
+      "id, student_id, kind, occurred_at, whole_day, detail, status, minutes, justification_reason, justification_comment, review_comment, students(classes!students_class_id_fkey(name), profiles!students_profile_id_fkey(display_name))",
     )
     .eq("voided", false)
     .order("occurred_at", { ascending: false });
   if (studentId) q = q.eq("student_id", studentId);
-  const { data } = await q;
+  const { data, error } = await q;
+  if (error) console.error("[préau] vie scolaire : lecture impossible", error.message);
   const rows = data ?? [];
 
   const events: LifeEventView[] = rows.map((e) => {
