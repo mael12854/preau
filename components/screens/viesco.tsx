@@ -7,7 +7,7 @@ import { cn } from "@/lib/cn";
 import type { LifeEventView, LifeStatsView } from "@/lib/data/types";
 import { Stat } from "./greeting";
 import { SelectField } from "@/components/ui/field";
-import { JustifyButton, RequestButton, ReviewButtons } from "./justify-dialog";
+import { AddAbsenceButton, JustifyButton, RequestButton, ReviewButtons } from "./justify-dialog";
 
 /** Vie scolaire : 4 compteurs, événements avec statut et « Justifier ». */
 const plural = (n: number, one: string, many: string) => (n > 1 ? many : one);
@@ -17,6 +17,8 @@ export function VieScolaireScreen({
   stats,
   staff = false,
   canValidate = false,
+  students = [],
+  today = "",
 }: {
   events: LifeEventView[];
   stats: LifeStatsView;
@@ -24,6 +26,9 @@ export function VieScolaireScreen({
   staff?: boolean;
   /** Vie scolaire, direction, secrétariat : justification validée tout de suite. */
   canValidate?: boolean;
+  /** Élèves suivis (personnel), pour saisir une absence après coup. */
+  students?: { id: string; label: string }[];
+  today?: string;
 }) {
   const [klass, setKlass] = useState("toutes");
   const [who, setWho] = useState("tous");
@@ -85,6 +90,9 @@ export function VieScolaireScreen({
             onValueChange={(v) => setShow(v as typeof show)}
             className="min-w-64"
           />
+          <div className="ml-auto flex items-end">
+            <AddAbsenceButton students={students} today={today} />
+          </div>
           {who !== "tous" && pupilToJustify > 0 && (
             <div className="flex items-end">
               <RequestButton

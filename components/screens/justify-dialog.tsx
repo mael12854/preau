@@ -2,10 +2,11 @@
 
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import { justifyEvent, requestJustification, requestStudentJustifications, reviewJustification } from "@/app/(app)/actions";
+import { addAbsence, justifyEvent, requestJustification, requestStudentJustifications, reviewJustification } from "@/app/(app)/actions";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { SelectField, TextAreaField } from "@/components/ui/field";
+import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
+import { Checkbox } from "@/components/ui/choice";
 import { useToast } from "@/components/ui/toast";
 import { ABSENCE_REASONS } from "@/lib/reference";
 
@@ -198,6 +199,94 @@ export function RequestButton({
           </Button>
           <Button type="submit" icon="send" disabled={pending}>
             {pending ? "Envoi…" : "Envoyer la demande"}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+/** Établissement : saisir une absence ou un retard passé (jour sans appel, absences d'avant), et demander le justificatif. */
+export function AddAbsenceButton({ students, today }: { students: { id: string; label: string }[]; today: string }) {
+  const toast = useToast();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [studentId, setStudentId] = useState<string>();
+  const [kind, setKind] = useState<"absence" | "retard">("absence");
+  const [day, setDay] = useState(today);
+  const [wholeDay, setWholeDay] = useState(true);
+  const [from, setFrom] = useState("08:00");
+  const [to, setTo] = useState("09:00");
+  const [detail, setDetail] = useState("");
+  const [request, setRequest] = useState(true);
+  const [error, setError] = useState<string>();
+  const [pending, start] = useTransition();
+  if (!students.length) return null;
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        setOpen(o);
+        setError(undefined);
+      }}
+      title="Ajouter une absence"
+      description="Pour un jour sans appel, ou une absence d'avant Préau."
+      trigger={
+        <Button icon="add" className="h-12 px-4 text-label">
+          Ajouter une absence
+        </Button>
+      }
+    >
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!studentId) return setError("Choisissez un élève.");
+          start(async () => {
+            const r = await addAbsence({ studentId, kind, day, wholeDay, from, to, detail, request });
+            if (!r.ok) return setError(r.error);
+            setOpen(false);
+            setDetail("");
+            toast({ title: request ? "Absence ajoutée, justificatif demandé à la famille" : "Absence ajoutée" });
+            router.refresh();
+          });
+        }}
+      >
+        <SelectField label="Élève" placeholder="Choisir un élève" options={students.map((s) => ({ value: s.id, label: s.label }))} value={studentId} onValueChange={setStudentId} />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <SelectField
+            label="Type"
+            options={[
+              { value: "absence", label: "Absence" },
+              { value: "retard", label: "Retard" },
+            ]}
+            value={kind}
+            onValueChange={(v) => setKind(v as "absence" | "retard")}
+          />
+          <TextField label="Date" type="date" max={today} value={day} onChange={(e) => setDay(e.target.value)} required />
+        </div>
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-label">
+          <Checkbox checked={wholeDay} onCheckedChange={setWholeDay} />
+          Journée entière
+        </label>
+        {!wholeDay && (
+          <div className="grid grid-cols-2 gap-4">
+            <TextField label="De" type="time" value={from} onChange={(e) => setFrom(e.target.value)} required />
+            <TextField label="À" type="time" value={to} onChange={(e) => setTo(e.target.value)} />
+          </div>
+        )}
+        <TextField label="Cours ou précision (facultatif)" placeholder="Mathématiques" value={detail} maxLength={120} onChange={(e) => setDetail(e.target.value)} />
+        <label className="flex min-h-11 cursor-pointer items-center gap-3 text-label">
+          <Checkbox checked={request} onCheckedChange={setRequest} />
+          Demander le justificatif à la famille (message et e-mail)
+        </label>
+        {error && <p role="alert" className="m-0 text-label text-danger">{error}</p>}
+        <div className="flex flex-wrap justify-end gap-2.5">
+          <Button variant="secondary" onClick={() => setOpen(false)}>
+            Annuler
+          </Button>
+          <Button type="submit" disabled={pending}>
+            {pending ? "Enregistrement…" : "Ajouter"}
           </Button>
         </div>
       </form>

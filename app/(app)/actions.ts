@@ -1373,3 +1373,30 @@ export async function requestJustification(eventId: string, note: string): Promi
 export async function requestStudentJustifications(studentId: string, note: string): Promise<ActionResult> {
   return run((s) => s.rpc("request_student_justifications", { p_student: studentId, p_note: note }), ["/vie-scolaire"]);
 }
+
+/** Saisir après coup une absence ou un retard (jour sans appel, absences d'avant), avec demande de justificatif. */
+export async function addAbsence(input: {
+  studentId: string;
+  kind: "absence" | "retard";
+  day: string;
+  wholeDay: boolean;
+  from: string;
+  to: string;
+  detail: string;
+  request: boolean;
+}): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("add_absence", {
+        p_student: input.studentId,
+        p_kind: input.kind,
+        p_day: input.day,
+        p_whole_day: input.wholeDay,
+        p_from: input.wholeDay ? null : input.from || null,
+        p_to: input.wholeDay ? null : input.to || null,
+        p_detail: input.detail,
+        p_request: input.request,
+      }),
+    ["/vie-scolaire", "/accueil"],
+  );
+}

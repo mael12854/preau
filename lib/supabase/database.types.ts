@@ -1911,6 +1911,19 @@ export type Database = {
         Args: { p_body: string; p_class: string; p_requires_signature?: boolean; p_title: string }
         Returns: string
       }
+      add_absence: {
+        Args: {
+          p_day: string
+          p_detail: string
+          p_from: string | null
+          p_kind: string
+          p_request: boolean
+          p_student: string
+          p_to: string | null
+          p_whole_day: boolean
+        }
+        Returns: string
+      }
       answer_quiz: { Args: { p_choice: number; p_session: string }; Returns: undefined }
       quiz_state: { Args: { p_session: string }; Returns: Json }
       quiz_step: { Args: { p_action: string; p_session: string }; Returns: undefined }
