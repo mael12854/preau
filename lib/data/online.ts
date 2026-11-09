@@ -7,6 +7,9 @@ import { getPublishTargets } from "./targets";
 
 export type LinkKind = "meet" | "duolingo" | "kahoot" | "autre";
 export type ClassLink = { id: string; kind: LinkKind; label: string; url: string | null; code: string | null };
+/** Compte d'appli donné par l'établissement à un élève. */
+export type AppAccount = { login: string; password: string; classCode: string };
+
 export type OnlineClass = {
   id: string;
   name: string;
@@ -14,7 +17,7 @@ export type OnlineClass = {
   links: ClassLink[];
   /** Classes tenues par la personne : élèves et identifiants d'applis déjà donnés (appli → élève → identifiant). */
   students?: { id: string; name: string }[];
-  logins?: Record<string, Record<string, { login: string; password: string }>>;
+  logins?: Record<string, Record<string, AppAccount>>;
 };
 
 const ORDER: LinkKind[] = ["meet", "kahoot", "duolingo", "autre"];
@@ -43,8 +46,8 @@ export async function getOnlineClasses(supabase: SupabaseServer, viewer: Viewer)
   );
   const pupilIds = [...new Set([...rosters.values()].flat().map((s) => s.id))];
   const { data: given } = pupilIds.length
-    ? await supabase.from("student_app_logins").select("student_id, app_key, login, password").in("student_id", pupilIds)
-    : { data: [] as { student_id: string; app_key: string; login: string; password: string | null }[] };
+    ? await supabase.from("student_app_logins").select("student_id, app_key, login, password, class_code").in("student_id", pupilIds)
+    : { data: [] as { student_id: string; app_key: string; login: string; password: string | null; class_code: string | null }[] };
   return (classes ?? []).map((c) => ({
     id: c.id,
     name: c.name,
@@ -57,10 +60,10 @@ export async function getOnlineClasses(supabase: SupabaseServer, viewer: Viewer)
       ? (() => {
           const students = rosters.get(c.id)!.map((s) => ({ id: s.id, name: s.name }));
           const ids = new Set(students.map((s) => s.id));
-          const logins: Record<string, Record<string, { login: string; password: string }>> = {};
+          const logins: Record<string, Record<string, AppAccount>> = {};
           for (const g of given ?? []) {
-            if (!ids.has(g.student_id) || (!g.login && !g.password)) continue;
-            (logins[g.app_key] ??= {})[g.student_id] = { login: g.login, password: g.password ?? "" };
+            if (!ids.has(g.student_id) || (!g.login && !g.password && !g.class_code)) continue;
+            (logins[g.app_key] ??= {})[g.student_id] = { login: g.login, password: g.password ?? "", classCode: g.class_code ?? "" };
           }
           return { students, logins };
         })()
@@ -83,7 +86,7 @@ export type MyApp = {
   login: string;
   hidden: boolean;
   /** Identifiant donné par l'établissement (à l'élève, ou à chaque enfant pour un responsable). */
-  given: { who: string | null; login: string; password: string | null }[];
+  given: { who: string | null; login: string; password: string | null; classCode: string | null }[];
 };
 
 /** Mes applis : le catalogue, les applis ajoutées par la personne, et l'identifiant retenu pour chacune. */
@@ -93,17 +96,18 @@ export async function getMyApps(supabase: SupabaseServer, viewer?: Viewer): Prom
   const [{ data }, { data: given }] = await Promise.all([
     supabase.from("my_apps").select("id, app_key, name, url, login, hidden").order("created_at"),
     pupils.length
-      ? supabase.from("student_app_logins").select("student_id, app_key, login, password").in("student_id", pupils.map((p) => p.id))
-      : Promise.resolve({ data: [] as { student_id: string; app_key: string; login: string; password: string | null }[] }),
+      ? supabase.from("student_app_logins").select("student_id, app_key, login, password, class_code").in("student_id", pupils.map((p) => p.id))
+      : Promise.resolve({ data: [] as { student_id: string; app_key: string; login: string; password: string | null; class_code: string | null }[] }),
   ]);
   const self = viewer?.id !== "parent" && viewer?.id !== "parent-primaire";
   const givenFor = (key: string) =>
     (given ?? [])
-      .filter((g) => g.app_key === key && (g.login || g.password))
+      .filter((g) => g.app_key === key && (g.login || g.password || g.class_code))
       .map((g) => ({
         who: self ? null : (pupils.find((p) => p.id === g.student_id)?.firstName ?? null),
         login: g.login,
         password: g.password,
+        classCode: g.class_code,
       }));
   const rows = data ?? [];
   const byKey = new Map(rows.filter((r) => r.app_key).map((r) => [r.app_key!, r]));

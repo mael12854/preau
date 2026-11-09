@@ -13,13 +13,13 @@ export type CatalogApp = {
   sso?: "Google" | "Google ou Microsoft";
   /** Ce qu'on retient pour se connecter (affiché dans la case identifiant). */
   loginHint: string;
-  /** Comptes donnés par l'établissement : nom de la seconde case (mot de passe par défaut). */
-  credentials?: { second: string; secret: boolean; sharedByClass: boolean };
+  /** Comptes donnés par l'établissement : cases demandées en plus de l'identifiant (mot de passe par défaut). */
+  account?: { password: boolean; classCode: boolean };
 };
 
-/** Seconde information d'un compte donné par l'établissement : mot de passe (masqué) ou, par ex., code de classe. */
-export function secondField(appKey: string) {
-  return CATALOG.find((a) => a.key === appKey)?.credentials ?? { second: "Mot de passe", secret: true, sharedByClass: false };
+/** Cases d'un compte donné par l'établissement : identifiant, plus mot de passe et/ou code de classe selon l'appli. */
+export function accountFields(appKey: string) {
+  return CATALOG.find((a) => a.key === appKey)?.account ?? { password: true, classCode: false };
 }
 
 export const CATALOG: CatalogApp[] = [
@@ -27,14 +27,14 @@ export const CATALOG: CatalogApp[] = [
   { key: "quizlet", name: "Quizlet", description: "Cartes mémoire et jeux pour réviser son vocabulaire et ses leçons.", category: "Quiz et jeux", url: "https://quizlet.com", loginUrl: "https://quizlet.com/login", sso: "Google", loginHint: "Nom d'utilisateur ou e-mail" },
   { key: "wooclap", name: "Wooclap", description: "Questions et sondages en cours, depuis son téléphone.", category: "Quiz et jeux", url: "https://www.wooclap.com", loginUrl: "https://app.wooclap.com/auth/login", sso: "Google ou Microsoft", loginHint: "E-mail" },
   { key: "learningapps", name: "LearningApps", description: "Petits exercices interactifs, classés par matière.", category: "Quiz et jeux", url: "https://learningapps.org", loginHint: "Nom d'utilisateur" },
-  { key: "duolingo", name: "Duolingo", description: "Apprendre une langue quelques minutes par jour.", category: "Langues", url: "https://www.duolingo.com", sso: "Google", loginHint: "Nom d'utilisateur ou e-mail" },
+  { key: "duolingo", name: "Duolingo", description: "Apprendre une langue quelques minutes par jour.", category: "Langues", url: "https://www.duolingo.com", sso: "Google", loginHint: "Nom d'utilisateur ou e-mail", account: { password: true, classCode: true } },
   { key: "wordreference", name: "WordReference", description: "Dictionnaire bilingue avec forum de traduction.", category: "Langues", url: "https://www.wordreference.com", loginHint: "Nom d'utilisateur" },
   { key: "canva", name: "Canva", description: "Affiches, exposés et présentations à partir de modèles.", category: "Créer et collaborer", url: "https://www.canva.com", loginUrl: "https://www.canva.com/login", sso: "Google ou Microsoft", loginHint: "E-mail" },
   { key: "padlet", name: "Padlet", description: "Mur collaboratif pour partager idées, liens et images.", category: "Créer et collaborer", url: "https://padlet.com", loginUrl: "https://padlet.com/auth/login", sso: "Google ou Microsoft", loginHint: "E-mail" },
   { key: "genially", name: "Genially", description: "Présentations et jeux interactifs.", category: "Créer et collaborer", url: "https://genially.com", loginUrl: "https://auth.genially.com/fr/login", sso: "Google ou Microsoft", loginHint: "E-mail" },
   { key: "digipad", name: "Digipad", description: "Murs collaboratifs, outil libre de La Digitale.", category: "Créer et collaborer", url: "https://digipad.app", loginHint: "Identifiant" },
   { key: "scratch", name: "Scratch", description: "Programmer des jeux et des animations avec des blocs.", category: "Sciences et maths", url: "https://scratch.mit.edu", loginHint: "Nom d'utilisateur" },
-  { key: "tinkercad", name: "Tinkercad", description: "Modélisation 3D, électronique et programmation par blocs.", category: "Sciences et maths", url: "https://www.tinkercad.com", loginUrl: "https://www.tinkercad.com/login", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail", credentials: { second: "Code de classe", secret: false, sharedByClass: true } },
+  { key: "tinkercad", name: "Tinkercad", description: "Modélisation 3D, électronique et programmation par blocs.", category: "Sciences et maths", url: "https://www.tinkercad.com", loginUrl: "https://www.tinkercad.com/login", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail", account: { password: false, classCode: true } },
   { key: "geogebra", name: "GeoGebra", description: "Géométrie, graphiques et calcul, en ligne.", category: "Sciences et maths", url: "https://www.geogebra.org", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail" },
   { key: "khan", name: "Khan Academy", description: "Cours et exercices de maths et de sciences, en français.", category: "Sciences et maths", url: "https://fr.khanacademy.org", loginUrl: "https://fr.khanacademy.org/login", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail" },
   { key: "phet", name: "PhET", description: "Simulations interactives de physique, chimie et maths.", category: "Sciences et maths", url: "https://phet.colorado.edu/fr/", loginHint: "E-mail" },

@@ -8,8 +8,8 @@ import { Dialog } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { SelectField, TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
-import type { ClassLink, LinkKind, OnlineClass } from "@/lib/data/online";
-import { CATALOG, secondField } from "@/lib/apps";
+import type { AppAccount, ClassLink, LinkKind, OnlineClass } from "@/lib/data/online";
+import { accountFields, CATALOG } from "@/lib/apps";
 import type { IconName } from "@/lib/icons";
 
 /** Types proposés. Tinkercad est enregistré comme « autre » et reconnu à son lien ou à son nom. */
@@ -178,7 +178,8 @@ function LinkRow({ link, classId, editable }: { link: ClassLink; classId: string
   );
 }
 
-/** Identifiants et mots de passe d'une appli (ex. Scratch) pour chaque élève : saisis par le professeur, vus par l'élève et sa famille dans « Mes applis ». */
+/** Comptes d'une appli (identifiant, mot de passe, code de classe selon l'appli) pour chaque élève : saisis par
+ * l'établissement, vus par l'élève et sa famille dans « Mes applis ». */
 function StudentLogins({
   classId,
   students,
@@ -186,7 +187,7 @@ function StudentLogins({
 }: {
   classId: string;
   students: { id: string; name: string }[];
-  logins: Record<string, Record<string, { login: string; password: string }>>;
+  logins: Record<string, Record<string, AppAccount>>;
 }) {
   const toast = useToast();
   const [app, setApp] = useState("scratch");
@@ -195,24 +196,26 @@ function StudentLogins({
   const [shared, setShared] = useState("");
   const [pending, start] = useTransition();
   const appName = CATALOG.find((a) => a.key === app)?.name ?? app;
-  const field = secondField(app);
-  // Code commun (ex. code de classe Tinkercad) : enregistré pour tous les élèves, identifiants conservés.
+  const fields = accountFields(app);
+  const filled = Object.values(saved[app] ?? {}).filter((c) => c.login || c.password || c.classCode).length;
+  // Code de classe commun : enregistré pour tous les élèves, identifiants et mots de passe conservés.
   const applyToAll = () =>
     start(async () => {
       const value = shared.trim();
       if (!value) return;
       const next = { ...(saved[app] ?? {}) };
       for (const st of students) {
-        const login = next[st.id]?.login ?? "";
-        const r = await setStudentAppLogin(st.id, app, login, value);
+        const prev = next[st.id];
+        const account = { login: prev?.login ?? "", password: prev?.password ?? "", classCode: value };
+        const r = await setStudentAppLogin(st.id, app, account);
         if (!r.ok) return toast({ title: `${st.name} : ${r.error}` });
-        next[st.id] = { login, password: value };
+        next[st.id] = account;
       }
       setSaved((x) => ({ ...x, [app]: next }));
       setVersion((v) => v + 1);
-      toast({ title: `${field.second} enregistré pour les ${students.length} élèves` });
+      toast({ title: `Code de classe enregistré pour les ${students.length} élèves` });
     });
-  const filled = Object.values(saved[app] ?? {}).filter((c) => c.login || c.password).length;
+  const cols = 1 + Number(fields.password) + Number(fields.classCode);
   return (
     <details className="border-b border-line">
       <summary className="flex min-h-12 cursor-pointer items-center gap-2 px-5 py-2 text-label font-bold">
@@ -225,7 +228,7 @@ function StudentLogins({
       <div className="flex flex-col gap-3 px-5 pb-4">
         <p className="m-0 text-caption leading-[1.45] text-ink-2">
           Pour les comptes créés par l&apos;établissement. Chaque élève et sa famille retrouvent ces informations dans
-          « Mes applis ». Ils ne sont visibles que par l&apos;élève, sa famille, ses professeurs et l&apos;administration.
+          « Mes applis ». Elles ne sont visibles que par l&apos;élève, sa famille, ses professeurs et l&apos;administration.
         </p>
         <SelectField
           label="Appli"
@@ -234,14 +237,9 @@ function StudentLogins({
           onValueChange={setApp}
           className="max-w-64"
         />
-        {field.sharedByClass && (
+        {fields.classCode && (
           <div className="flex flex-wrap items-end gap-2">
-            <TextField
-              label={`${field.second} (le même pour toute la classe)`}
-              value={shared}
-              maxLength={120}
-              onChange={(e) => setShared(e.target.value)}
-            />
+            <TextField label="Code de classe (le même pour toute la classe)" value={shared} maxLength={80} onChange={(e) => setShared(e.target.value)} />
             <Button type="button" variant="secondary" className="h-12 px-4 text-label" disabled={pending || !shared.trim()} onClick={applyToAll}>
               {pending ? "Enregistrement…" : "Appliquer à tous"}
             </Button>
@@ -252,11 +250,12 @@ function StudentLogins({
             <CredentialRow
               key={`${app}-${st.id}-${version}`}
               classId={classId}
-              field={field}
+              fields={fields}
+              cols={cols}
               app={app}
               appName={appName}
               student={st}
-              initial={saved[app]?.[st.id] ?? { login: "", password: "" }}
+              initial={saved[app]?.[st.id] ?? { login: "", password: "", classCode: "" }}
               onSaved={(c) => setSaved((x) => ({ ...x, [app]: { ...(x[app] ?? {}), [st.id]: c } }))}
             />
           ))}
@@ -268,7 +267,8 @@ function StudentLogins({
 
 function CredentialRow({
   classId,
-  field,
+  fields,
+  cols,
   app,
   appName,
   student,
@@ -276,59 +276,53 @@ function CredentialRow({
   onSaved,
 }: {
   classId: string;
-  field: { second: string; secret: boolean };
+  fields: { password: boolean; classCode: boolean };
+  cols: number;
   app: string;
   appName: string;
   student: { id: string; name: string };
-  initial: { login: string; password: string };
-  onSaved: (c: { login: string; password: string }) => void;
+  initial: AppAccount;
+  onSaved: (c: AppAccount) => void;
 }) {
   const toast = useToast();
-  const [login, setLogin] = useState(initial.login);
-  const [password, setPassword] = useState(initial.password);
+  const [value, setValue] = useState(initial);
   const [last, setLast] = useState(initial);
   const [, start] = useTransition();
   const id = `cred-${classId}-${app}-${student.id}`;
   const save = () => {
-    const next = { login: login.trim(), password };
-    if (next.login === last.login && next.password === last.password) return;
+    const next = { login: value.login.trim(), password: value.password, classCode: value.classCode.trim() };
+    if (next.login === last.login && next.password === last.password && next.classCode === last.classCode) return;
     start(async () => {
-      const r = await setStudentAppLogin(student.id, app, next.login, next.password);
+      const r = await setStudentAppLogin(student.id, app, next);
       if (!r.ok) return toast({ title: r.error });
       setLast(next);
       onSaved(next);
       toast({ title: `${appName} : ${student.name} enregistré` });
     });
   };
-  const enter = (e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur());
+  const input = (key: keyof AppAccount, label: string, mono = false) => (
+    <input
+      id={`${id}-${key}`}
+      aria-label={`${label} ${appName} de ${student.name}`}
+      value={value[key]}
+      maxLength={key === "classCode" ? 80 : 120}
+      autoComplete="off"
+      spellCheck={false}
+      placeholder={label}
+      onChange={(e) => setValue((v) => ({ ...v, [key]: e.target.value }))}
+      onBlur={save}
+      onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur())}
+      className={`h-10 min-w-0 rounded-control border border-line bg-surface px-2.5 text-label ${mono ? "font-mono" : ""}`}
+    />
+  );
   return (
-    <li className="grid gap-1.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,12rem)_minmax(0,12rem)] sm:items-center sm:gap-3">
-      <span className="truncate text-ui font-bold sm:font-normal">{student.name}</span>
-      <input
-        id={`${id}-login`}
-        aria-label={`Identifiant ${appName} de ${student.name}`}
-        value={login}
-        maxLength={120}
-        autoComplete="off"
-        placeholder="Identifiant"
-        onChange={(e) => setLogin(e.target.value)}
-        onBlur={save}
-        onKeyDown={enter}
-        className="h-10 rounded-control border border-line bg-surface px-2.5 text-label"
-      />
-      <input
-        id={`${id}-pwd`}
-        aria-label={`${field.second} ${appName} de ${student.name}`}
-        value={password}
-        maxLength={120}
-        autoComplete="off"
-        spellCheck={false}
-        placeholder={field.second}
-        onChange={(e) => setPassword(e.target.value)}
-        onBlur={save}
-        onKeyDown={enter}
-        className="h-10 rounded-control border border-line bg-surface px-2.5 font-mono text-label"
-      />
+    <li>
+      <div className={`grid gap-1.5 sm:gap-3 ${cols === 3 ? "sm:grid-cols-[minmax(0,1fr)_repeat(3,minmax(0,10rem))]" : cols === 2 ? "sm:grid-cols-[minmax(0,1fr)_repeat(2,minmax(0,12rem))]" : "sm:grid-cols-[minmax(0,1fr)_minmax(0,14rem)]"} sm:items-center`}>
+        <span className="truncate text-ui font-bold sm:font-normal">{student.name}</span>
+        {input("login", "Identifiant")}
+        {fields.password && input("password", "Mot de passe", true)}
+        {fields.classCode && input("classCode", "Code de classe", true)}
+      </div>
     </li>
   );
 }

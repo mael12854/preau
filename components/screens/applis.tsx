@@ -9,67 +9,52 @@ import { Dialog } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
-import { secondField } from "@/lib/apps";
 import type { MyApp } from "@/lib/data/online";
 
-/** Identifiant et mot de passe donnés par l'établissement : mot de passe masqué, affichable et copiable. */
-function GivenCredential({ appKey, appName, given }: { appKey: string; appName: string; given: MyApp["given"][number] }) {
+/** Compte donné par l'établissement : code de classe, identifiant, mot de passe (masqué), chacun copiable. */
+function GivenCredential({ appName, given }: { appName: string; given: MyApp["given"][number] }) {
   const toast = useToast();
-  const field = secondField(appKey);
-  const [show, setShow] = useState(!field.secret);
+  const [show, setShow] = useState(false);
   const copy = (text: string, what: string) =>
     navigator.clipboard?.writeText(text).then(
       () => toast({ title: `${what} copié` }),
       () => toast({ title: "La copie n'a pas abouti." }),
     );
+  const row = (label: string, value: string, secret = false) => (
+    <div className="flex items-center justify-between gap-2">
+      <span className="flex min-w-0 flex-col">
+        <span className="text-caption text-ink-muted">{label}</span>
+        <b className="truncate font-mono text-ui">{secret && !show ? "•".repeat(Math.min(value.length, 12)) : value}</b>
+      </span>
+      <span className="flex shrink-0">
+        {secret && (
+          <button
+            type="button"
+            aria-pressed={show}
+            aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+            onClick={() => setShow((v) => !v)}
+            className="flex size-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
+          >
+            <Icon name={show ? "visibility_off" : "visibility"} size={18} />
+          </button>
+        )}
+        <button
+          type="button"
+          aria-label={`Copier : ${label.toLowerCase()} ${appName}${given.who ? ` de ${given.who}` : ""}`}
+          onClick={() => copy(value, label)}
+          className="flex size-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
+        >
+          <Icon name="content_copy" size={18} />
+        </button>
+      </span>
+    </div>
+  );
   return (
     <div className="flex flex-col gap-1.5 rounded-control bg-brand-tint px-3 py-2">
       <span className="text-caption text-ink-2">Donné par l&apos;établissement{given.who ? ` · ${given.who}` : ""}</span>
-      {given.login && (
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex min-w-0 flex-col">
-            <span className="text-caption text-ink-muted">Identifiant</span>
-            <b className="truncate font-mono text-ui">{given.login}</b>
-          </span>
-          <button
-            type="button"
-            aria-label={`Copier l'identifiant ${appName}${given.who ? ` de ${given.who}` : ""}`}
-            onClick={() => copy(given.login, "Identifiant")}
-            className="flex size-9 shrink-0 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
-          >
-            <Icon name="content_copy" size={18} />
-          </button>
-        </div>
-      )}
-      {given.password && (
-        <div className="flex items-center justify-between gap-2">
-          <span className="flex min-w-0 flex-col">
-            <span className="text-caption text-ink-muted">{field.second}</span>
-            <b className="truncate font-mono text-ui">{show ? given.password : "•".repeat(Math.min(given.password.length, 12))}</b>
-          </span>
-          <span className="flex shrink-0">
-            {field.secret && (
-            <button
-              type="button"
-              aria-pressed={show}
-              aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-              onClick={() => setShow((v) => !v)}
-              className="flex size-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
-            >
-              <Icon name={show ? "visibility_off" : "visibility"} size={18} />
-            </button>
-            )}
-            <button
-              type="button"
-              aria-label={`Copier : ${field.second.toLowerCase()} ${appName}${given.who ? ` de ${given.who}` : ""}`}
-              onClick={() => copy(given.password!, field.second)}
-              className="flex size-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
-            >
-              <Icon name="content_copy" size={18} />
-            </button>
-          </span>
-        </div>
-      )}
+      {given.classCode && row("Code de classe", given.classCode)}
+      {given.login && row("Identifiant", given.login)}
+      {given.password && row("Mot de passe", given.password, true)}
     </div>
   );
 }
@@ -156,7 +141,7 @@ function AppCard({ app }: { app: MyApp }) {
       </div>
       {app.sso && <Badge tone="info">Connexion avec {app.sso}</Badge>}
       {app.given.map((g) => (
-        <GivenCredential key={`${g.who}-${g.login}`} appKey={app.key} appName={app.name} given={g} />
+        <GivenCredential key={`${g.who}-${g.login}`} appName={app.name} given={g} />
       ))}
       <LoginField app={app} />
       <div className="mt-auto flex flex-wrap gap-2">

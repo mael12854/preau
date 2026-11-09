@@ -1357,11 +1357,25 @@ export async function getVocabStats(deckId: string) {
 }
 
 /** Identifiant d'appli donné à un élève (ex. compte Scratch) ; vide pour l'effacer. Professeur de l'élève, administration. */
-export async function setStudentAppLogin(studentId: string, appKey: string, login: string, password: string): Promise<ActionResult> {
-  return run((s) => s.rpc("set_student_app_credentials", { p_student: studentId, p_app: appKey, p_login: login, p_password: password }), [
+export async function setStudentAppLogin(
+  studentId: string,
+  appKey: string,
+  account: { login: string; password: string; classCode: string },
+): Promise<ActionResult> {
+  return run(
+    (s) =>
+      s.rpc("set_student_app_account", {
+        p_student: studentId,
+        p_app: appKey,
+        p_login: account.login,
+        p_password: account.password,
+        p_class_code: account.classCode,
+      }),
+    [
     "/classes-en-ligne",
     "/applis",
-  ]);
+  ],
+  );
 }
 
 /** Demander un justificatif pour une absence ou un retard (n'importe quelle date) : message à la famille. */
