@@ -60,7 +60,11 @@ const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "notes", "viesco", "messag
  */
 export const PROFILES: Profile[] = [
   // École primaire : l'enfant a une interface très simple (ses devoirs et le cahier de liaison).
-  { id: "primaire", label: "Élève · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false, nav: ["dash", "edt", "devoirs", "liaison", "outils", "enligne", "applis", "compte"] },
+  {
+    id: "primaire", label: "Élève · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,
+    labels: { bulletins: "Livret scolaire" },
+    nav: ["dash", "edt", "devoirs", "notes", "bulletins", "liaison", "outils", "enligne", "applis", "compte"],
+  },
   {
     id: "parent-primaire", label: "Parent · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,
     labels: { bulletins: "Livret scolaire", viesco: "Absences" },
