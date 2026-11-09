@@ -9,7 +9,7 @@ import { Icon } from "@/components/ui/icon";
 import { SelectField, TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import type { ClassLink, LinkKind, OnlineClass } from "@/lib/data/online";
-import { CATALOG } from "@/lib/apps";
+import { CATALOG, secondField } from "@/lib/apps";
 import type { IconName } from "@/lib/icons";
 
 /** Types proposés. Tinkercad est enregistré comme « autre » et reconnu à son lien ou à son nom. */
@@ -188,9 +188,30 @@ function StudentLogins({
   students: { id: string; name: string }[];
   logins: Record<string, Record<string, { login: string; password: string }>>;
 }) {
+  const toast = useToast();
   const [app, setApp] = useState("scratch");
   const [saved, setSaved] = useState(logins);
+  const [version, setVersion] = useState(0);
+  const [shared, setShared] = useState("");
+  const [pending, start] = useTransition();
   const appName = CATALOG.find((a) => a.key === app)?.name ?? app;
+  const field = secondField(app);
+  // Code commun (ex. code de classe Tinkercad) : enregistré pour tous les élèves, identifiants conservés.
+  const applyToAll = () =>
+    start(async () => {
+      const value = shared.trim();
+      if (!value) return;
+      const next = { ...(saved[app] ?? {}) };
+      for (const st of students) {
+        const login = next[st.id]?.login ?? "";
+        const r = await setStudentAppLogin(st.id, app, login, value);
+        if (!r.ok) return toast({ title: `${st.name} : ${r.error}` });
+        next[st.id] = { login, password: value };
+      }
+      setSaved((x) => ({ ...x, [app]: next }));
+      setVersion((v) => v + 1);
+      toast({ title: `${field.second} enregistré pour les ${students.length} élèves` });
+    });
   const filled = Object.values(saved[app] ?? {}).filter((c) => c.login || c.password).length;
   return (
     <details className="border-b border-line">
@@ -203,8 +224,8 @@ function StudentLogins({
       </summary>
       <div className="flex flex-col gap-3 px-5 pb-4">
         <p className="m-0 text-caption leading-[1.45] text-ink-2">
-          Pour les comptes créés par l&apos;établissement. Chaque élève et sa famille retrouvent leur identifiant et leur mot de
-          passe dans « Mes applis ». Ils ne sont visibles que par l&apos;élève, sa famille, ses professeurs et l&apos;administration.
+          Pour les comptes créés par l&apos;établissement. Chaque élève et sa famille retrouvent ces informations dans
+          « Mes applis ». Ils ne sont visibles que par l&apos;élève, sa famille, ses professeurs et l&apos;administration.
         </p>
         <SelectField
           label="Appli"
@@ -213,11 +234,25 @@ function StudentLogins({
           onValueChange={setApp}
           className="max-w-64"
         />
+        {field.sharedByClass && (
+          <div className="flex flex-wrap items-end gap-2">
+            <TextField
+              label={`${field.second} (le même pour toute la classe)`}
+              value={shared}
+              maxLength={120}
+              onChange={(e) => setShared(e.target.value)}
+            />
+            <Button type="button" variant="secondary" className="h-12 px-4 text-label" disabled={pending || !shared.trim()} onClick={applyToAll}>
+              {pending ? "Enregistrement…" : "Appliquer à tous"}
+            </Button>
+          </div>
+        )}
         <ul className="m-0 flex list-none flex-col gap-3 p-0">
           {students.map((st) => (
             <CredentialRow
-              key={`${app}-${st.id}`}
+              key={`${app}-${st.id}-${version}`}
               classId={classId}
+              field={field}
               app={app}
               appName={appName}
               student={st}
@@ -233,6 +268,7 @@ function StudentLogins({
 
 function CredentialRow({
   classId,
+  field,
   app,
   appName,
   student,
@@ -240,6 +276,7 @@ function CredentialRow({
   onSaved,
 }: {
   classId: string;
+  field: { second: string; secret: boolean };
   app: string;
   appName: string;
   student: { id: string; name: string };
@@ -281,12 +318,12 @@ function CredentialRow({
       />
       <input
         id={`${id}-pwd`}
-        aria-label={`Mot de passe ${appName} de ${student.name}`}
+        aria-label={`${field.second} ${appName} de ${student.name}`}
         value={password}
         maxLength={120}
         autoComplete="off"
         spellCheck={false}
-        placeholder="Mot de passe"
+        placeholder={field.second}
         onChange={(e) => setPassword(e.target.value)}
         onBlur={save}
         onKeyDown={enter}

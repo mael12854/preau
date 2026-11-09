@@ -9,12 +9,14 @@ import { Dialog } from "@/components/ui/dialog";
 import { Icon } from "@/components/ui/icon";
 import { TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
+import { secondField } from "@/lib/apps";
 import type { MyApp } from "@/lib/data/online";
 
 /** Identifiant et mot de passe donnés par l'établissement : mot de passe masqué, affichable et copiable. */
-function GivenCredential({ appName, given }: { appName: string; given: MyApp["given"][number] }) {
+function GivenCredential({ appKey, appName, given }: { appKey: string; appName: string; given: MyApp["given"][number] }) {
   const toast = useToast();
-  const [show, setShow] = useState(false);
+  const field = secondField(appKey);
+  const [show, setShow] = useState(!field.secret);
   const copy = (text: string, what: string) =>
     navigator.clipboard?.writeText(text).then(
       () => toast({ title: `${what} copié` }),
@@ -42,10 +44,11 @@ function GivenCredential({ appName, given }: { appName: string; given: MyApp["gi
       {given.password && (
         <div className="flex items-center justify-between gap-2">
           <span className="flex min-w-0 flex-col">
-            <span className="text-caption text-ink-muted">Mot de passe</span>
+            <span className="text-caption text-ink-muted">{field.second}</span>
             <b className="truncate font-mono text-ui">{show ? given.password : "•".repeat(Math.min(given.password.length, 12))}</b>
           </span>
           <span className="flex shrink-0">
+            {field.secret && (
             <button
               type="button"
               aria-pressed={show}
@@ -55,10 +58,11 @@ function GivenCredential({ appName, given }: { appName: string; given: MyApp["gi
             >
               <Icon name={show ? "visibility_off" : "visibility"} size={18} />
             </button>
+            )}
             <button
               type="button"
-              aria-label={`Copier le mot de passe ${appName}${given.who ? ` de ${given.who}` : ""}`}
-              onClick={() => copy(given.password!, "Mot de passe")}
+              aria-label={`Copier : ${field.second.toLowerCase()} ${appName}${given.who ? ` de ${given.who}` : ""}`}
+              onClick={() => copy(given.password!, field.second)}
               className="flex size-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
             >
               <Icon name="content_copy" size={18} />
@@ -152,7 +156,7 @@ function AppCard({ app }: { app: MyApp }) {
       </div>
       {app.sso && <Badge tone="info">Connexion avec {app.sso}</Badge>}
       {app.given.map((g) => (
-        <GivenCredential key={`${g.who}-${g.login}`} appName={app.name} given={g} />
+        <GivenCredential key={`${g.who}-${g.login}`} appKey={app.key} appName={app.name} given={g} />
       ))}
       <LoginField app={app} />
       <div className="mt-auto flex flex-wrap gap-2">

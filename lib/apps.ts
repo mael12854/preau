@@ -13,7 +13,14 @@ export type CatalogApp = {
   sso?: "Google" | "Google ou Microsoft";
   /** Ce qu'on retient pour se connecter (affiché dans la case identifiant). */
   loginHint: string;
+  /** Comptes donnés par l'établissement : nom de la seconde case (mot de passe par défaut). */
+  credentials?: { second: string; secret: boolean; sharedByClass: boolean };
 };
+
+/** Seconde information d'un compte donné par l'établissement : mot de passe (masqué) ou, par ex., code de classe. */
+export function secondField(appKey: string) {
+  return CATALOG.find((a) => a.key === appKey)?.credentials ?? { second: "Mot de passe", secret: true, sharedByClass: false };
+}
 
 export const CATALOG: CatalogApp[] = [
   { key: "kahoot", name: "Kahoot!", description: "Quiz en direct : entrez le code PIN donné en classe.", category: "Quiz et jeux", url: "https://kahoot.it", loginUrl: "https://create.kahoot.it/auth/login", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail" },
@@ -27,7 +34,7 @@ export const CATALOG: CatalogApp[] = [
   { key: "genially", name: "Genially", description: "Présentations et jeux interactifs.", category: "Créer et collaborer", url: "https://genially.com", loginUrl: "https://auth.genially.com/fr/login", sso: "Google ou Microsoft", loginHint: "E-mail" },
   { key: "digipad", name: "Digipad", description: "Murs collaboratifs, outil libre de La Digitale.", category: "Créer et collaborer", url: "https://digipad.app", loginHint: "Identifiant" },
   { key: "scratch", name: "Scratch", description: "Programmer des jeux et des animations avec des blocs.", category: "Sciences et maths", url: "https://scratch.mit.edu", loginHint: "Nom d'utilisateur" },
-  { key: "tinkercad", name: "Tinkercad", description: "Modélisation 3D, électronique et programmation par blocs.", category: "Sciences et maths", url: "https://www.tinkercad.com", loginUrl: "https://www.tinkercad.com/login", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail" },
+  { key: "tinkercad", name: "Tinkercad", description: "Modélisation 3D, électronique et programmation par blocs.", category: "Sciences et maths", url: "https://www.tinkercad.com", loginUrl: "https://www.tinkercad.com/login", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail", credentials: { second: "Code de classe", secret: false, sharedByClass: true } },
   { key: "geogebra", name: "GeoGebra", description: "Géométrie, graphiques et calcul, en ligne.", category: "Sciences et maths", url: "https://www.geogebra.org", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail" },
   { key: "khan", name: "Khan Academy", description: "Cours et exercices de maths et de sciences, en français.", category: "Sciences et maths", url: "https://fr.khanacademy.org", loginUrl: "https://fr.khanacademy.org/login", sso: "Google ou Microsoft", loginHint: "Nom d'utilisateur ou e-mail" },
   { key: "phet", name: "PhET", description: "Simulations interactives de physique, chimie et maths.", category: "Sciences et maths", url: "https://phet.colorado.edu/fr/", loginHint: "E-mail" },
