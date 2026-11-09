@@ -178,7 +178,7 @@ function LinkRow({ link, classId, editable }: { link: ClassLink; classId: string
   );
 }
 
-/** Identifiants d'une appli (ex. Scratch) pour chaque élève de la classe : saisis par le professeur, vus par l'élève dans « Mes applis ». */
+/** Identifiants et mots de passe d'une appli (ex. Scratch) pour chaque élève : saisis par le professeur, vus par l'élève et sa famille dans « Mes applis ». */
 function StudentLogins({
   classId,
   students,
@@ -186,23 +186,12 @@ function StudentLogins({
 }: {
   classId: string;
   students: { id: string; name: string }[];
-  logins: Record<string, Record<string, string>>;
+  logins: Record<string, Record<string, { login: string; password: string }>>;
 }) {
-  const toast = useToast();
   const [app, setApp] = useState("scratch");
-  const [values, setValues] = useState(logins);
-  const [, start] = useTransition();
+  const [saved, setSaved] = useState(logins);
   const appName = CATALOG.find((a) => a.key === app)?.name ?? app;
-  const filled = Object.keys(values[app] ?? {}).length;
-  const save = (studentId: string, name: string, login: string) => {
-    if ((logins[app]?.[studentId] ?? "") === login.trim()) return;
-    start(async () => {
-      const r = await setStudentAppLogin(studentId, app, login);
-      if (!r.ok) return toast({ title: r.error });
-      logins[app] = { ...(logins[app] ?? {}), [studentId]: login.trim() };
-      toast({ title: login.trim() ? `${appName} : identifiant de ${name} enregistré` : `${appName} : identifiant de ${name} effacé` });
-    });
-  };
+  const filled = Object.values(saved[app] ?? {}).filter((c) => c.login || c.password).length;
   return (
     <details className="border-b border-line">
       <summary className="flex min-h-12 cursor-pointer items-center gap-2 px-5 py-2 text-label font-bold">
@@ -214,8 +203,8 @@ function StudentLogins({
       </summary>
       <div className="flex flex-col gap-3 px-5 pb-4">
         <p className="m-0 text-caption leading-[1.45] text-ink-2">
-          Chaque élève (et sa famille) retrouve son identifiant dans « Mes applis ». Jamais de mot de passe ici : donnez-le
-          à l&apos;élève en classe.
+          Pour les comptes créés par l&apos;établissement. Chaque élève et sa famille retrouvent leur identifiant et leur mot de
+          passe dans « Mes applis ». Ils ne sont visibles que par l&apos;élève, sa famille, ses professeurs et l&apos;administration.
         </p>
         <SelectField
           label="Appli"
@@ -224,34 +213,86 @@ function StudentLogins({
           onValueChange={setApp}
           className="max-w-64"
         />
-        <ul className="m-0 flex list-none flex-col gap-2 p-0">
-          {students.map((st) => {
-            const id = `login-${classId}-${app}-${st.id}`;
-            return (
-              <li key={`${app}-${st.id}`} className="grid grid-cols-[minmax(0,1fr)_minmax(0,14rem)] items-center gap-3">
-                <label htmlFor={id} className="truncate text-ui">
-                  {st.name}
-                </label>
-                <input
-                  id={id}
-                  defaultValue={values[app]?.[st.id] ?? ""}
-                  maxLength={120}
-                  autoComplete="off"
-                  placeholder={`Identifiant ${appName}`}
-                  onBlur={(e) => {
-                    const v = e.target.value;
-                    setValues((x) => ({ ...x, [app]: { ...(x[app] ?? {}), ...(v.trim() ? { [st.id]: v.trim() } : {}) } }));
-                    save(st.id, st.name, v);
-                  }}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), (e.target as HTMLInputElement).blur())}
-                  className="h-10 rounded-control border border-line bg-surface px-2.5 text-label"
-                />
-              </li>
-            );
-          })}
+        <ul className="m-0 flex list-none flex-col gap-3 p-0">
+          {students.map((st) => (
+            <CredentialRow
+              key={`${app}-${st.id}`}
+              classId={classId}
+              app={app}
+              appName={appName}
+              student={st}
+              initial={saved[app]?.[st.id] ?? { login: "", password: "" }}
+              onSaved={(c) => setSaved((x) => ({ ...x, [app]: { ...(x[app] ?? {}), [st.id]: c } }))}
+            />
+          ))}
         </ul>
       </div>
     </details>
+  );
+}
+
+function CredentialRow({
+  classId,
+  app,
+  appName,
+  student,
+  initial,
+  onSaved,
+}: {
+  classId: string;
+  app: string;
+  appName: string;
+  student: { id: string; name: string };
+  initial: { login: string; password: string };
+  onSaved: (c: { login: string; password: string }) => void;
+}) {
+  const toast = useToast();
+  const [login, setLogin] = useState(initial.login);
+  const [password, setPassword] = useState(initial.password);
+  const [last, setLast] = useState(initial);
+  const [, start] = useTransition();
+  const id = `cred-${classId}-${app}-${student.id}`;
+  const save = () => {
+    const next = { login: login.trim(), password };
+    if (next.login === last.login && next.password === last.password) return;
+    start(async () => {
+      const r = await setStudentAppLogin(student.id, app, next.login, next.password);
+      if (!r.ok) return toast({ title: r.error });
+      setLast(next);
+      onSaved(next);
+      toast({ title: `${appName} : ${student.name} enregistré` });
+    });
+  };
+  const enter = (e: React.KeyboardEvent<HTMLInputElement>) => e.key === "Enter" && (e.preventDefault(), e.currentTarget.blur());
+  return (
+    <li className="grid gap-1.5 sm:grid-cols-[minmax(0,1fr)_minmax(0,12rem)_minmax(0,12rem)] sm:items-center sm:gap-3">
+      <span className="truncate text-ui font-bold sm:font-normal">{student.name}</span>
+      <input
+        id={`${id}-login`}
+        aria-label={`Identifiant ${appName} de ${student.name}`}
+        value={login}
+        maxLength={120}
+        autoComplete="off"
+        placeholder="Identifiant"
+        onChange={(e) => setLogin(e.target.value)}
+        onBlur={save}
+        onKeyDown={enter}
+        className="h-10 rounded-control border border-line bg-surface px-2.5 text-label"
+      />
+      <input
+        id={`${id}-pwd`}
+        aria-label={`Mot de passe ${appName} de ${student.name}`}
+        value={password}
+        maxLength={120}
+        autoComplete="off"
+        spellCheck={false}
+        placeholder="Mot de passe"
+        onChange={(e) => setPassword(e.target.value)}
+        onBlur={save}
+        onKeyDown={enter}
+        className="h-10 rounded-control border border-line bg-surface px-2.5 font-mono text-label"
+      />
+    </li>
   );
 }
 

@@ -4,6 +4,7 @@
  * ajoutez ici toute nouvelle icône avant de l'utiliser.
  */
 export const ICON_NAMES = [
+  "visibility",
   "pause",
   "groups_3",
   "replay",

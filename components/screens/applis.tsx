@@ -11,6 +11,65 @@ import { TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import type { MyApp } from "@/lib/data/online";
 
+/** Identifiant et mot de passe donnés par l'établissement : mot de passe masqué, affichable et copiable. */
+function GivenCredential({ appName, given }: { appName: string; given: MyApp["given"][number] }) {
+  const toast = useToast();
+  const [show, setShow] = useState(false);
+  const copy = (text: string, what: string) =>
+    navigator.clipboard?.writeText(text).then(
+      () => toast({ title: `${what} copié` }),
+      () => toast({ title: "La copie n'a pas abouti." }),
+    );
+  return (
+    <div className="flex flex-col gap-1.5 rounded-control bg-brand-tint px-3 py-2">
+      <span className="text-caption text-ink-2">Donné par l&apos;établissement{given.who ? ` · ${given.who}` : ""}</span>
+      {given.login && (
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex min-w-0 flex-col">
+            <span className="text-caption text-ink-muted">Identifiant</span>
+            <b className="truncate font-mono text-ui">{given.login}</b>
+          </span>
+          <button
+            type="button"
+            aria-label={`Copier l'identifiant ${appName}${given.who ? ` de ${given.who}` : ""}`}
+            onClick={() => copy(given.login, "Identifiant")}
+            className="flex size-9 shrink-0 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
+          >
+            <Icon name="content_copy" size={18} />
+          </button>
+        </div>
+      )}
+      {given.password && (
+        <div className="flex items-center justify-between gap-2">
+          <span className="flex min-w-0 flex-col">
+            <span className="text-caption text-ink-muted">Mot de passe</span>
+            <b className="truncate font-mono text-ui">{show ? given.password : "•".repeat(Math.min(given.password.length, 12))}</b>
+          </span>
+          <span className="flex shrink-0">
+            <button
+              type="button"
+              aria-pressed={show}
+              aria-label={show ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+              onClick={() => setShow((v) => !v)}
+              className="flex size-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
+            >
+              <Icon name={show ? "visibility_off" : "visibility"} size={18} />
+            </button>
+            <button
+              type="button"
+              aria-label={`Copier le mot de passe ${appName}${given.who ? ` de ${given.who}` : ""}`}
+              onClick={() => copy(given.password!, "Mot de passe")}
+              className="flex size-9 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
+            >
+              <Icon name="content_copy" size={18} />
+            </button>
+          </span>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Identifiant de l'appli : retenu pour soi seul, copiable. Jamais de mot de passe. */
 function LoginField({ app }: { app: MyApp }) {
   const toast = useToast();
@@ -93,25 +152,7 @@ function AppCard({ app }: { app: MyApp }) {
       </div>
       {app.sso && <Badge tone="info">Connexion avec {app.sso}</Badge>}
       {app.given.map((g) => (
-        <div key={`${g.who}-${g.login}`} className="flex items-center justify-between gap-2 rounded-control bg-brand-tint px-3 py-2">
-          <span className="flex min-w-0 flex-col">
-            <span className="text-caption text-ink-2">Donné par l&apos;établissement{g.who ? ` · ${g.who}` : ""}</span>
-            <b className="truncate font-mono text-ui">{g.login}</b>
-          </span>
-          <button
-            type="button"
-            aria-label={`Copier l'identifiant ${app.name}${g.who ? ` de ${g.who}` : ""}`}
-            onClick={() =>
-              navigator.clipboard?.writeText(g.login).then(
-                () => toast({ title: "Identifiant copié" }),
-                () => toast({ title: "La copie n'a pas abouti." }),
-              )
-            }
-            className="flex size-9 shrink-0 items-center justify-center rounded-control text-ink-2 hover:bg-surface"
-          >
-            <Icon name="content_copy" size={18} />
-          </button>
-        </div>
+        <GivenCredential key={`${g.who}-${g.login}`} appName={app.name} given={g} />
       ))}
       <LoginField app={app} />
       <div className="mt-auto flex flex-wrap gap-2">
@@ -209,9 +250,9 @@ export function ApplisScreen({ apps }: { apps: MyApp[] }) {
     <div className="flex flex-col gap-6">
       <div className="flex flex-wrap items-center justify-between gap-3 rounded-card border border-line bg-surface px-5 py-4">
         <p className="m-0 max-w-2xl text-label leading-[1.45] text-ink-2">
-          Préau retient votre identifiant pour chaque appli, jamais votre mot de passe. Laissez votre navigateur
-          retenir le mot de passe, ou utilisez « Connexion avec Google » quand l&apos;appli le propose : vous resterez
-          connecté.
+          Les comptes créés par l&apos;établissement (identifiant et mot de passe) apparaissent sur la fiche de l&apos;appli.
+          Pour vos comptes personnels, Préau retient seulement votre identifiant : laissez votre navigateur retenir le mot
+          de passe, ou utilisez « Connexion avec Google » quand l&apos;appli le propose.
         </p>
         <AddApp />
       </div>
