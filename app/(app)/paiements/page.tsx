@@ -16,7 +16,10 @@ export default async function Page() {
   const supabase = await createClient();
   // Demandes acceptées ou refusées dans Crédit Domestique depuis la dernière visite.
   await syncPayments(supabase);
-  const data = await getPayments(supabase, profile.student?.id ?? null, reference);
+  const [data, { data: school }] = await Promise.all([
+    getPayments(supabase, profile.student?.id ?? null, reference),
+    supabase.from("schools").select("canteen").eq("domain", profile.school.domain).maybeSingle(),
+  ]);
   return (
     <AppShell profile={profile} module="paiements">
       <PaiementsScreen
@@ -26,7 +29,8 @@ export default async function Page() {
         menuDay={formatWeekday(reference)}
         bills={data.bills}
         pendingTopUps={data.pendingTopUps}
-        canPay={profile.id === "parent"}
+        canPay={profile.id === "parent" || profile.id === "parent-primaire"}
+        canteen={school?.canteen ?? false}
       />
     </AppShell>
   );

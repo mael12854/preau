@@ -16,6 +16,8 @@ const SUGGESTED = 40;
 type Props = {
   student: { id: string; firstName: string } | null;
   balance: { cents: number; meals: number } | null;
+  /** L'école a une cantine (solde et menu) ; sinon, seulement les factures. */
+  canteen?: boolean;
   menu: string[] | null;
   menuDay: string;
   bills: BillView[];
@@ -29,7 +31,9 @@ type Props = {
  * Un paiement n'est jamais crédité par le navigateur : il reste en attente jusqu'à ce que le responsable
  * accepte la demande dans Crédit Domestique (vérifié côté serveur à chaque affichage).
  */
-export function PaiementsScreen({ student, balance, menu, menuDay, bills, pendingTopUps, canPay }: Props) {
+export function PaiementsScreen({ student: followed, balance, menu, menuDay, bills, pendingTopUps, canPay, canteen = true }: Props) {
+  // École sans cantine : seulement les factures.
+  const student = canteen ? followed : null;
   const toast = useToast();
   const [pending, start] = useTransition();
   const pay = (fn: () => Promise<PaymentResult>) =>
@@ -102,7 +106,7 @@ export function PaiementsScreen({ student, balance, menu, menuDay, bills, pendin
             <h2 id="menu" className="m-0 font-display text-h3 font-bold">
               Menu de {menuDay}
             </h2>
-            {menu ? (
+            {menu?.length ? (
               <ul className="m-0 flex list-none flex-col gap-2.5 p-0 text-ui">
                 {menu.map((d) => (
                   <li key={d}>{d}</li>

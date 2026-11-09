@@ -1414,3 +1414,30 @@ export async function addAbsence(input: {
     ["/vie-scolaire", "/accueil"],
   );
 }
+
+// ===== Gestion de la cantine (secrétariat, direction) =====
+export async function setCanteenSettings(enabled: boolean, mealPriceCents: number): Promise<ActionResult> {
+  return run((s) => s.rpc("set_canteen_settings", { p_enabled: enabled, p_meal_price_cents: mealPriceCents }), ["/cantine", "/paiements"]);
+}
+
+export async function saveMenu(day: string, items: string[]): Promise<ActionResult> {
+  return run((s) => s.rpc("save_menu", { p_day: day, p_items: items }), ["/cantine", "/paiements", "/accueil"]);
+}
+
+export async function adjustCanteenBalance(studentId: string, amountCents: number, reason: string): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("adjust_canteen_balance", { p_student: studentId, p_amount_cents: amountCents, p_reason: reason }),
+    ["/cantine", "/paiements"],
+  );
+}
+
+export async function createInvoices(studentIds: string[], label: string, amountCents: number, dueOn: string): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("create_invoices", { p_students: studentIds, p_label: label, p_amount_cents: amountCents, p_due_on: dueOn }),
+    ["/cantine", "/paiements"],
+  );
+}
+
+export async function settleInvoice(invoiceId: string, method: string): Promise<ActionResult> {
+  return run((s) => s.rpc("settle_invoice", { p_invoice: invoiceId, p_method: method }), ["/cantine", "/paiements"]);
+}

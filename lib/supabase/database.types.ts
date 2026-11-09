@@ -217,6 +217,12 @@ export type Database = {
           },
         ]
       }
+      canteen_adjustments: {
+        Row: { amount_cents: number; created_at: string; created_by: string | null; id: string; reason: string; student_id: string }
+        Insert: { amount_cents: number; created_at?: string; created_by?: string | null; id?: string; reason: string; student_id: string }
+        Update: { amount_cents?: number; created_at?: string; created_by?: string | null; id?: string; reason?: string; student_id?: string }
+        Relationships: []
+      }
       canteen_accounts: {
         Row: {
           balance_cents: number
@@ -1536,6 +1542,8 @@ export type Database = {
       }
       schools: {
         Row: {
+          canteen: boolean
+          meal_price_cents: number
           week_a_monday: string
           domain: string
           grading: Database["public"]["Enums"]["grading_mode"]
@@ -1544,6 +1552,8 @@ export type Database = {
           year_label: string
         }
         Insert: {
+          canteen?: boolean
+          meal_price_cents?: number
           week_a_monday?: string
           domain: string
           grading?: Database["public"]["Enums"]["grading_mode"]
@@ -1552,6 +1562,8 @@ export type Database = {
           year_label: string
         }
         Update: {
+          canteen?: boolean
+          meal_price_cents?: number
           week_a_monday?: string
           domain?: string
           grading?: Database["public"]["Enums"]["grading_mode"]
@@ -1911,6 +1923,11 @@ export type Database = {
         Args: { p_body: string; p_class: string; p_requires_signature?: boolean; p_title: string }
         Returns: string
       }
+      adjust_canteen_balance: { Args: { p_amount_cents: number; p_reason: string; p_student: string }; Returns: number }
+      create_invoices: { Args: { p_amount_cents: number; p_due_on: string; p_label: string; p_students: string[] }; Returns: number }
+      save_menu: { Args: { p_day: string; p_items: string[] }; Returns: undefined }
+      set_canteen_settings: { Args: { p_enabled: boolean; p_meal_price_cents: number }; Returns: undefined }
+      settle_invoice: { Args: { p_invoice: string; p_method: string }; Returns: undefined }
       add_absence: {
         Args: {
           p_day: string
