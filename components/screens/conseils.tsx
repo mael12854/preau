@@ -32,10 +32,12 @@ function termBounds(term: number, today: string) {
 function NewCouncil({
   classes,
   teachers,
+  selfId,
   today,
 }: {
   classes: { id: string; name: string }[];
   teachers: { id: string; name: string }[];
+  selfId: string | null;
   today: string;
 }) {
   const router = useRouter();
@@ -45,7 +47,7 @@ function NewCouncil({
   const [day, setDay] = useState(today);
   const [time, setTime] = useState("17:00");
   const [[from, to], setBounds] = useState(() => termBounds(1, today));
-  const [head, setHead] = useState("aucun");
+  const [head, setHead] = useState(selfId ?? "aucun");
   const [error, setError] = useState<string>();
   const [pending, start] = useTransition();
   return (
@@ -97,7 +99,7 @@ function NewCouncil({
         </div>
         <SelectField
           label="Professeur principal"
-          options={[{ value: "aucun", label: "Aucun (la direction conduit le conseil)" }, ...teachers.map((t) => ({ value: t.id, label: t.name }))]}
+          options={[...(selfId ? [] : [{ value: "aucun", label: "Aucun (la direction conduit le conseil)" }]), ...teachers.map((t) => ({ value: t.id, label: t.name }))]}
           value={head}
           onValueChange={setHead}
         />
@@ -118,19 +120,21 @@ export function CouncilsScreen({
   canCreate,
   classes,
   teachers,
+  selfId,
   today,
 }: {
   councils: CouncilSummary[];
   canCreate: boolean;
   classes: { id: string; name: string }[];
   teachers: { id: string; name: string }[];
+  selfId: string | null;
   today: string;
 }) {
   return (
     <div className="flex flex-col gap-4">
       {canCreate && classes.length > 0 && (
         <div className="flex justify-end">
-          <NewCouncil classes={classes} teachers={teachers} today={today} />
+          <NewCouncil classes={classes} teachers={teachers} selfId={selfId} today={today} />
         </div>
       )}
       {councils.length === 0 ? (

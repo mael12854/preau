@@ -19,13 +19,14 @@ export type CouncilSummary = {
 /** Conseils visibles (personnel de la classe, participants) et, pour l'administration, ce qu'il faut pour en créer. */
 export async function getCouncils(supabase: SupabaseServer, viewer: Viewer) {
   const admin = viewer.id === "direction" || viewer.id === "secretariat";
+  const teacher = viewer.id === "prof" || viewer.id === "enseignant-primaire";
   const [{ data }, targets, { data: profs }] = await Promise.all([
     supabase
       .from("class_councils")
       .select("id, term, held_at, status, classes(name), profiles!class_councils_head_teacher_id_fkey(display_name)")
       .order("held_at", { ascending: false }),
-    admin ? getPublishTargets(supabase, viewer) : Promise.resolve(null),
-    admin
+    admin || teacher ? getPublishTargets(supabase, viewer) : Promise.resolve(null),
+    admin || teacher
       ? supabase.from("profiles").select("id, display_name").eq("kind", "prof").order("display_name")
       : Promise.resolve({ data: [] as { id: string; display_name: string }[] }),
   ]);
@@ -39,7 +40,9 @@ export async function getCouncils(supabase: SupabaseServer, viewer: Viewer) {
   }));
   return {
     councils,
-    canCreate: admin,
+    canCreate: admin || teacher,
+    /** Un professeur qui crée un conseil en devient le professeur principal, sauf choix contraire. */
+    selfId: teacher ? viewer.profileId : null,
     classes: targets?.classes ?? [],
     teachers: (profs ?? []).map((p) => ({ id: p.id, name: p.display_name })),
   };
@@ -97,15 +100,15 @@ export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: s
   if (!c) return null;
   const admin = viewer.id === "direction" || viewer.id === "secretariat";
   const direction = viewer.id === "direction";
+  const isHead = c.head_teacher_id === viewer.profileId;
   const [{ data: participants }, sheets, { data: teachings }, { data: people }] = await Promise.all([
     supabase.from("class_council_participants").select("profile_id, role, profiles(display_name)").eq("council_id", id),
     isAdminStaff(viewer) || viewer.staff ? supabase.rpc("council_sheets", { p_council: id }) : Promise.resolve({ data: [] }),
     supabase.from("teachings").select("subject_id, teacher_id, subjects(name)").eq("class_id", c.class_id),
-    admin
+    admin || isHead
       ? supabase.from("profiles").select("id, display_name, kind").in("kind", ["prof", "cpe", "direction", "secretariat", "eleve", "parent"]).order("display_name")
       : Promise.resolve({ data: [] as { id: string; display_name: string; kind: string }[] }),
   ]);
-  const isHead = c.head_teacher_id === viewer.profileId;
   const subjects = [
     ...new Map(
       (teachings ?? [])

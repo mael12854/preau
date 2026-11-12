@@ -29,7 +29,7 @@ function NewMeeting({ classes, today }: { classes: { id: string; name: string }[
       open={open}
       onOpenChange={setOpen}
       title="Nouvelle réunion parents-profs"
-      description="Ensuite, chaque professeur ouvre ses créneaux ; les familles réservent depuis leur espace."
+      description="Chaque professeur des classes choisies reçoit ses créneaux sur toute la plage ; les familles réservent avec chaque professeur tant qu’il reste de la place."
       trigger={
         <Button icon="add" className="h-11 px-4 text-label">
           Nouvelle réunion

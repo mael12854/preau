@@ -295,7 +295,7 @@ export function MeetingScreen({ board, teacher, admin }: { board: MeetingBoard; 
       {family && <FamilyPanel board={board} />}
       {!teacher && !family && (
         <p className="m-0 rounded-card border border-line bg-surface px-5 py-6 text-label text-ink-2">
-          Les professeurs ouvrent leurs créneaux depuis cette page ; les familles réservent depuis leur espace.
+          Les créneaux de chaque professeur couvrent toute la plage ; un professeur peut en retirer ou en rouvrir. Les familles réservent depuis leur espace tant qu’il reste de la place.
         </p>
       )}
     </div>
