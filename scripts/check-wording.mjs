@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Règle métier : aucune moyenne, aucun classement dans l'interface. La note sur 20 n'existe que pour
+ * Règle métier : aucun classement dans l'interface (les moyennes sont autorisées depuis les conseils de classe). La note sur 20 n'existe que pour
  * les établissements réglés sur « note20 » et passe uniquement par lib/grading.ts.
  * Parcourt le code de l'application (hors référence de design) et échoue si un terme interdit apparaît.
  * Usage : npm run check:wording
@@ -11,7 +11,7 @@ import { join, relative } from "node:path";
 const ROOT = new URL("..", import.meta.url).pathname;
 const DIRS = ["app", "components", "lib"];
 // « 12/20 » ou « / 20 », mais pas une opacité Tailwind comme « ink/20 ».
-const FORBIDDEN = [/(?<![a-z-])\/\s?20\b/i, /moyenne/i, /classement/i, /\branking\b/i];
+const FORBIDDEN = [/(?<![a-z-])\/\s?20\b/i, /classement/i, /\branking\b/i];
 // Seul fichier autorisé à écrire « /20 » : le formatage des notes (établissements notés sur 20).
 const SCORE_FILE = join("lib", "grading.ts");
 
@@ -37,7 +37,7 @@ for (const f of files) {
 }
 
 if (hits.length) {
-  console.error("Termes interdits trouvés (notes sur 20, moyenne, classement) :\n" + hits.join("\n"));
+  console.error("Termes interdits trouvés (notes sur 20, classement) :\n" + hits.join("\n"));
   process.exit(1);
 }
-console.log(`OK : aucun « /20 » (hors lib/grading.ts), « moyenne » ni « classement » dans ${files.length} fichiers.`);
+console.log(`OK : aucun « /20 » (hors lib/grading.ts), ni « classement » dans ${files.length} fichiers.`);

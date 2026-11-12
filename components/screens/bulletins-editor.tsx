@@ -14,6 +14,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
+import { MENTIONS } from "@/lib/councils";
 import type { ReportEditorView } from "@/lib/data/report-editor";
 import {
   EVAL_LEVELS,
@@ -225,12 +226,15 @@ function StudentReport({
               <legend className="mb-1 font-display text-ui font-bold">
                 Avis du conseil de classe
               </legend>
-              <TextField
+              <SelectField
                 label="Mention (facultative)"
-                value={council.mention}
-                maxLength={80}
-                onChange={(e) =>
-                  setCouncil((c) => ({ ...c, mention: e.target.value }))
+                options={[
+                  { value: "aucune", label: "Aucune mention" },
+                  ...MENTIONS.map((m) => ({ value: m, label: m })),
+                ]}
+                value={council.mention || "aucune"}
+                onValueChange={(v) =>
+                  setCouncil((c) => ({ ...c, mention: v === "aucune" ? "" : v }))
                 }
               />
               <TextAreaField

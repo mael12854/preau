@@ -19,7 +19,11 @@ const FAILED = "L'enregistrement n'a pas abouti. Réessayez dans un instant.";
 
 /** Les messages des fonctions SQL sont rédigés pour l'utilisateur ; les autres restent génériques. */
 function readableError(message: string) {
-  const readable = /^[A-ZÉÈ][^:]*\.?$/.test(message) && !/permission|violates|syntax/i.test(message);
+  // Les messages des fonctions SQL commencent par une majuscule ; les erreurs techniques de Postgres, non
+  // (et certaines contiennent des mots qui les trahissent).
+  const readable =
+    /^[A-ZÉÈÀ]/.test(message) &&
+    !/permission|violates|syntax|relation|column|function|operator|constraint|duplicate|null value/i.test(message);
   return readable ? message : FAILED;
 }
 
@@ -1440,4 +1444,94 @@ export async function createInvoices(studentIds: string[], label: string, amount
 
 export async function settleInvoice(invoiceId: string, method: string): Promise<ActionResult> {
   return run((s) => s.rpc("settle_invoice", { p_invoice: invoiceId, p_method: method }), ["/cantine", "/paiements"]);
+}
+
+// ===== Conseils de classe =====
+export async function createCouncil(input: {
+  classId: string;
+  term: number;
+  heldAt: string;
+  periodStart: string;
+  periodEnd: string;
+  headTeacherId: string | null;
+}): Promise<ActionResult & { id?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_class_council", {
+    p_class: input.classId,
+    p_term: input.term,
+    p_held_at: input.heldAt,
+    p_period_start: input.periodStart,
+    p_period_end: input.periodEnd,
+    p_head_teacher: input.headTeacherId,
+  });
+  if (error) return { ok: false, error: readableError(error.message) };
+  revalidatePath("/conseils");
+  return { ok: true, id: data };
+}
+
+export async function setCouncilStatus(councilId: string, status: "en_cours" | "cloture"): Promise<ActionResult> {
+  return run((s) => s.rpc("set_council_status", { p_council: councilId, p_status: status }), ["/conseils", "/bulletins"]);
+}
+
+export async function setCouncilParticipant(
+  councilId: string,
+  profileId: string,
+  role: "prof" | "prof_principal" | "direction" | "vie_scolaire" | "delegue_eleve" | "delegue_parent",
+): Promise<ActionResult> {
+  return run((s) => s.rpc("set_council_participant", { p_council: councilId, p_profile: profileId, p_role: role }), ["/conseils"]);
+}
+
+// ===== Réunions parents-profs =====
+export async function createMeeting(input: {
+  title: string;
+  day: string;
+  starts: string;
+  ends: string;
+  slotMinutes: number;
+  cancelHours: number;
+  classIds: string[];
+}): Promise<ActionResult & { id?: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_parent_meeting", {
+    p_title: input.title,
+    p_day: input.day,
+    p_starts: input.starts,
+    p_ends: input.ends,
+    p_slot_minutes: input.slotMinutes,
+    p_cancel_hours: input.cancelHours,
+    p_classes: input.classIds,
+  });
+  if (error) return { ok: false, error: readableError(error.message) };
+  revalidatePath("/reunions");
+  return { ok: true, id: data };
+}
+
+export async function setMeetingOpen(meetingId: string, open: boolean): Promise<ActionResult> {
+  return run((s) => s.rpc("set_parent_meeting_open", { p_meeting: meetingId, p_open: open }), ["/reunions"]);
+}
+
+export async function openMeetingSlots(meetingId: string, from: string, to: string, place: string, visio: string): Promise<ActionResult & { count?: number }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("open_meeting_slots", {
+    p_meeting: meetingId,
+    p_from: from,
+    p_to: to,
+    p_place: place,
+    p_visio_url: visio,
+  });
+  if (error) return { ok: false, error: readableError(error.message) };
+  revalidatePath(`/reunions/${meetingId}`);
+  return { ok: true, count: data ?? 0 };
+}
+
+export async function closeMeetingSlot(slotId: string): Promise<ActionResult> {
+  return run((s) => s.rpc("close_meeting_slot", { p_slot: slotId }), ["/reunions"]);
+}
+
+export async function bookMeetingSlot(slotId: string, studentId: string): Promise<ActionResult> {
+  return run((s) => s.rpc("book_meeting_slot", { p_slot: slotId, p_student: studentId }), ["/reunions"]);
+}
+
+export async function cancelMeetingBooking(bookingId: string): Promise<ActionResult> {
+  return run((s) => s.rpc("cancel_meeting_booking", { p_booking: bookingId }), ["/reunions"]);
 }

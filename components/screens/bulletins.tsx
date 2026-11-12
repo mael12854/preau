@@ -132,7 +132,7 @@ export function BulletinsScreen({
               )}
             >
               <span>Matière</span>
-              {positioning ? <span>Positionnement</span> : <span>Note</span>}
+              {positioning ? <span>Positionnement</span> : <span>Moyenne</span>}
               <span>Appréciation</span>
             </div>
             <ul className="m-0 list-none p-0">
@@ -181,7 +181,7 @@ export function BulletinsScreen({
                     {!positioning && (
                       <span
                         className="text-ui font-bold tabular"
-                        aria-label={r.score === null ? "Pas de note" : `Note : ${scoreLabel(r.score, "NE")}`}
+                        aria-label={r.score === null ? "Pas de moyenne" : `Moyenne : ${scoreLabel(r.score, "NE")}`}
                       >
                         {r.score === null ? "—" : scoreShort(r.score, "NE")}
                       </span>
@@ -193,6 +193,17 @@ export function BulletinsScreen({
                 );
               })}
             </ul>
+            {!positioning && (() => {
+              const scores = current.lines.map((l) => l.score).filter((v): v is number => v !== null);
+              if (!scores.length) return null;
+              const general = Math.round((scores.reduce((a, b) => a + b, 0) / scores.length) * 100) / 100;
+              return (
+                <p className="m-0 flex items-center justify-between border-b border-line-soft bg-surface-2 px-6 py-3.5 text-ui">
+                  <b>Moyenne générale</b>
+                  <b className="tabular">{scoreShort(general, "NE")}</b>
+                </p>
+              );
+            })()}
             {current.council && (
               <div className="flex items-center gap-4 bg-brand-tint px-6 py-[1.125rem]">
                 <Icon

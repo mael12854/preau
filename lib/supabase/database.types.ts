@@ -595,6 +595,45 @@ export type Database = {
         }
         Relationships: []
       }
+      class_councils: {
+        Row: {
+          class_id: string; closed_at: string | null; created_by: string | null; head_teacher_id: string | null; held_at: string; id: string
+          period_end: string; period_start: string; school_id: string; school_year: string
+          status: Database["public"]["Enums"]["council_status"]; term: number
+        }
+        Insert: { class_id: string; held_at: string; period_end: string; period_start: string; school_id: string; school_year: string; term: number }
+        Update: { status?: Database["public"]["Enums"]["council_status"] }
+        Relationships: [
+          { foreignKeyName: "class_councils_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+          { foreignKeyName: "class_councils_head_teacher_id_fkey"; columns: ["head_teacher_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
+      class_council_participants: {
+        Row: { council_id: string; profile_id: string; role: Database["public"]["Enums"]["council_role"] }
+        Insert: { council_id: string; profile_id: string; role: Database["public"]["Enums"]["council_role"] }
+        Update: { role?: Database["public"]["Enums"]["council_role"] }
+        Relationships: [
+          { foreignKeyName: "class_council_participants_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
+        ]
+      }
+      parent_meetings: {
+        Row: {
+          cancel_hours: number; created_at: string; created_by: string | null; day: string; ends: string; id: string; open: boolean
+          school_id: string; slot_minutes: number; starts: string; title: string
+        }
+        Insert: { day: string; ends: string; school_id: string; starts: string; title: string }
+        Update: { open?: boolean }
+        Relationships: []
+      }
+      parent_meeting_classes: {
+        Row: { class_id: string; meeting_id: string }
+        Insert: { class_id: string; meeting_id: string }
+        Update: { class_id?: string }
+        Relationships: [
+          { foreignKeyName: "parent_meeting_classes_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+          { foreignKeyName: "parent_meeting_classes_meeting_id_fkey"; columns: ["meeting_id"]; isOneToOne: false; referencedRelation: "parent_meetings"; referencedColumns: ["id"] },
+        ]
+      }
       classes: {
         Row: {
           hidden: boolean
@@ -1498,6 +1537,8 @@ export type Database = {
       }
       report_cards: {
         Row: {
+          council_id: string | null
+          published_at: string | null
           class_name: string
           council_mention: string | null
           council_text: string | null
@@ -1509,6 +1550,8 @@ export type Database = {
           term: number
         }
         Insert: {
+          council_id?: string | null
+          published_at?: string | null
           class_name: string
           council_mention?: string | null
           council_text?: string | null
@@ -1520,6 +1563,8 @@ export type Database = {
           term: number
         }
         Update: {
+          council_id?: string | null
+          published_at?: string | null
           class_name?: string
           council_mention?: string | null
           council_text?: string | null
@@ -1928,6 +1973,23 @@ export type Database = {
       save_menu: { Args: { p_day: string; p_items: string[] }; Returns: undefined }
       set_canteen_settings: { Args: { p_enabled: boolean; p_meal_price_cents: number }; Returns: undefined }
       settle_invoice: { Args: { p_invoice: string; p_method: string }; Returns: undefined }
+      book_meeting_slot: { Args: { p_slot: string; p_student: string }; Returns: string }
+      cancel_meeting_booking: { Args: { p_booking: string }; Returns: undefined }
+      close_meeting_slot: { Args: { p_slot: string }; Returns: undefined }
+      council_sheets: { Args: { p_council: string }; Returns: Json }
+      create_class_council: {
+        Args: { p_class: string; p_head_teacher: string | null; p_held_at: string; p_period_end: string; p_period_start: string; p_term: number }
+        Returns: string
+      }
+      create_parent_meeting: {
+        Args: { p_cancel_hours: number; p_classes: string[]; p_day: string; p_ends: string; p_slot_minutes: number; p_starts: string; p_title: string }
+        Returns: string
+      }
+      meeting_board: { Args: { p_meeting: string }; Returns: Json }
+      open_meeting_slots: { Args: { p_from: string; p_meeting: string; p_place: string; p_to: string; p_visio_url: string }; Returns: number }
+      set_council_participant: { Args: { p_council: string; p_profile: string; p_role: Database["public"]["Enums"]["council_role"] }; Returns: undefined }
+      set_council_status: { Args: { p_council: string; p_status: Database["public"]["Enums"]["council_status"] }; Returns: undefined }
+      set_parent_meeting_open: { Args: { p_meeting: string; p_open: boolean }; Returns: undefined }
       add_absence: {
         Args: {
           p_day: string
@@ -2075,6 +2137,8 @@ export type Database = {
       attendance_status: "present" | "absent" | "late"
       civility: "madame" | "monsieur"
       doc_category: "administratif" | "pedagogique" | "cantine"
+      council_role: "prof" | "prof_principal" | "direction" | "vie_scolaire" | "delegue_eleve" | "delegue_parent"
+      council_status: "preparation" | "en_cours" | "cloture"
       eval_value: "MI" | "MF" | "MS" | "TB" | "NE" | "ABS" | "DISP"
       grading_mode: "competences" | "note20"
       invoice_status: "a_payer" | "payee" | "creditee"
