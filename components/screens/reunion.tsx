@@ -22,7 +22,7 @@ import { parseScore, scoreShort } from "@/lib/grading";
 import { formatDateLong, formatTimeText } from "@/lib/format";
 
 const where = (place: string | null, visio: string | null) =>
-  [place, visio ? "visio" : null].filter(Boolean).join(" · ") || "Lieu à préciser";
+  [place, visio && !/visio/i.test(place ?? "") ? "visio" : null].filter(Boolean).join(" · ") || "Lieu à préciser";
 
 function useAction() {
   const toast = useToast();
@@ -227,12 +227,12 @@ function TeacherPanel({ board }: { board: MeetingBoard }) {
                           (s.booking.report ? <Badge tone="ok">Bilan rédigé</Badge> : <Badge tone="warn">Bilan à rédiger</Badge>)}
                       </span>
                       <span className="text-caption text-ink-2">avec {s.booking.parent}</span>
-                      {s.booking.report && <ReportView report={s.booking.report} />}
                     </>
                   ) : (
                     <span className="text-ui text-ink-muted">Libre</span>
                   )}
                   <span className="text-caption text-ink-muted">{where(s.place, s.visio_url)}</span>
+                  {s.booking?.report && <ReportView report={s.booking.report} />}
                 </span>
                 <span className="flex items-center justify-end gap-1.5 print:hidden">
                   {s.booking?.can_report && <ReportDialog booking={s.booking} />}
