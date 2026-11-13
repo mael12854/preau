@@ -1,5 +1,5 @@
 import "server-only";
-import { formatCents, formatDayMonth, formatSize, isoDay } from "@/lib/format";
+import { formatCents, formatDayMonth, formatSize, formatTimeText, isoDay } from "@/lib/format";
 import type { SupabaseServer } from "@/lib/supabase/server";
 import type { Tone } from "@/lib/tone";
 import { iconName } from "./common";
@@ -63,15 +63,39 @@ export async function getAgenda(
     month === 11
       ? `${year + 1}-01-01`
       : `${year}-${String(month + 2).padStart(2, "0")}-01`;
-  const { data } = await supabase
-    .from("agenda_events")
-    .select(
-      "id, title, tone, starts_on, ends_on, is_holiday, created_by, classes(name)",
-    )
-    .lt("starts_on", next)
-    .or(`starts_on.gte.${first},ends_on.gte.${first}`)
-    .order("starts_on");
-  return (data ?? []).map((e) => ({
+  const last = new Date(Date.UTC(year, month + 1, 0)).toISOString().slice(0, 10);
+  const [{ data }, { data: rdv }] = await Promise.all([
+    supabase
+      .from("agenda_events")
+      .select(
+        "id, title, tone, starts_on, ends_on, is_holiday, created_by, classes(name)",
+      )
+      .lt("starts_on", next)
+      .or(`starts_on.gte.${first},ends_on.gte.${first}`)
+      .order("starts_on"),
+    supabase.rpc("my_meeting_appointments", { p_from: first, p_to: last }),
+  ]);
+  const appointments: AgendaEventView[] = ((rdv ?? []) as Appointment[]).map((a) => ({
+    id: `rdv-${a.id}`,
+    title: a.as_teacher ? `RDV ${a.student}` : `RDV ${a.teacher}`,
+    tone: "info",
+    startsOn: isoDay(a.starts_at),
+    endsOn: null,
+    holiday: false,
+    className: null,
+    canDelete: false,
+    appointment: {
+      time: `${formatTimeText(a.starts_at)} – ${formatTimeText(a.ends_at)}`,
+      lines: [
+        a.title,
+        a.as_teacher ? `Avec ${a.parent}, pour ${a.student}` : `Avec ${a.teacher}, pour ${a.student}`,
+        a.visio_url ? "En visio" : (a.place ?? "Lieu à préciser"),
+      ],
+      link: a.visio_url,
+      meetingId: a.meeting_id,
+    },
+  }));
+  const events: AgendaEventView[] = (data ?? []).map((e) => ({
     id: e.id,
     title: e.title,
     tone: e.tone,
@@ -81,7 +105,22 @@ export async function getAgenda(
     className: e.classes?.name ?? null,
     canDelete: manager || (!!profileId && e.created_by === profileId),
   }));
+  return [...events, ...appointments].sort((a, b) => a.startsOn.localeCompare(b.startsOn));
 }
+
+type Appointment = {
+  id: string;
+  meeting_id: string;
+  title: string;
+  starts_at: string;
+  ends_at: string;
+  place: string | null;
+  visio_url: string | null;
+  teacher: string;
+  student: string;
+  parent: string;
+  as_teacher: boolean;
+};
 
 /** Solde, menu du jour et factures d'un élève (famille), ou de tout l'établissement (secrétariat). */
 export async function getPayments(

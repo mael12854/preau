@@ -1,12 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { TONE_CLASSES } from "@/components/ui/badge";
 import { Icon } from "@/components/ui/icon";
 import { cn } from "@/lib/cn";
 import type { PublishTargets } from "@/lib/data/targets";
 import type { AgendaEventView } from "@/lib/data/types";
-import { AddAgendaEvent, AgendaEventList } from "./agenda-editor";
+import { AddAgendaEvent, AgendaEventList, AppointmentDialog } from "./agenda-editor";
 import { formatDateLong, formatMonth } from "@/lib/format";
 
 const DAYS = ["lun.", "mar.", "mer.", "jeu.", "ven.", "sam.", "dim."];
@@ -59,6 +60,7 @@ export function AgendaScreen({
   targets?: PublishTargets | null;
 }) {
   const router = useRouter();
+  const [opened, setOpened] = useState<AgendaEventView | null>(null);
   const weeks = monthCells(year, month);
   const title = formatMonth(year, month);
 
@@ -186,17 +188,31 @@ export function AgendaScreen({
                               {formatDateLong(date)}
                             </span>
                           </span>
-                          {dayEvents.map((e) => (
-                            <span
-                              key={e.id}
-                              className={cn(
-                                "rounded-[5px] px-1.5 py-[0.1875rem] text-xs leading-[1.3] font-bold",
-                                TONE_CLASSES[e.tone],
-                              )}
-                            >
-                              {e.title}
-                            </span>
-                          ))}
+                          {dayEvents.map((e) =>
+                            e.appointment ? (
+                              <button
+                                key={e.id}
+                                type="button"
+                                onClick={() => setOpened(e)}
+                                className={cn(
+                                  "rounded-[5px] px-1.5 py-[0.1875rem] text-left text-xs leading-[1.3] font-bold hover:underline",
+                                  TONE_CLASSES[e.tone],
+                                )}
+                              >
+                                {e.appointment.time.split(" – ")[0]} · {e.title}
+                              </button>
+                            ) : (
+                              <span
+                                key={e.id}
+                                className={cn(
+                                  "rounded-[5px] px-1.5 py-[0.1875rem] text-xs leading-[1.3] font-bold",
+                                  TONE_CLASSES[e.tone],
+                                )}
+                              >
+                                {e.title}
+                              </span>
+                            ),
+                          )}
                         </div>
                       </td>
                     );
@@ -207,7 +223,8 @@ export function AgendaScreen({
           </table>
         </div>
       </section>
-      <AgendaEventList events={events} />
+      <AgendaEventList events={events} onOpen={setOpened} />
+      <AppointmentDialog event={opened} onClose={() => setOpened(null)} />
     </div>
   );
 }

@@ -1986,6 +1986,7 @@ export type Database = {
         Returns: string
       }
       meeting_board: { Args: { p_meeting: string }; Returns: Json }
+      my_meeting_appointments: { Args: { p_from: string; p_to: string }; Returns: Json }
       open_meeting_slots: { Args: { p_from: string; p_meeting: string; p_place: string; p_to: string; p_visio_url: string }; Returns: number }
       set_council_participant: { Args: { p_council: string; p_profile: string; p_role: Database["public"]["Enums"]["council_role"] }; Returns: undefined }
       set_council_status: { Args: { p_council: string; p_status: Database["public"]["Enums"]["council_status"] }; Returns: undefined }

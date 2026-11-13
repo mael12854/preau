@@ -142,6 +142,13 @@ export type AgendaEventView = {
   className: string | null;
   /** L'auteur, la direction ou le secrétariat peuvent le retirer. */
   canDelete: boolean;
+  /** Rendez-vous parents-profs (agenda du professeur et du parent qui a réservé) : horaire et détails. */
+  appointment?: {
+    time: string;
+    lines: string[];
+    link: string | null;
+    meetingId: string;
+  };
 };
 
 export type BillView = {

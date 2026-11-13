@@ -16,7 +16,8 @@ import { Icon } from "@/components/ui/icon";
 import { useToast } from "@/components/ui/toast";
 import type { AgendaEventView } from "@/lib/data/types";
 import type { PublishTargets } from "@/lib/data/targets";
-import { formatDateShort } from "@/lib/format";
+import { formatDateLong, formatDateShort } from "@/lib/format";
+import Link from "next/link";
 
 const TONES: { value: AgendaInput["tone"]; label: string }[] = [
   { value: "neutral", label: "Gris" },
@@ -160,7 +161,60 @@ export function AddAgendaEvent({
 }
 
 /** Liste des événements du mois, avec leur retrait pour qui en a le droit. */
-export function AgendaEventList({ events }: { events: AgendaEventView[] }) {
+/** Fiche d'un rendez-vous parents-profs : horaire, personnes, lieu et lien de visio. */
+export function AppointmentDialog({
+  event,
+  onClose,
+}: {
+  event: AgendaEventView | null;
+  onClose: () => void;
+}) {
+  const a = event?.appointment;
+  return (
+    <Dialog
+      open={!!a}
+      onOpenChange={(o) => !o && onClose()}
+      title={event?.title ?? ""}
+      description={event && a ? `${formatDateLong(event.startsOn, true)} · ${a.time}` : undefined}
+    >
+      {a && (
+        <div className="flex flex-col gap-3">
+          <ul className="m-0 flex list-none flex-col gap-1.5 p-0 text-ui">
+            {a.lines.map((l) => (
+              <li key={l}>{l}</li>
+            ))}
+          </ul>
+          {a.link && (
+            <p className="m-0 flex flex-col gap-1 rounded-control bg-surface-2 px-3 py-2.5">
+              <span className="text-caption text-ink-muted">Lien de la visio</span>
+              <a href={a.link} target="_blank" rel="noopener noreferrer" className="text-label font-bold break-all text-brand hover:underline">
+                {a.link}
+              </a>
+            </p>
+          )}
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link href={`/reunions/${a.meetingId}`} className="flex h-10 items-center rounded-control border border-line px-4 text-label font-bold hover:border-line-strong">
+              Voir la réunion
+            </Link>
+            {a.link && (
+              <a href={a.link} target="_blank" rel="noopener noreferrer" className="flex h-10 items-center gap-1.5 rounded-control bg-brand px-4 text-label font-bold text-on-brand">
+                <Icon name="videocam" size={18} /> Rejoindre
+              </a>
+            )}
+          </div>
+        </div>
+      )}
+    </Dialog>
+  );
+}
+
+export function AgendaEventList({
+  events,
+  onOpen,
+}: {
+  events: AgendaEventView[];
+  onOpen?: (e: AgendaEventView) => void;
+}) {
   const toast = useToast();
   const router = useRouter();
   const [pending, start] = useTransition();
@@ -189,10 +243,17 @@ export function AgendaEventList({ events }: { events: AgendaEventView[] }) {
               <span className="tabular w-32 text-caption text-ink-muted">
                 {formatDateShort(e.startsOn)}
                 {e.endsOn && ` → ${formatDateShort(e.endsOn)}`}
+                {e.appointment && ` · ${e.appointment.time}`}
               </span>
-              <b className="flex-1 text-label">{e.title}</b>
+              {e.appointment && onOpen ? (
+                <button type="button" onClick={() => onOpen(e)} className="flex-1 text-left text-label font-bold text-brand hover:underline">
+                  {e.title}
+                </button>
+              ) : (
+                <b className="flex-1 text-label">{e.title}</b>
+              )}
               <Badge tone={e.tone}>
-                {e.holiday ? "Vacances" : (e.className ?? "Établissement")}
+                {e.appointment ? "Rendez-vous" : e.holiday ? "Vacances" : (e.className ?? "Établissement")}
               </Badge>
               {e.canDelete && (
                 <button
