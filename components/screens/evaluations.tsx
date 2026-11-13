@@ -168,6 +168,14 @@ function CompetencesScreen({ subjects, currentTerm, scale }: { subjects: Subject
               <b className="text-body">{evalText(current.level, scale).label}</b>
             </div>
           )}
+          {current.score !== null && (
+            <p className="m-0 flex items-baseline justify-between gap-3 rounded-alert bg-bg p-3.5">
+              <span className="text-label text-ink-2">Note</span>
+              <b className="tabular text-body" aria-label={scoreLabel(current.score, current.level)}>
+                {scoreShort(current.score, current.level)}
+              </b>
+            </p>
+          )}
           <div className="flex flex-col gap-2.5">
             <h3 className="m-0 text-meta font-normal text-ink-muted">Compétences évaluées</h3>
             <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
