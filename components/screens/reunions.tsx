@@ -124,7 +124,7 @@ export function MeetingsScreen({
       )}
       {meetings.length === 0 ? (
         <p className="m-0 rounded-card border border-line bg-surface px-5 py-10 text-center text-ui text-ink-2">
-          {staff ? "Aucune réunion pour l'instant." : "Aucune réunion parents-profs prévue pour vos enfants."}
+          {staff ? "Aucune réunion pour l'instant." : "Aucune réunion parents-profs prévue pour l'instant."}
         </p>
       ) : (
         <ul className="m-0 grid list-none gap-3 p-0 sm:grid-cols-2">

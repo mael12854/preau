@@ -55,7 +55,7 @@ export type Profile = {
   labels?: Partial<Record<ModuleKey, string>>;
 };
 
-const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "notes", "viesco", "messages", "documents", "agenda", "bulletins", "outils", "enligne", "applis", "compte"];
+const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "notes", "viesco", "messages", "reunions", "documents", "agenda", "bulletins", "outils", "enligne", "applis", "compte"];
 
 /**
  * Menu de chaque profil. Les noms et rôles ne servent que de valeurs par défaut :
@@ -66,7 +66,7 @@ export const PROFILES: Profile[] = [
   {
     id: "primaire", label: "Élève · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,
     labels: { bulletins: "Livret scolaire" },
-    nav: ["dash", "edt", "devoirs", "notes", "bulletins", "viesco", "messages", "liaison", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "edt", "devoirs", "notes", "bulletins", "viesco", "messages", "reunions", "liaison", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   {
     id: "parent-primaire", label: "Parent · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,

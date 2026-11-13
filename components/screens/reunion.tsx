@@ -147,7 +147,7 @@ function TeacherPanel({ board }: { board: MeetingBoard }) {
 }
 
 // ── Famille : réserver, son parcours ──
-function FamilyPanel({ board }: { board: MeetingBoard }) {
+function FamilyPanel({ board, student }: { board: MeetingBoard; student: boolean }) {
   const { pending, act } = useAction();
   const m = board.meeting;
   return (
@@ -175,7 +175,8 @@ function FamilyPanel({ board }: { board: MeetingBoard }) {
                 <span className="flex min-w-0 flex-1 flex-col">
                   <b className="text-ui">{b.teacher}</b>
                   <span className="text-caption text-ink-2">
-                    pour {b.student} · {where(b.place, b.visio_url)}
+                    {student ? "" : `pour ${b.student} · `}
+                    {where(b.place, b.visio_url)}
                   </span>
                   {b.visio_url && (
                     <a href={b.visio_url} target="_blank" rel="noopener noreferrer" className="w-fit text-caption font-bold text-brand hover:underline">
@@ -201,14 +202,13 @@ function FamilyPanel({ board }: { board: MeetingBoard }) {
           </ol>
         )}
         <p className="m-0 text-caption text-ink-muted print:hidden">
-          Annulation possible jusqu&apos;à {m.cancel_hours ? `${m.cancel_hours} h avant le rendez-vous` : "l'heure du rendez-vous"}. Un seul créneau par
-          professeur et par enfant.
+          Annulation possible jusqu&apos;à {m.cancel_hours ? `${m.cancel_hours} h avant le rendez-vous` : "l'heure du rendez-vous"}. {student ? "Un seul créneau par professeur." : "Un seul créneau par professeur et par enfant."}
         </p>
       </section>
 
       {board.children.map((child) => (
         <section key={child.student_id} className="flex flex-col gap-3 print:hidden">
-          <h2 className="m-0 font-display text-h3 font-bold">Réserver pour {child.name}</h2>
+          <h2 className="m-0 font-display text-h3 font-bold">{student ? "Réserver un créneau" : `Réserver pour ${child.name}`}</h2>
           {!m.open && <p className="m-0 text-label text-ink-2">Les réservations sont fermées.</p>}
           {child.teachers.length === 0 ? (
             <p className="m-0 rounded-card border border-line bg-surface px-5 py-6 text-label text-ink-2">
@@ -263,7 +263,18 @@ function FamilyPanel({ board }: { board: MeetingBoard }) {
 }
 
 /** Une réunion parents-profs : planning du professeur, réservations et parcours des familles. */
-export function MeetingScreen({ board, teacher, admin }: { board: MeetingBoard; teacher: boolean; admin: boolean }) {
+export function MeetingScreen({
+  board,
+  teacher,
+  admin,
+  student = false,
+}: {
+  board: MeetingBoard;
+  teacher: boolean;
+  admin: boolean;
+  /** L'élève réserve ses propres rendez-vous. */
+  student?: boolean;
+}) {
   const { pending, act } = useAction();
   const m = board.meeting;
   const family = board.children.length > 0 || board.my_bookings.length > 0;
@@ -292,7 +303,7 @@ export function MeetingScreen({ board, teacher, admin }: { board: MeetingBoard; 
         </span>
       </section>
       {teacher && <TeacherPanel board={board} />}
-      {family && <FamilyPanel board={board} />}
+      {family && <FamilyPanel board={board} student={student} />}
       {!teacher && !family && (
         <p className="m-0 rounded-card border border-line bg-surface px-5 py-6 text-label text-ink-2">
           Les créneaux de chaque professeur couvrent toute la plage ; un professeur peut en retirer ou en rouvrir. Les familles réservent depuis leur espace tant qu’il reste de la place.
