@@ -1975,6 +1975,8 @@ export type Database = {
       settle_invoice: { Args: { p_invoice: string; p_method: string }; Returns: undefined }
       book_meeting_slot: { Args: { p_slot: string; p_student: string }; Returns: string }
       cancel_meeting_booking: { Args: { p_booking: string }; Returns: undefined }
+      save_meeting_report: { Args: { p_booking: string; p_summary: string; p_scores: Json }; Returns: undefined }
+      pending_meeting_reports: { Args: Record<PropertyKey, never>; Returns: number }
       close_meeting_slot: { Args: { p_slot: string }; Returns: undefined }
       council_sheets: { Args: { p_council: string }; Returns: Json }
       create_class_council: {

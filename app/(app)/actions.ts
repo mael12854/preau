@@ -1532,6 +1532,17 @@ export async function bookMeetingSlot(slotId: string, studentId: string): Promis
   return run((s) => s.rpc("book_meeting_slot", { p_slot: slotId, p_student: studentId }), ["/reunions"]);
 }
 
+export async function saveMeetingReport(
+  bookingId: string,
+  summary: string,
+  scores: Record<string, string>,
+): Promise<ActionResult> {
+  return run(
+    (s) => s.rpc("save_meeting_report", { p_booking: bookingId, p_summary: summary, p_scores: scores }),
+    ["/reunions", "/evaluations", "/notes"],
+  );
+}
+
 export async function cancelMeetingBooking(bookingId: string): Promise<ActionResult> {
   return run((s) => s.rpc("cancel_meeting_booking", { p_booking: bookingId }), ["/reunions"]);
 }

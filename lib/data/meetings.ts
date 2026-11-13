@@ -26,6 +26,13 @@ export async function getMeetings(supabase: SupabaseServer, viewer: Viewer) {
   return { meetings, canCreate: viewer.staff && !!targets?.classes.length, classes: targets?.classes ?? [] };
 }
 
+/** Bilan d'un rendez-vous : texte du professeur et note sur 20 par matière. */
+export type MeetingReport = {
+  summary: string;
+  written_at: string;
+  scores: { subject_id: string; name: string; score: number }[];
+};
+
 type Slot = { id: string; starts_at: string; ends_at: string; place: string | null; visio_url: string | null };
 export type MeetingBoard = {
   meeting: {
@@ -40,13 +47,24 @@ export type MeetingBoard = {
     mine: boolean;
     classes: string[] | null;
   };
-  my_slots: (Slot & { booking: { id: string; student: string; parent: string } | null })[];
+  my_slots: (Slot & {
+    booking: {
+      id: string;
+      student: string;
+      parent: string;
+      /** Le rendez-vous a commencé : le bilan peut être rédigé. */
+      can_report: boolean;
+      /** Matières que le professeur enseigne à l'élève (une note sur 20 chacune). */
+      subjects: { id: string; name: string }[];
+      report: MeetingReport | null;
+    } | null;
+  })[];
   children: {
     student_id: string;
     name: string;
     teachers: { teacher_id: string; name: string; slots: (Slot & { state: "free" | "taken" | "mine" })[] }[];
   }[];
-  my_bookings: (Slot & { id: string; teacher: string; student: string; can_cancel: boolean })[];
+  my_bookings: (Slot & { id: string; teacher: string; student: string; can_cancel: boolean; report: MeetingReport | null })[];
 };
 
 export async function getMeetingBoard(supabase: SupabaseServer, id: string): Promise<MeetingBoard | null> {

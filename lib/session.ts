@@ -332,6 +332,7 @@ async function buildViewer(
       student,
       me.kind === "eleve" || me.kind === "parent",
       auth.user.id,
+      me.kind === "prof",
     ),
   };
 }
@@ -342,9 +343,10 @@ async function navCounts(
   student: FollowedStudent | null,
   family: boolean,
   userId: string,
+  teacher = false,
 ): Promise<Partial<Record<ModuleKey, number>>> {
   const today = isoDay(now());
-  const [{ count: unread }, homework, done] = await Promise.all([
+  const [{ count: unread }, homework, done, reports] = await Promise.all([
     supabase
       .from("message_recipients")
       .select("message_id", { count: "exact", head: true })
@@ -364,10 +366,12 @@ async function navCounts(
           .select("homework_id")
           .eq("user_id", userId)
       : Promise.resolve({ data: [] as { homework_id: string }[] }),
+    // Professeur : bilans de rendez-vous parents-profs à rédiger.
+    teacher ? supabase.rpc("pending_meeting_reports") : Promise.resolve({ data: 0 }),
   ]);
   const doneIds = new Set((done.data ?? []).map((d) => d.homework_id));
   const todo = (homework.data ?? []).filter((h) => !doneIds.has(h.id)).length;
-  return { messages: unread ?? 0, devoirs: todo };
+  return { messages: unread ?? 0, devoirs: todo, reunions: reports.data ?? 0 };
 }
 
 /** Renvoie la personne connectée si elle a accès au module, sinon redirige. */

@@ -7,15 +7,18 @@ import {
   cancelMeetingBooking,
   closeMeetingSlot,
   openMeetingSlots,
+  saveMeetingReport,
   setMeetingOpen,
 } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Icon } from "@/components/ui/icon";
-import { TextField } from "@/components/ui/field";
+import { Dialog } from "@/components/ui/dialog";
+import { TextAreaField, TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import { cn } from "@/lib/cn";
-import type { MeetingBoard } from "@/lib/data/meetings";
+import type { MeetingBoard, MeetingReport } from "@/lib/data/meetings";
+import { parseScore, scoreShort } from "@/lib/grading";
 import { formatDateLong, formatTimeText } from "@/lib/format";
 
 const where = (place: string | null, visio: string | null) =>
@@ -34,6 +37,121 @@ function useAction() {
     });
   };
   return { pending, act };
+}
+
+type Booking = NonNullable<MeetingBoard["my_slots"][number]["booking"]>;
+
+// ── Professeur : bilan du rendez-vous et note sur 20 dans chaque matière qu'il enseigne à l'élève ──
+function ReportDialog({ booking }: { booking: Booking }) {
+  const toast = useToast();
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
+  const [summary, setSummary] = useState(booking.report?.summary ?? "");
+  const [scores, setScores] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      booking.subjects.map((sub) => {
+        const v = booking.report?.scores.find((x) => x.subject_id === sub.id)?.score;
+        return [sub.id, v === undefined ? "" : String(v).replace(".", ",")];
+      }),
+    ),
+  );
+  const [all, setAll] = useState("");
+  const [error, setError] = useState<string>();
+  const [pending, start] = useTransition();
+  const done = !!booking.report;
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={setOpen}
+      title={`Bilan · ${booking.student}`}
+      description="Le bilan et les notes sont visibles par l'élève et sa famille. Chaque note compte comme une évaluation « Bilan RPP » dans la matière."
+      trigger={
+        <Button size="sm" variant={done ? "secondary" : "primary"}>
+          {done ? "Modifier le bilan" : "Rédiger le bilan"}
+        </Button>
+      }
+    >
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const bad = booking.subjects.find((sub) => parseScore(scores[sub.id] ?? "") == null);
+          if (bad) return setError(`Mettez une note entre 0 et 20 (au demi-point) en ${bad.name}.`);
+          start(async () => {
+            const r = await saveMeetingReport(booking.id, summary, scores);
+            if (!r.ok) return setError(r.error);
+            toast({ title: done ? "Bilan modifié" : "Bilan enregistré, la famille est prévenue" });
+            setOpen(false);
+            router.refresh();
+          });
+        }}
+      >
+        <TextAreaField
+          label="Bilan du rendez-vous"
+          value={summary}
+          onChange={(e) => setSummary(e.target.value)}
+          maxLength={4000}
+          rows={5}
+          required
+        />
+        {booking.subjects.length > 0 && (
+          <fieldset className="m-0 flex flex-col gap-3 border-0 p-0">
+            <legend className="mb-2 text-label font-bold">Note sur 20 par matière</legend>
+            {booking.subjects.length > 1 && (
+              <div className="flex items-end gap-2">
+                <TextField label="Même note partout" inputMode="decimal" value={all} onChange={(e) => setAll(e.target.value)} placeholder="ex. 14,5" />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="h-11 px-3 text-label"
+                  onClick={() => setScores(Object.fromEntries(booking.subjects.map((sub) => [sub.id, all])))}
+                >
+                  Appliquer
+                </Button>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {booking.subjects.map((sub) => (
+                <TextField
+                  key={sub.id}
+                  label={sub.name}
+                  inputMode="decimal"
+                  value={scores[sub.id] ?? ""}
+                  onChange={(e) => setScores((x) => ({ ...x, [sub.id]: e.target.value }))}
+                  required
+                />
+              ))}
+            </div>
+          </fieldset>
+        )}
+        {error && <p role="alert" className="m-0 text-label text-danger">{error}</p>}
+        <div className="flex justify-end">
+          <Button type="submit" disabled={pending} className="h-10 px-4 text-label">
+            {pending ? "Enregistrement…" : "Enregistrer le bilan"}
+          </Button>
+        </div>
+      </form>
+    </Dialog>
+  );
+}
+
+/** Bilan affiché à la famille et à l'élève (et rappel pour le professeur). */
+function ReportView({ report }: { report: MeetingReport }) {
+  return (
+    <div className="mt-1.5 flex flex-col gap-1.5 rounded-control bg-surface-2 px-3 py-2.5">
+      <span className="text-caption font-bold text-ink-muted">Bilan du rendez-vous</span>
+      <p className="m-0 text-label whitespace-pre-line">{report.summary}</p>
+      {report.scores.length > 0 && (
+        <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
+          {report.scores.map((x) => (
+            <li key={x.subject_id} className="rounded-[5px] border border-line bg-surface px-2 py-0.5 text-caption">
+              {x.name} <b className="tabular">{scoreShort(Number(x.score), "NE")}</b>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
 }
 
 // ── Professeur : ouvrir ses créneaux, son planning ──
@@ -100,8 +218,13 @@ function TeacherPanel({ board }: { board: MeetingBoard }) {
                 <span className="flex min-w-0 flex-1 flex-col">
                   {s.booking ? (
                     <>
-                      <b className="text-ui">{s.booking.student}</b>
+                      <span className="flex flex-wrap items-center gap-2">
+                        <b className="text-ui">{s.booking.student}</b>
+                        {s.booking.can_report &&
+                          (s.booking.report ? <Badge tone="ok">Bilan rédigé</Badge> : <Badge tone="warn">Bilan à rédiger</Badge>)}
+                      </span>
                       <span className="text-caption text-ink-2">avec {s.booking.parent}</span>
+                      {s.booking.report && <ReportView report={s.booking.report} />}
                     </>
                   ) : (
                     <span className="text-ui text-ink-muted">Libre</span>
@@ -109,7 +232,8 @@ function TeacherPanel({ board }: { board: MeetingBoard }) {
                   <span className="text-caption text-ink-muted">{where(s.place, s.visio_url)}</span>
                 </span>
                 <span className="flex gap-1.5 print:hidden">
-                  {s.booking && (
+                  {s.booking?.can_report && <ReportDialog booking={s.booking} />}
+                  {s.booking && !s.booking.can_report && (
                     <Button
                       size="sm"
                       variant="secondary"
@@ -183,6 +307,7 @@ function FamilyPanel({ board, student }: { board: MeetingBoard; student: boolean
                       Rejoindre la visio
                     </a>
                   )}
+                  {b.report && <ReportView report={b.report} />}
                 </span>
                 {b.can_cancel ? (
                   <Button
