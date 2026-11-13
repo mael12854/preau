@@ -140,11 +140,11 @@ function ReportView({ report }: { report: MeetingReport }) {
   return (
     <div className="mt-1.5 flex flex-col gap-1.5 rounded-control bg-surface-2 px-3 py-2.5">
       <span className="text-caption font-bold text-ink-muted">Bilan du rendez-vous</span>
-      <p className="m-0 text-label whitespace-pre-line">{report.summary}</p>
+      <p className="m-0 text-label break-words whitespace-pre-line">{report.summary}</p>
       {report.scores.length > 0 && (
         <ul className="m-0 flex list-none flex-wrap gap-1.5 p-0">
           {report.scores.map((x) => (
-            <li key={x.subject_id} className="rounded-[5px] border border-line bg-surface px-2 py-0.5 text-caption">
+            <li key={x.subject_id} className="rounded-[5px] border border-line bg-surface px-2 py-0.5 text-caption whitespace-nowrap">
               {x.name} <b className="tabular">{scoreShort(Number(x.score), "NE")}</b>
             </li>
           ))}
@@ -211,11 +211,14 @@ function TeacherPanel({ board }: { board: MeetingBoard }) {
           </div>
           <ul className="m-0 list-none overflow-hidden rounded-card border border-line bg-surface p-0">
             {board.my_slots.map((s) => (
-              <li key={s.id} className="flex flex-wrap items-center gap-3 border-b border-line-soft px-4 py-3 last:border-b-0">
-                <b className="w-24 text-ui tabular">
+              <li
+                key={s.id}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-b border-line-soft px-4 py-3 last:border-b-0 sm:grid-cols-[7.5rem_minmax(0,1fr)_auto] sm:items-start"
+              >
+                <b className="text-ui whitespace-nowrap tabular sm:pt-1">
                   {formatTimeText(s.starts_at)}–{formatTimeText(s.ends_at)}
                 </b>
-                <span className="flex min-w-0 flex-1 flex-col">
+                <span className="order-last col-span-2 flex min-w-0 flex-col sm:order-none sm:col-span-1">
                   {s.booking ? (
                     <>
                       <span className="flex flex-wrap items-center gap-2">
@@ -231,7 +234,7 @@ function TeacherPanel({ board }: { board: MeetingBoard }) {
                   )}
                   <span className="text-caption text-ink-muted">{where(s.place, s.visio_url)}</span>
                 </span>
-                <span className="flex gap-1.5 print:hidden">
+                <span className="flex items-center justify-end gap-1.5 print:hidden">
                   {s.booking?.can_report && <ReportDialog booking={s.booking} />}
                   {s.booking && !s.booking.can_report && (
                     <Button
@@ -292,11 +295,14 @@ function FamilyPanel({ board, student }: { board: MeetingBoard; student: boolean
         ) : (
           <ol className="m-0 list-none overflow-hidden rounded-card border border-line bg-surface p-0">
             {board.my_bookings.map((b) => (
-              <li key={b.id} className="flex flex-wrap items-center gap-3 border-b border-line-soft px-4 py-3 last:border-b-0">
-                <b className="w-24 text-ui tabular">
+              <li
+                key={b.id}
+                className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1.5 border-b border-line-soft px-4 py-3 last:border-b-0 sm:grid-cols-[7.5rem_minmax(0,1fr)_auto] sm:items-start"
+              >
+                <b className="text-ui whitespace-nowrap tabular sm:pt-1">
                   {formatTimeText(b.starts_at)}–{formatTimeText(b.ends_at)}
                 </b>
-                <span className="flex min-w-0 flex-1 flex-col">
+                <span className="order-last col-span-2 flex min-w-0 flex-col sm:order-none sm:col-span-1">
                   <b className="text-ui">{b.teacher}</b>
                   <span className="text-caption text-ink-2">
                     {student ? "" : `pour ${b.student} · `}
