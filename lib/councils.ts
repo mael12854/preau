@@ -18,3 +18,13 @@ export const COUNCIL_ROLES = {
 } as const;
 export type CouncilRole = keyof typeof COUNCIL_ROLES;
 
+/** Rôles qu'on peut donner selon le profil de la personne (le professeur principal se choisit à la création du conseil). */
+export const ROLES_BY_KIND: Record<string, CouncilRole[]> = {
+  eleve: ["delegue_eleve"],
+  parent: ["delegue_parent"],
+  prof: ["prof"],
+  direction: ["direction"],
+  cpe: ["vie_scolaire"],
+  secretariat: ["vie_scolaire"],
+};
+

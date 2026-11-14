@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { SelectField, TextAreaField } from "@/components/ui/field";
 import { SegmentedTabs } from "@/components/ui/segmented";
 import { useToast } from "@/components/ui/toast";
-import { COUNCIL_ROLES, MENTIONS, type CouncilRole } from "@/lib/councils";
+import { COUNCIL_ROLES, MENTIONS, ROLES_BY_KIND, type CouncilRole } from "@/lib/councils";
 import type { CouncilDetail, CouncilSheet } from "@/lib/data/councils";
 import { EVAL_LEVELS, evalText, type EvalLevel } from "@/lib/evaluation";
 import { formatDateShort, formatTimeText } from "@/lib/format";
@@ -309,12 +309,18 @@ function Participants({ council }: { council: CouncilDetail }) {
             placeholder="Choisir"
             options={council.people.filter((p) => p.available).map((p) => ({ value: p.id, label: p.detail ? `${p.name} · ${p.detail}` : p.name }))}
             value={person}
-            onValueChange={setPerson}
+            onValueChange={(v) => {
+              setPerson(v);
+              const allowed = ROLES_BY_KIND[council.people.find((p) => p.id === v)?.kind ?? ""] ?? [];
+              if (allowed.length && !allowed.includes(role)) setRole(allowed[0]);
+            }}
             className="min-w-56 flex-1"
           />
           <SelectField
             label="Rôle"
-            options={Object.entries(COUNCIL_ROLES).map(([value, label]) => ({ value, label }))}
+            options={(person ? (ROLES_BY_KIND[council.people.find((p) => p.id === person)?.kind ?? ""] ?? []) : (Object.keys(COUNCIL_ROLES) as CouncilRole[])).map(
+              (value) => ({ value, label: COUNCIL_ROLES[value] }),
+            )}
             value={role}
             onValueChange={(v) => setRole(v as CouncilRole)}
             className="min-w-44"
