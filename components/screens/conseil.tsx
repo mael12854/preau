@@ -307,7 +307,7 @@ function Participants({ council }: { council: CouncilDetail }) {
           <SelectField
             label="Personne"
             placeholder="Choisir"
-            options={council.people.map((p) => ({ value: p.id, label: p.detail ? `${p.name} · ${p.detail}` : p.name }))}
+            options={council.people.filter((p) => p.available).map((p) => ({ value: p.id, label: p.detail ? `${p.name} · ${p.detail}` : p.name }))}
             value={person}
             onValueChange={setPerson}
             className="min-w-56 flex-1"

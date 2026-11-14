@@ -95,7 +95,7 @@ export type CouncilDetail = {
   canEditLines: boolean;
   grading: "competences" | "note20";
   /** Personnes de l'école (administration), pour ajouter des participants. */
-  people: { id: string; name: string; kind: string; detail: string }[];
+  people: { id: string; name: string; kind: string; detail: string; available: boolean }[];
 };
 
 export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: string): Promise<CouncilDetail | null> {
@@ -108,7 +108,7 @@ export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: s
   const admin = viewer.id === "direction" || viewer.id === "secretariat";
   const direction = viewer.id === "direction";
   const isHead = c.head_teacher_id === viewer.profileId;
-  const [{ data: participants }, sheets, { data: teachings }, { data: people }, { data: enrolled }, { data: links }] = await Promise.all([
+  const [{ data: participants }, sheets, { data: teachings }, { data: people }, { data: enrolled }, { data: links }, { data: taken }] = await Promise.all([
     supabase.from("class_council_participants").select("profile_id, role, profiles(display_name)").eq("council_id", id),
     isAdminStaff(viewer) || viewer.staff ? supabase.rpc("council_sheets", { p_council: id }) : Promise.resolve({ data: [] }),
     supabase.from("teachings").select("subject_id, teacher_id, subjects(name)").eq("class_id", c.class_id),
@@ -122,7 +122,10 @@ export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: s
     admin || isHead
       ? supabase.from("guardians").select("guardian_id, student_id")
       : Promise.resolve({ data: [] as { guardian_id: string; student_id: string }[] }),
+    // Une personne n'est qu'une fois au conseil : ses autres profils (élève, parent…) ne sont plus proposés.
+    admin || isHead ? supabase.rpc("council_taken_profiles", { p_council: id }) : Promise.resolve({ data: [] as string[] }),
   ]);
+  const hidden = new Set<string>([...(taken ?? []), ...(participants ?? []).map((x) => x.profile_id)]);
   const names = new Map((people ?? []).map((p) => [p.id, p.display_name]));
   const classOf = new Map((enrolled ?? []).map((e) => [e.profile_id, e.classes?.name ?? ""]));
   const detail = (p: { id: string; kind: string }) => {
@@ -160,6 +163,6 @@ export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: s
     canAdvise: c.status !== "cloture" && (direction || (isHead && c.status === "en_cours")),
     canEditLines: c.status === "preparation" || (direction && c.status === "en_cours"),
     grading: viewer.grading,
-    people: (people ?? []).map((p) => ({ id: p.id, name: p.display_name, kind: p.kind, detail: detail(p) })),
+    people: (people ?? []).map((p) => ({ id: p.id, name: p.display_name, kind: p.kind, detail: detail(p), available: !hidden.has(p.id) })),
   };
 }
