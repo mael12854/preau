@@ -120,6 +120,8 @@ export type Database = {
           id: string
           published_at: string | null
           skills: string[]
+          /** Évaluation individuelle (bilan de rendez-vous) : le seul élève concerné. */
+          student_id: string | null
           subject_id: string
           teacher_id: string
           term: number

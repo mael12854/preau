@@ -259,7 +259,7 @@ export async function getAppel(
     ? await supabase
         .from("assessments")
         .select(
-          "id, title, held_on, term, skills, published_at, class_id, classes(name), subjects(name), assessment_results(student_id, skill_levels, score, level)",
+          "id, title, held_on, term, skills, published_at, class_id, student_id, classes(name), subjects(name), assessment_results(student_id, skill_levels, score, level)",
         )
         .eq("id", chosen.id)
         .maybeSingle()
@@ -271,6 +271,8 @@ export async function getAppel(
       a.class_id === current?.class_id
         ? classRoster
         : await roster(supabase, a.class_id);
+    // Évaluation individuelle (bilan de rendez-vous parents-profs) : seul l'élève concerné.
+    if (a.student_id) evalStudents = evalStudents.filter((st) => st.id === a.student_id);
     const grid: Record<string, EvalValue[]> = {};
     evalStudents.forEach((s) => (grid[s.id] = a.skills.map(() => "NE")));
     a.assessment_results.forEach(

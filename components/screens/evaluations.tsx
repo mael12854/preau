@@ -52,6 +52,16 @@ function ScoresScreen({ subjects, currentTerm }: { subjects: SubjectEvaluationsV
                         {scoreShort(ev.score, ev.level)}
                       </b>
                     </div>
+                    {ev.skills.length > 0 && (
+                      <ul className="m-0 flex list-none flex-wrap gap-x-3 gap-y-1 p-0">
+                        {ev.skills.map((sk) => (
+                          <li key={sk.name} className="flex items-center gap-1.5 text-caption text-ink-2">
+                            <PastilleDot value={sk.level} size={16} />
+                            {sk.name}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                     {ev.comment && <p className="m-0 text-caption leading-normal text-ink-2">« {ev.comment} »</p>}
                   </li>
                 ))}
