@@ -281,7 +281,12 @@ function Participants({ council }: { council: CouncilDetail }) {
       <ul className="m-0 list-none overflow-hidden rounded-card border border-line bg-surface p-0">
         {council.participants.map((p) => (
           <li key={p.id} className="flex items-center justify-between gap-2 border-b border-line-soft px-4 py-3 last:border-b-0">
-            <span className="text-ui">{p.name}</span>
+            <span className="flex min-w-0 flex-col">
+              <span className="text-ui">{p.name}</span>
+              {council.people.find((x) => x.id === p.id)?.detail && (
+                <span className="text-caption text-ink-muted">{council.people.find((x) => x.id === p.id)!.detail}</span>
+              )}
+            </span>
             <Badge tone={p.role === "prof_principal" || p.role === "direction" ? "info" : "neutral"}>{COUNCIL_ROLES[p.role]}</Badge>
           </li>
         ))}
@@ -302,7 +307,7 @@ function Participants({ council }: { council: CouncilDetail }) {
           <SelectField
             label="Personne"
             placeholder="Choisir"
-            options={council.people.map((p) => ({ value: p.id, label: p.name }))}
+            options={council.people.map((p) => ({ value: p.id, label: p.detail ? `${p.name} · ${p.detail}` : p.name }))}
             value={person}
             onValueChange={setPerson}
             className="min-w-56 flex-1"

@@ -7,6 +7,13 @@ import type { CouncilRole, CouncilStatus } from "@/lib/councils";
 
 export type { CouncilRole, CouncilStatus };
 
+const PERSON_KIND: Record<string, string> = {
+  prof: "Professeur",
+  cpe: "Vie scolaire",
+  direction: "Direction",
+  secretariat: "Secrétariat",
+};
+
 export type CouncilSummary = {
   id: string;
   className: string;
@@ -88,7 +95,7 @@ export type CouncilDetail = {
   canEditLines: boolean;
   grading: "competences" | "note20";
   /** Personnes de l'école (administration), pour ajouter des participants. */
-  people: { id: string; name: string; kind: string }[];
+  people: { id: string; name: string; kind: string; detail: string }[];
 };
 
 export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: string): Promise<CouncilDetail | null> {
@@ -101,14 +108,31 @@ export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: s
   const admin = viewer.id === "direction" || viewer.id === "secretariat";
   const direction = viewer.id === "direction";
   const isHead = c.head_teacher_id === viewer.profileId;
-  const [{ data: participants }, sheets, { data: teachings }, { data: people }] = await Promise.all([
+  const [{ data: participants }, sheets, { data: teachings }, { data: people }, { data: enrolled }, { data: links }] = await Promise.all([
     supabase.from("class_council_participants").select("profile_id, role, profiles(display_name)").eq("council_id", id),
     isAdminStaff(viewer) || viewer.staff ? supabase.rpc("council_sheets", { p_council: id }) : Promise.resolve({ data: [] }),
     supabase.from("teachings").select("subject_id, teacher_id, subjects(name)").eq("class_id", c.class_id),
     admin || isHead
       ? supabase.from("profiles").select("id, display_name, kind").in("kind", ["prof", "cpe", "direction", "secretariat", "eleve", "parent"]).order("display_name")
       : Promise.resolve({ data: [] as { id: string; display_name: string; kind: string }[] }),
+    // Pour distinguer les homonymes (un élève et un parent portant le même nom) : classe ou enfants.
+    admin || isHead
+      ? supabase.from("students").select("profile_id, classes!students_class_id_fkey(name)")
+      : Promise.resolve({ data: [] as { profile_id: string; classes: { name: string } | null }[] }),
+    admin || isHead
+      ? supabase.from("guardians").select("guardian_id, student_id")
+      : Promise.resolve({ data: [] as { guardian_id: string; student_id: string }[] }),
   ]);
+  const names = new Map((people ?? []).map((p) => [p.id, p.display_name]));
+  const classOf = new Map((enrolled ?? []).map((e) => [e.profile_id, e.classes?.name ?? ""]));
+  const detail = (p: { id: string; kind: string }) => {
+    if (p.kind === "eleve") return ["Élève", classOf.get(p.id)].filter(Boolean).join(" · ");
+    if (p.kind === "parent") {
+      const kids = (links ?? []).filter((g) => g.guardian_id === p.id).map((g) => names.get(g.student_id)?.split(" ")[0]).filter(Boolean);
+      return kids.length ? `Parent de ${kids.join(", ")}` : "Parent";
+    }
+    return PERSON_KIND[p.kind] ?? "";
+  };
   const subjects = [
     ...new Map(
       (teachings ?? [])
@@ -136,6 +160,6 @@ export async function getCouncil(supabase: SupabaseServer, viewer: Viewer, id: s
     canAdvise: c.status !== "cloture" && (direction || (isHead && c.status === "en_cours")),
     canEditLines: c.status === "preparation" || (direction && c.status === "en_cours"),
     grading: viewer.grading,
-    people: (people ?? []).map((p) => ({ id: p.id, name: p.display_name, kind: p.kind })),
+    people: (people ?? []).map((p) => ({ id: p.id, name: p.display_name, kind: p.kind, detail: detail(p) })),
   };
 }
