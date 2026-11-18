@@ -6,7 +6,7 @@ import { saveLessonNote } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
-import { SelectField, TextAreaField } from "@/components/ui/field";
+import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { SubjectChip } from "@/components/ui/subject-chip";
 import { useToast } from "@/components/ui/toast";
@@ -16,7 +16,6 @@ import { cn } from "@/lib/cn";
 import { formatDateLong, formatMonth, formatTimeText, isoDay } from "@/lib/format";
 import { AttachmentList, FilePicker, uploadAttachments } from "./attachments";
 
-const when = (startsAt: string) => `${formatDateLong(startsAt, true)} · ${formatTimeText(startsAt)}`;
 
 /** Contenu de séance : l'enseignant choisit un de ses cours (3 semaines passées, 1 à venir), écrit ce qui a été fait, joint des fichiers. */
 export function LessonNoteEditor({
@@ -35,6 +34,15 @@ export function LessonNoteEditor({
   // Par défaut : le cours le plus récent déjà commencé (choisi côté serveur).
   const [lessonId, setLessonId] = useState(initialLesson ?? lessons[0]?.id ?? "");
   const lesson = lessons.find((l) => l.id === lessonId);
+  // On choisit d'abord le jour, puis un cours de ce jour (et non parmi tous les cours de la période).
+  const [day, setDay] = useState(lesson ? isoDay(lesson.startsAt) : "");
+  const dayLessons = lessons.filter((l) => isoDay(l.startsAt) === day).sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+  const days = lessons.map((l) => isoDay(l.startsAt)).sort();
+  const pick = (id: string) => {
+    setLessonId(id);
+    setContent(lessons.find((l) => l.id === id)?.content ?? "");
+    setFiles([]);
+  };
   const [content, setContent] = useState(lesson?.content ?? "");
   const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -67,7 +75,7 @@ export function LessonNoteEditor({
         className="flex flex-col gap-4"
         onSubmit={(e) => {
           e.preventDefault();
-          if (!lesson) return;
+          if (!lesson || isoDay(lesson.startsAt) !== day) return setError("Choisissez un de vos cours de ce jour.");
           if (!content.trim()) return setError("Décrivez le contenu de la séance.");
           setError(null);
           start(async () => {
@@ -85,19 +93,34 @@ export function LessonNoteEditor({
           });
         }}
       >
-        <SelectField
-          label="Cours"
-          options={lessons.map((l) => ({
-            value: l.id,
-            label: `${l.label} · ${when(l.startsAt)}${l.content ? " ✓" : ""}`,
-          }))}
-          value={lessonId}
-          onValueChange={(v) => {
-            setLessonId(v);
-            setContent(lessons.find((l) => l.id === v)?.content ?? "");
-            setFiles([]);
+        <TextField
+          label="Jour"
+          type="date"
+          min={days[0]}
+          max={days.at(-1)}
+          value={day}
+          onChange={(e) => {
+            setDay(e.target.value);
+            const first = lessons
+              .filter((l) => isoDay(l.startsAt) === e.target.value)
+              .sort((a, b) => a.startsAt.localeCompare(b.startsAt))[0];
+            pick(first?.id ?? "");
           }}
+          required
         />
+        {dayLessons.length ? (
+          <SelectField
+            label="Cours"
+            options={dayLessons.map((l) => ({
+              value: l.id,
+              label: `${formatTimeText(l.startsAt)} · ${l.label}${l.content ? " ✓" : ""}`,
+            }))}
+            value={lesson && dayLessons.includes(lesson) ? lessonId : undefined}
+            onValueChange={pick}
+          />
+        ) : (
+          <p className="m-0 text-label text-ink-2">Aucun de vos cours ce jour-là.</p>
+        )}
         <TextAreaField
           label="Contenu de la séance"
           value={content}
