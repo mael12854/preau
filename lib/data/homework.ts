@@ -139,19 +139,20 @@ export async function getHomeworkChoices(
   return [...map.values()].sort((a, b) => a.label.localeCompare(b.label, "fr"));
 }
 
-/** Contenus de séance des 30 derniers jours (et à venir), du plus récent au plus ancien. */
+/** Contenus de séance d'une période [from, to[ (dates ISO), dans l'ordre des cours. */
 export async function getLessonNotes(
   supabase: SupabaseServer,
   scope: Scope,
-  reference: Date,
+  from: string,
+  to: string,
 ): Promise<LessonNoteView[]> {
-  const from = new Date(reference.getTime() - 30 * 86400000).toISOString();
   let q = supabase
     .from("lesson_notes")
     .select("lesson_id, content, starts_at, subjects(id, name, hue), classes(name)")
     .gte("starts_at", from)
-    .order("starts_at", { ascending: false })
-    .limit(200);
+    .lt("starts_at", to)
+    .order("starts_at")
+    .limit(500);
   q =
     "classId" in scope
       ? q.in("class_id", ([] as string[]).concat(scope.classId))
