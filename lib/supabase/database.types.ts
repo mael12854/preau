@@ -618,6 +618,24 @@ export type Database = {
           { foreignKeyName: "class_council_participants_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       }
+      lesson_notes: {
+        Row: { class_id: string; content: string; lesson_id: string; starts_at: string; subject_id: string | null; teacher_id: string; updated_at: string }
+        Insert: { class_id: string; content: string; lesson_id: string; starts_at: string; teacher_id: string }
+        Update: { content?: string }
+        Relationships: [
+          { foreignKeyName: "lesson_notes_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+          { foreignKeyName: "lesson_notes_subject_id_fkey"; columns: ["subject_id"]; isOneToOne: false; referencedRelation: "subjects"; referencedColumns: ["id"] },
+        ]
+      }
+      class_attachments: {
+        Row: {
+          created_at: string; created_by: string; homework_id: string | null; id: string; lesson_id: string | null; mime_type: string
+          name: string; removed_at: string | null; school_id: string; size_bytes: number; storage_path: string; uploaded_at: string | null
+        }
+        Insert: { name: string; school_id: string; size_bytes: number; storage_path: string; mime_type: string; created_by: string }
+        Update: { uploaded_at?: string | null; removed_at?: string | null }
+        Relationships: []
+      }
       parent_meetings: {
         Row: {
           cancel_hours: number; created_at: string; created_by: string | null; day: string; ends: string; id: string; open: boolean
@@ -1978,6 +1996,12 @@ export type Database = {
       book_meeting_slot: { Args: { p_slot: string; p_student: string }; Returns: string }
       cancel_meeting_booking: { Args: { p_booking: string }; Returns: undefined }
       council_taken_profiles: { Args: { p_council: string }; Returns: string[] }
+      set_lesson_note: { Args: { p_lesson: string; p_content: string }; Returns: undefined }
+      create_class_attachment: {
+        Args: { p_homework: string; p_lesson: string; p_file_name: string; p_size_bytes: number; p_mime_type: string }
+        Returns: { id: string; storage_path: string }[]
+      }
+      remove_class_attachment: { Args: { p_attachment: string }; Returns: string }
       save_meeting_report: { Args: { p_booking: string; p_summary: string; p_scores: Json }; Returns: undefined }
       pending_meeting_reports: { Args: Record<PropertyKey, never>; Returns: number }
       close_meeting_slot: { Args: { p_slot: string }; Returns: undefined }

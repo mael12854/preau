@@ -14,6 +14,7 @@ import { SelectField, TextAreaField, TextField } from "@/components/ui/field";
 import { useToast } from "@/components/ui/toast";
 import type { HomeworkChoice } from "@/lib/data/homework";
 import type { HomeworkView } from "@/lib/data/types";
+import { AttachmentList, FilePicker, uploadAttachments } from "./attachments";
 
 /** Champs communs : travail, échéance, contrôle. */
 function HomeworkFields({
@@ -77,6 +78,7 @@ export function GiveHomework({
   const [content, setContent] = useState("");
   const [due, setDue] = useState(choices[0]?.next ?? "");
   const [exam, setExam] = useState(false);
+  const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -117,10 +119,16 @@ export function GiveHomework({
               exam,
             });
             if (!r.ok) return setError(r.error ?? "");
+            const failed = files.length ? await uploadAttachments({ homeworkId: r.id }, files) : null;
+            if (failed) {
+              router.refresh();
+              return setError(`Devoir donné, mais une pièce jointe n'est pas partie. ${failed}`);
+            }
             toast({ title: exam ? "Contrôle annoncé" : "Devoir donné" });
             setOpen(false);
             setContent("");
             setExam(false);
+            setFiles([]);
             router.refresh();
           });
         }}
@@ -147,6 +155,7 @@ export function GiveHomework({
           setExam={setExam}
           min={today}
         />
+        <FilePicker files={files} onChange={setFiles} />
         {error && (
           <p role="alert" className="m-0 text-label text-danger">
             {error}
@@ -176,6 +185,7 @@ export function HomeworkActions({
   const [content, setContent] = useState(item.text);
   const [due, setDue] = useState(item.dueOn);
   const [exam, setExam] = useState(item.exam);
+  const [files, setFiles] = useState<File[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [pending, start] = useTransition();
 
@@ -204,8 +214,14 @@ export function HomeworkActions({
                 exam,
               });
               if (!r.ok) return setError(r.error ?? "");
+              const failed = files.length ? await uploadAttachments({ homeworkId: item.id }, files) : null;
+              if (failed) {
+                router.refresh();
+                return setError(`Devoir modifié, mais une pièce jointe n'est pas partie. ${failed}`);
+              }
               toast({ title: "Devoir modifié" });
               setOpen(false);
+              setFiles([]);
               router.refresh();
             });
           }}
@@ -219,6 +235,13 @@ export function HomeworkActions({
             setExam={setExam}
             min={today}
           />
+          {item.files.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <span className="text-label font-bold">Pièces jointes</span>
+              <AttachmentList files={item.files} removable />
+            </div>
+          )}
+          <FilePicker files={files} onChange={setFiles} />
           {error && (
             <p role="alert" className="m-0 text-label text-danger">
               {error}

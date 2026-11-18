@@ -47,18 +47,87 @@ export async function giveHomework(h: {
   content: string;
   due: string;
   exam: boolean;
-}): Promise<ActionResult> {
-  return run(
-    (s) =>
-      s.rpc("give_homework", {
-        p_class: h.classId,
-        p_subject: h.subjectId,
-        p_content: h.content,
-        p_due: h.due,
-        p_is_exam: h.exam,
-      }),
-    ["/devoirs", "/accueil"],
-  );
+}): Promise<{ ok: true; id: string } | { ok: false; error: string }> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("give_homework", {
+    p_class: h.classId,
+    p_subject: h.subjectId,
+    p_content: h.content,
+    p_due: h.due,
+    p_is_exam: h.exam,
+  });
+  if (error || !data) return { ok: false, error: error ? readableError(error.message) : FAILED };
+  revalidatePath("/devoirs");
+  revalidatePath("/accueil");
+  return { ok: true, id: data };
+}
+
+/** Cahier de textes : contenu d'une séance (le professeur du cours). */
+export async function saveLessonNote(lessonId: string, content: string): Promise<ActionResult> {
+  return run((s) => s.rpc("set_lesson_note", { p_lesson: lessonId, p_content: content }), ["/devoirs"]);
+}
+
+/**
+ * Pièce jointe d'un devoir ou d'un contenu de séance, étape 1 : la fonction SQL vérifie les droits et crée la ligne,
+ * puis le serveur délivre un lien d'envoi à usage unique pour ce seul chemin.
+ */
+export async function prepareAttachment(input: {
+  homeworkId: string | null;
+  lessonId: string | null;
+  fileName: string;
+  size: number;
+  type: string;
+}): Promise<UploadTicket> {
+  const store = storage();
+  if (!store) return { ok: false, error: "Le stockage des fichiers n'est pas configuré sur le serveur." };
+  if (!DOCUMENT_TYPES.includes(input.type))
+    return { ok: false, error: "Ce type de fichier n'est pas accepté (PDF, image, Word, Excel, OpenDocument ou texte)." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("create_class_attachment", {
+    p_homework: input.homeworkId as string,
+    p_lesson: input.lessonId as string,
+    p_file_name: input.fileName,
+    p_size_bytes: input.size,
+    p_mime_type: input.type,
+  });
+  const row = data?.[0];
+  if (error || !row) return { ok: false, error: error ? readableError(error.message) : FAILED };
+  const { data: ticket } = await store.createSignedUploadUrl(row.storage_path);
+  if (!ticket) {
+    await supabase.rpc("remove_class_attachment", { p_attachment: row.id });
+    return { ok: false, error: FAILED };
+  }
+  return { ok: true, id: row.id, path: row.storage_path, token: ticket.token };
+}
+
+/** Pièce jointe, étape 2 : le fichier est bien arrivé, la pièce jointe devient visible. */
+export async function confirmAttachment(attachmentId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const viewer = await getViewer();
+  const { data: pj } = await supabase
+    .from("class_attachments")
+    .select("storage_path, created_by")
+    .eq("id", attachmentId)
+    .maybeSingle();
+  if (!viewer || !pj || pj.created_by !== (await actingProfileId(viewer))) return { ok: false, error: FAILED };
+  const store = storage();
+  const folder = pj.storage_path.split("/").slice(0, -1).join("/");
+  const { data: files } = (await store?.list(folder)) ?? { data: null };
+  if (!files?.some((f) => pj.storage_path.endsWith(`/${f.name}`)))
+    return { ok: false, error: "Le fichier n'est pas arrivé. Réessayez." };
+  await createAdminClient()!.from("class_attachments").update({ uploaded_at: new Date().toISOString() }).eq("id", attachmentId);
+  revalidatePath("/devoirs");
+  return { ok: true };
+}
+
+/** Retirer une pièce jointe (son auteur) : la ligne, puis le fichier. */
+export async function removeAttachment(attachmentId: string): Promise<ActionResult> {
+  const supabase = await createClient();
+  const { data: path, error } = await supabase.rpc("remove_class_attachment", { p_attachment: attachmentId });
+  if (error) return { ok: false, error: readableError(error.message) };
+  if (path) await storage()?.remove([path]);
+  revalidatePath("/devoirs");
+  return { ok: true };
 }
 
 /** Devoirs : modifier un devoir qu'on a donné. */

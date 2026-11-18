@@ -2,11 +2,11 @@
 
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/choice";
-import { Icon } from "@/components/ui/icon";
 import { SubjectChip } from "@/components/ui/subject-chip";
 import { cn } from "@/lib/cn";
 import type { HomeworkDayView } from "@/lib/data/types";
 import { useDone } from "@/lib/use-done";
+import { AttachmentList } from "./attachments";
 import { HomeworkActions } from "./devoirs-editor";
 
 /**
@@ -65,13 +65,7 @@ export function DevoirsScreen({
                         {staff && h.className && <span className="text-meta text-ink-muted">{h.className}</span>}
                       </div>
                       <p className={cn("m-0 text-lg", isDone && !staff ? "text-ink-muted line-through" : "text-ink")}>{h.text}</p>
-                      {h.file && (
-                        <a href="#" onClick={(e) => e.preventDefault()} className="flex w-fit min-h-11 items-center gap-1.5 text-sm font-bold no-underline hover:underline -my-2">
-                          <Icon name="attach_file" size={18} />
-                          {h.file}
-                          <span className="sr-only"> (pièce jointe)</span>
-                        </a>
-                      )}
+                      <AttachmentList files={h.files} />
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       <span className="text-meta text-ink-muted">Donné le {h.given}</span>

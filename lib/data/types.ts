@@ -25,6 +25,9 @@ export type LessonView = {
   group: string | null;
 };
 
+/** Pièce jointe d'un devoir ou d'un contenu de séance (téléchargée par /devoirs/pj/[id]). */
+export type AttachmentView = { id: string; name: string; size: number };
+
 export type HomeworkView = {
   id: string;
   subject: SubjectRef;
@@ -33,7 +36,18 @@ export type HomeworkView = {
   dueOn: string;
   exam: boolean;
   file: string | null;
+  files: AttachmentView[];
   className?: string;
+};
+
+/** Contenu d'une séance (cahier de textes). */
+export type LessonNoteView = {
+  lessonId: string;
+  subject: SubjectRef | null;
+  className: string;
+  startsAt: string;
+  content: string;
+  files: AttachmentView[];
 };
 
 export type HomeworkDayView = {
