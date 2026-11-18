@@ -7,6 +7,7 @@ import { now } from "@/lib/clock";
 import { LessonNoteEditor, SeancesCalendar } from "@/components/screens/seances";
 import {
   getDoneHomework,
+  getHomeworkBetween,
   getHomeworkChoices,
   getLessonNotes,
   getNoteLessons,
@@ -41,14 +42,15 @@ export default async function DevoirsPage({ searchParams }: { searchParams: Prom
           ? { classId: viewer.student.classIds }
           : null;
       const teacher = viewer.id === "prof" || viewer.id === "enseignant-primaire";
-      const [days, done, choices, notes, noteLessons] = await Promise.all([
+      const [days, done, choices, notes, noteLessons, monthHomework] = await Promise.all([
         scope ? getUpcomingHomework(supabase, scope, reference) : [],
         viewer.staff ? [] : getDoneHomework(supabase, viewer.userId),
         teacher ? getHomeworkChoices(supabase, viewer.profileId, reference) : [],
         scope ? getLessonNotes(supabase, scope, from, to) : [],
         teacher ? getNoteLessons(supabase, viewer.profileId, reference) : [],
+        scope ? getHomeworkBetween(supabase, scope, `${year}-${pad(month + 1)}-01`, `${year}-${pad(month + 1)}-${pad(new Date(year, month + 1, 0).getDate())}`) : [],
       ]);
-      return { days, done, choices, teacher, notes, noteLessons };
+      return { days, done, choices, teacher, notes, noteLessons, monthHomework };
     }),
   );
   return (
@@ -78,6 +80,8 @@ export default async function DevoirsPage({ searchParams }: { searchParams: Prom
               month={month}
               today={today}
               notes={data[i].notes.filter((n) => isoDay(n.startsAt).startsWith(`${year}-${pad(month + 1)}`))}
+              homework={data[i].monthHomework}
+              noteLessons={data[i].teacher ? data[i].noteLessons : undefined}
               staff={s.viewer.staff}
             />
           </div>

@@ -210,3 +210,36 @@ export async function getNoteLessons(
     files: files.get(l.id) ?? [],
   }));
 }
+
+/** Devoirs à rendre entre deux jours (inclus), avec leurs pièces jointes : pour le calendrier du cahier de textes. */
+export async function getHomeworkBetween(
+  supabase: SupabaseServer,
+  scope: Scope,
+  fromDay: string,
+  toDay: string,
+): Promise<HomeworkView[]> {
+  let q = supabase
+    .from("homework")
+    .select("id, content, given_on, due_on, is_exam, attachment_name, subjects(id, name, hue), classes(name)")
+    .gte("due_on", fromDay)
+    .lte("due_on", toDay)
+    .order("due_on")
+    .order("id");
+  q =
+    "classId" in scope
+      ? q.in("class_id", ([] as string[]).concat(scope.classId))
+      : q.eq("teacher_id", scope.teacherId);
+  const { data } = await q;
+  const files = await attachmentsOf(supabase, "homework_id", (data ?? []).map((h) => h.id));
+  return (data ?? []).map((h) => ({
+    id: h.id,
+    subject: { id: h.subjects!.id, name: h.subjects!.name, hue: h.subjects!.hue },
+    text: h.content,
+    given: formatDayMonth(h.given_on),
+    dueOn: h.due_on,
+    exam: h.is_exam,
+    file: h.attachment_name,
+    files: files.get(h.id) ?? [],
+    className: h.classes?.name,
+  }));
+}

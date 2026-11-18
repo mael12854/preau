@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { saveLessonNote } from "@/app/(app)/actions";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { SelectField, TextAreaField } from "@/components/ui/field";
@@ -10,7 +11,7 @@ import { Icon } from "@/components/ui/icon";
 import { SubjectChip } from "@/components/ui/subject-chip";
 import { useToast } from "@/components/ui/toast";
 import type { NoteLesson } from "@/lib/data/homework";
-import type { LessonNoteView } from "@/lib/data/types";
+import type { HomeworkView, LessonNoteView } from "@/lib/data/types";
 import { cn } from "@/lib/cn";
 import { formatDateLong, formatMonth, formatTimeText, isoDay } from "@/lib/format";
 import { AttachmentList, FilePicker, uploadAttachments } from "./attachments";
@@ -18,7 +19,16 @@ import { AttachmentList, FilePicker, uploadAttachments } from "./attachments";
 const when = (startsAt: string) => `${formatDateLong(startsAt, true)} · ${formatTimeText(startsAt)}`;
 
 /** Contenu de séance : l'enseignant choisit un de ses cours (3 semaines passées, 1 à venir), écrit ce qui a été fait, joint des fichiers. */
-export function LessonNoteEditor({ lessons, initialLesson }: { lessons: NoteLesson[]; initialLesson?: string }) {
+export function LessonNoteEditor({
+  lessons,
+  initialLesson,
+  trigger,
+}: {
+  lessons: NoteLesson[];
+  initialLesson?: string;
+  /** Bouton d'ouverture (par défaut « Contenu de séance »). */
+  trigger?: React.ReactNode;
+}) {
   const toast = useToast();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -46,9 +56,11 @@ export function LessonNoteEditor({ lessons, initialLesson }: { lessons: NoteLess
       title="Contenu de séance"
       description="Ce qui a été fait en cours. Les élèves de la classe et leurs familles le voient dans le cahier de textes."
       trigger={
-        <Button variant="secondary" icon="edit_note" className="h-10 px-4 text-label">
-          Contenu de séance
-        </Button>
+        trigger ?? (
+          <Button variant="secondary" icon="edit_note" className="h-10 px-4 text-label">
+            Contenu de séance
+          </Button>
+        )
       }
     >
       <form
@@ -132,13 +144,27 @@ function monthWeeks(year: number, month: number): (string | null)[][] {
   return Array.from({ length: cells.length / 7 }, (_, w) => cells.slice(w * 7, w * 7 + 7));
 }
 
-function NoteCard({ n, staff }: { n: LessonNoteView; staff: boolean }) {
+function NoteCard({ n, staff, lessons }: { n: LessonNoteView; staff: boolean; lessons?: NoteLesson[] }) {
+  const editable = lessons?.some((l) => l.id === n.lessonId);
   return (
     <li className="flex flex-col gap-2 rounded-card border border-line bg-surface px-[1.125rem] py-4">
       <div className="flex flex-wrap items-center gap-2">
         {n.subject && <SubjectChip name={n.subject.name} hue={n.subject.hue} />}
         {staff && <span className="text-meta text-ink-muted">{n.className}</span>}
         <span className="text-meta text-ink-muted">{formatTimeText(n.startsAt)}</span>
+        {editable && (
+          <span className="ml-auto">
+            <LessonNoteEditor
+              lessons={lessons!}
+              initialLesson={n.lessonId}
+              trigger={
+                <Button variant="secondary" icon="attach_file" className="h-9 px-3 text-label">
+                  Modifier / joindre
+                </Button>
+              }
+            />
+          </span>
+        )}
       </div>
       <p className="m-0 text-ui break-words whitespace-pre-line">{n.content}</p>
       <AttachmentList files={n.files} />
@@ -152,12 +178,18 @@ export function SeancesCalendar({
   month,
   today,
   notes,
+  homework = [],
+  noteLessons,
   staff,
 }: {
   year: number;
   month: number;
   today: string;
   notes: LessonNoteView[];
+  /** Devoirs à rendre dans le mois (avec leurs pièces jointes). */
+  homework?: HomeworkView[];
+  /** Enseignant : ses cours, pour modifier un contenu et y joindre des fichiers depuis le calendrier. */
+  noteLessons?: NoteLesson[];
   staff: boolean;
 }) {
   const router = useRouter();
@@ -166,10 +198,13 @@ export function SeancesCalendar({
     const d = isoDay(n.startsAt);
     byDay.set(d, [...(byDay.get(d) ?? []), n]);
   }
-  const withNotes = [...byDay.keys()].sort();
-  const initial = byDay.has(today) ? today : ([...withNotes].reverse().find((d) => d <= today) ?? withNotes[0] ?? null);
+  const dueByDay = new Map<string, HomeworkView[]>();
+  for (const h of homework) dueByDay.set(h.dueOn, [...(dueByDay.get(h.dueOn) ?? []), h]);
+  const withNotes = [...new Set([...byDay.keys(), ...dueByDay.keys()])].sort();
+  const has = (d: string) => byDay.has(d) || dueByDay.has(d);
+  const initial = has(today) ? today : ([...withNotes].reverse().find((d) => d <= today) ?? withNotes[0] ?? null);
   const [selected, setSelected] = useState<string | null>(initial);
-  const day = selected && byDay.has(selected) ? selected : initial;
+  const day = selected && has(selected) ? selected : initial;
   const title = formatMonth(year, month);
   const go = (delta: number) => {
     const d = new Date(year, month + delta, 1);
@@ -220,15 +255,20 @@ export function SeancesCalendar({
                 {week.map((d, i) => {
                   if (!d) return <td key={i} />;
                   const list = byDay.get(d) ?? [];
+                  const due = dueByDay.get(d) ?? [];
                   const n = Number(d.slice(8));
                   const active = d === day;
+                  const label = [
+                    list.length ? `${list.length} séance${list.length > 1 ? "s" : ""}` : "",
+                    due.length ? `${due.length} devoir${due.length > 1 ? "s" : ""} à rendre` : "",
+                  ].filter(Boolean).join(", ");
                   return (
                     <td key={d} className="p-0.5 text-center align-top">
-                      {list.length ? (
+                      {list.length || due.length ? (
                         <button
                           type="button"
                           aria-pressed={active}
-                          aria-label={`${formatDateLong(d)} : ${list.length} séance${list.length > 1 ? "s" : ""}`}
+                          aria-label={`${formatDateLong(d)} : ${label}`}
                           onClick={() => setSelected(d)}
                           className={cn(
                             "mx-auto flex h-12 w-full max-w-14 flex-col items-center justify-center gap-1 rounded-control text-ui font-bold",
@@ -245,6 +285,9 @@ export function SeancesCalendar({
                                 style={{ background: active ? "currentColor" : `oklch(0.65 0.13 ${x.subject?.hue ?? 0})` }}
                               />
                             ))}
+                            {due.length > 0 && (
+                              <span className={cn("size-1.5 rotate-45", active ? "bg-current" : "bg-ink-2")} title="Devoir à rendre" />
+                            )}
                           </span>
                         </button>
                       ) : (
@@ -268,15 +311,36 @@ export function SeancesCalendar({
       {day ? (
         <div className="flex flex-col gap-2.5" aria-live="polite">
           <h3 className="m-0 text-ui font-bold">{formatDateLong(day, true)}</h3>
-          <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
-            {(byDay.get(day) ?? []).map((n) => (
-              <NoteCard key={n.lessonId} n={n} staff={staff} />
-            ))}
-          </ul>
+          {(byDay.get(day) ?? []).length > 0 && (
+            <ul className="m-0 flex list-none flex-col gap-2.5 p-0" aria-label="Séances">
+              {(byDay.get(day) ?? []).map((n) => (
+                <NoteCard key={n.lessonId} n={n} staff={staff} lessons={noteLessons} />
+              ))}
+            </ul>
+          )}
+          {(dueByDay.get(day) ?? []).length > 0 && (
+            <>
+              <h4 className="m-0 mt-1 text-label font-bold text-ink-2">Travail à rendre ce jour</h4>
+              <ul className="m-0 flex list-none flex-col gap-2.5 p-0">
+                {(dueByDay.get(day) ?? []).map((h) => (
+                  <li key={h.id} className="flex flex-col gap-2 rounded-card border border-line bg-surface px-[1.125rem] py-4">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <SubjectChip name={h.subject.name} hue={h.subject.hue} />
+                      {h.exam && <Badge tone="inverse" className="text-xs">Contrôle</Badge>}
+                      {staff && h.className && <span className="text-meta text-ink-muted">{h.className}</span>}
+                      <span className="text-meta text-ink-muted">Donné le {h.given}</span>
+                    </div>
+                    <p className="m-0 text-ui break-words whitespace-pre-line">{h.text}</p>
+                    <AttachmentList files={h.files} />
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
         </div>
       ) : (
         <p className="m-0 rounded-card border border-line bg-surface px-5 py-6 text-label text-ink-2">
-          Aucun contenu de séance en {title.toLowerCase()}.
+          Aucune séance ni aucun devoir en {title.toLowerCase()}.
         </p>
       )}
     </section>
