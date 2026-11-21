@@ -1265,6 +1265,11 @@ export async function postLiaisonNote(
   );
 }
 
+/** Cahier de liaison : retirer un mot (son auteur, la direction ou le secrétariat). */
+export async function removeLiaisonNote(noteId: string): Promise<ActionResult> {
+  return run((s) => s.rpc("remove_liaison_note", { p_note: noteId }), ["/cahier-de-liaison", "/accueil"]);
+}
+
 /** Cahier de liaison : « Lu et signé » (responsable). */
 export async function signLiaisonNote(
   noteId: string,

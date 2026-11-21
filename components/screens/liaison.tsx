@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { postLiaisonNote, signLiaisonNote } from "@/app/(app)/actions";
+import { useRouter } from "next/navigation";
+import { postLiaisonNote, removeLiaisonNote, signLiaisonNote } from "@/app/(app)/actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/choice";
@@ -60,6 +61,7 @@ function Compose({ classes }: { classes: { value: string; label: string }[] }) {
 /** Cahier de liaison : mots de l'enseignant, « Lu et signé » par les parents. */
 export function LiaisonScreen({ notes, mode }: { notes: LiaisonNoteView[]; mode: Mode }) {
   const toast = useToast();
+  const router = useRouter();
   const [pending, start] = useTransition();
   const [signed, setSigned] = useState<string[]>([]);
   const big = mode.kind === "enfant";
@@ -83,6 +85,7 @@ export function LiaisonScreen({ notes, mode }: { notes: LiaisonNoteView[]; mode:
                     {[n.author, mode.kind === "enseignant" ? n.className : null, n.date].filter(Boolean).join(" · ")}
                   </span>
                 </div>
+                <div className="flex items-center gap-2">
                 {n.requiresSignature &&
                   (mode.kind === "enseignant" && n.signatures ? (
                     <Badge tone={n.signatures.signed >= n.signatures.total && n.signatures.total > 0 ? "ok" : "warn"}>
@@ -93,6 +96,25 @@ export function LiaisonScreen({ notes, mode }: { notes: LiaisonNoteView[]; mode:
                   ) : (
                     <Badge tone="danger">À signer</Badge>
                   ))}
+                {mode.kind === "enseignant" && (
+                  <button
+                    type="button"
+                    disabled={pending}
+                    aria-label={`Supprimer le mot « ${n.title} »`}
+                    onClick={() => {
+                      if (!window.confirm(`Supprimer le mot « ${n.title} » ? Il disparaîtra du cahier de liaison des familles.`)) return;
+                      start(async () => {
+                        const r = await removeLiaisonNote(n.id);
+                        toast({ title: r.ok ? "Mot supprimé" : r.error });
+                        if (r.ok) router.refresh();
+                      });
+                    }}
+                    className="flex size-10 items-center justify-center rounded-control text-ink-2 hover:bg-neutral-bg"
+                  >
+                    <Icon name="delete" size={20} />
+                  </button>
+                )}
+                </div>
               </div>
               <p className={big ? "m-0 text-h3 leading-relaxed whitespace-pre-line" : "m-0 text-lg leading-relaxed whitespace-pre-line"}>{n.body}</p>
               {mode.kind === "famille" && n.requiresSignature && !isSigned && (

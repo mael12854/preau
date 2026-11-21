@@ -1996,6 +1996,7 @@ export type Database = {
       book_meeting_slot: { Args: { p_slot: string; p_student: string }; Returns: string }
       cancel_meeting_booking: { Args: { p_booking: string }; Returns: undefined }
       council_taken_profiles: { Args: { p_council: string }; Returns: string[] }
+      remove_liaison_note: { Args: { p_note: string }; Returns: undefined }
       set_lesson_note: { Args: { p_lesson: string; p_content: string }; Returns: undefined }
       create_class_attachment: {
         Args: { p_homework: string; p_lesson: string; p_file_name: string; p_size_bytes: number; p_mime_type: string }
