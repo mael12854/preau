@@ -4,7 +4,7 @@ import type { IconName } from "@/lib/icons";
 export type ModuleKey =
   | "dash" | "edt" | "devoirs" | "notes" | "viesco" | "messages"
   | "documents" | "agenda" | "paiements" | "bulletins" | "saisie" | "liaison" | "annuaire"
-  | "conseils" | "reunions" | "cantine" | "outils" | "enligne" | "applis" | "compte";
+  | "conseils" | "reunions" | "cantine" | "outils" | "enligne" | "applis" | "compte" | "exercices";
 
 export type Module = { key: ModuleKey; label: string; icon: IconName; slug: string };
 
@@ -25,6 +25,7 @@ export const MODULES: Record<ModuleKey, Module> = {
   conseils: { key: "conseils", label: "Conseils de classe", icon: "groups", slug: "conseils" },
   reunions: { key: "reunions", label: "Réunions parents-profs", icon: "event", slug: "reunions" },
   cantine: { key: "cantine", label: "Gestion de la cantine", icon: "restaurant", slug: "cantine" },
+  exercices: { key: "exercices", label: "Exercices de maths", icon: "calculate", slug: "exercices" },
   outils: { key: "outils", label: "Outils", icon: "extension", slug: "outils" },
   enligne: { key: "enligne", label: "Mes classes en ligne", icon: "cast_for_education", slug: "classes-en-ligne" },
   applis: { key: "applis", label: "Mes applis", icon: "apps", slug: "applis" },
@@ -55,7 +56,7 @@ export type Profile = {
   labels?: Partial<Record<ModuleKey, string>>;
 };
 
-const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "notes", "viesco", "messages", "reunions", "documents", "agenda", "bulletins", "outils", "enligne", "applis", "compte"];
+const ELEVE: ModuleKey[] = ["dash", "edt", "devoirs", "exercices", "notes", "viesco", "messages", "reunions", "documents", "agenda", "bulletins", "outils", "enligne", "applis", "compte"];
 
 /**
  * Menu de chaque profil. Les noms et rôles ne servent que de valeurs par défaut :
@@ -66,28 +67,28 @@ export const PROFILES: Profile[] = [
   {
     id: "primaire", label: "Élève · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,
     labels: { bulletins: "Livret scolaire" },
-    nav: ["dash", "edt", "devoirs", "notes", "bulletins", "viesco", "messages", "reunions", "liaison", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "edt", "devoirs", "exercices", "notes", "bulletins", "viesco", "messages", "reunions", "liaison", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   {
     id: "parent-primaire", label: "Parent · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: false,
     labels: { bulletins: "Livret scolaire", viesco: "Absences" },
-    nav: ["dash", "liaison", "edt", "devoirs", "notes", "viesco", "messages", "paiements", "bulletins", "reunions", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "liaison", "edt", "devoirs", "exercices", "notes", "viesco", "messages", "paiements", "bulletins", "reunions", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   {
     id: "enseignant-primaire", label: "Enseignant · primaire", name: "", role: "", initials: "", hello: "", email: "", staff: true,
     labels: { devoirs: "Cahier de textes", bulletins: "Livret scolaire" },
-    nav: ["dash", "liaison", "saisie", "edt", "devoirs", "viesco", "bulletins", "conseils", "reunions", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "liaison", "saisie", "edt", "devoirs", "exercices", "viesco", "bulletins", "conseils", "reunions", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   { id: "college", label: "Élève · collège", name: "Léa Martin", role: "4e B", initials: "LM", hello: "Bonjour Léa", email: "lea.martin@jean-moulin.preau.fr", staff: false, nav: ELEVE },
   { id: "lycee", label: "Élève · lycée", name: "Hugo Benali", role: "1re 3 · Spé. Maths, SES", initials: "HB", hello: "Bonjour Hugo", email: "hugo.benali@preau.fr", staff: false, nav: ELEVE },
   {
     id: "parent", label: "Parent", name: "Sophie Martin", role: "Responsable de Léa (4e B)", initials: "SM", hello: "Bonjour Madame Martin", email: "sophie.martin@mail.fr", staff: false,
-    nav: ["dash", "notes", "devoirs", "edt", "viesco", "messages", "paiements", "bulletins", "reunions", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "notes", "devoirs", "exercices", "edt", "viesco", "messages", "paiements", "bulletins", "reunions", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   {
     id: "prof", label: "Professeur", name: "Marc Durand", role: "Mathématiques", initials: "MD", hello: "Bonjour Monsieur Durand", email: "marc.durand@ac-academie.fr", staff: true,
     labels: { devoirs: "Cahier de textes" },
-    nav: ["dash", "saisie", "edt", "devoirs", "viesco", "bulletins", "conseils", "reunions", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
+    nav: ["dash", "saisie", "edt", "devoirs", "exercices", "viesco", "bulletins", "conseils", "reunions", "messages", "documents", "agenda", "outils", "enligne", "applis", "compte"],
   },
   {
     id: "cpe", label: "Vie scolaire / CPE", name: "Nadia Kader", role: "Conseillère principale d'éducation", initials: "NK", hello: "Bonjour Madame Kader", email: "nadia.kader@ac-academie.fr", staff: true,

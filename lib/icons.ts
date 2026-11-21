@@ -5,6 +5,7 @@
  */
 export const ICON_NAMES = [
   "visibility",
+  "calculate",
   "videocam",
   "pause",
   "groups_3",

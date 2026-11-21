@@ -618,6 +618,27 @@ export type Database = {
           { foreignKeyName: "class_council_participants_profile_id_fkey"; columns: ["profile_id"]; isOneToOne: false; referencedRelation: "profiles"; referencedColumns: ["id"] },
         ]
       }
+      math_assignments: {
+        Row: {
+          assessment_id: string | null; class_id: string; created_at: string; due_on: string; exercise_ids: string[]; id: string
+          max_attempts: number | null; per_exercise: number; removed_at: string | null; school_id: string; teacher_id: string
+          title: string; to_evaluation: boolean
+        }
+        Insert: { class_id: string; school_id: string; teacher_id: string; title: string; exercise_ids: string[]; due_on: string }
+        Update: { removed_at?: string | null }
+        Relationships: [
+          { foreignKeyName: "math_assignments_class_id_fkey"; columns: ["class_id"]; isOneToOne: false; referencedRelation: "classes"; referencedColumns: ["id"] },
+        ]
+      }
+      math_attempts: {
+        Row: {
+          answers: Json | null; assignment_id: string | null; exercise_ids: string[]; good: number | null; id: string; per_exercise: number
+          results: Json | null; score: number | null; seed: number; started_at: string; student_id: string; submitted_at: string | null; total: number | null
+        }
+        Insert: { assignment_id?: string | null; student_id: string; exercise_ids: string[]; per_exercise: number; seed: number }
+        Update: { answers?: Json | null; results?: Json | null; good?: number | null; total?: number | null; score?: number | null; submitted_at?: string | null }
+        Relationships: []
+      }
       lesson_notes: {
         Row: { class_id: string; content: string; lesson_id: string; starts_at: string; subject_id: string | null; teacher_id: string; updated_at: string }
         Insert: { class_id: string; content: string; lesson_id: string; starts_at: string; teacher_id: string }
@@ -1997,6 +2018,11 @@ export type Database = {
       cancel_meeting_booking: { Args: { p_booking: string }; Returns: undefined }
       council_taken_profiles: { Args: { p_council: string }; Returns: string[] }
       remove_liaison_note: { Args: { p_note: string }; Returns: undefined }
+      create_math_assignment: {
+        Args: { p_class: string; p_title: string; p_exercises: string[]; p_per: number; p_due: string; p_max: number; p_to_eval: boolean; p_skills: string[] }
+        Returns: string
+      }
+      remove_math_assignment: { Args: { p_id: string }; Returns: undefined }
       set_lesson_note: { Args: { p_lesson: string; p_content: string }; Returns: undefined }
       create_class_attachment: {
         Args: { p_homework: string; p_lesson: string; p_file_name: string; p_size_bytes: number; p_mime_type: string }
