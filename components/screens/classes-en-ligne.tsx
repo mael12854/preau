@@ -12,21 +12,25 @@ import type { AppAccount, ClassLink, LinkKind, OnlineClass } from "@/lib/data/on
 import { accountFields, CATALOG } from "@/lib/apps";
 import type { IconName } from "@/lib/icons";
 
-/** Types proposés. Tinkercad est enregistré comme « autre » et reconnu à son lien ou à son nom. */
-type UiKind = LinkKind | "tinkercad";
+/** Types proposés. Tinkercad et Kwyk sont enregistrés comme « autre » et reconnus à leur lien ou à leur nom. */
+type UiKind = LinkKind | "tinkercad" | "kwyk";
+const KWYK = "https://www.kwyk.fr";
 const TINKERCAD_JOIN = "https://www.tinkercad.com/joinclass";
 const KINDS: { value: UiKind; label: string; name: string; icon: IconName; urlHint: string; codeLabel: string }[] = [
   { value: "meet", label: "Google Meet", name: "Classe virtuelle", icon: "cast_for_education", urlHint: "https://meet.google.com/abc-defg-hij", codeLabel: "Code de la réunion (facultatif)" },
   { value: "kahoot", label: "Kahoot!", name: "Kahoot", icon: "apps", urlHint: "https://kahoot.it", codeLabel: "Code PIN" },
   { value: "duolingo", label: "Duolingo", name: "Classe Duolingo", icon: "apps", urlHint: "https://www.duolingo.com/classroom/…", codeLabel: "Code de classe" },
   { value: "tinkercad", label: "Tinkercad", name: "Classe Tinkercad", icon: "extension", urlHint: TINKERCAD_JOIN, codeLabel: "Code de classe" },
+  { value: "kwyk", label: "Kwyk", name: "Classe Kwyk", icon: "calculate", urlHint: KWYK, codeLabel: "Code de classe (facultatif)" },
   { value: "autre", label: "Autre", name: "", icon: "link", urlHint: "https://…", codeLabel: "Code (facultatif)" },
 ];
 const kindOf = (k: UiKind) => KINDS.find((x) => x.value === k)!;
 const uiKind = (l: ClassLink): UiKind =>
   l.kind === "autre" && (/tinkercad\.com/i.test(l.url ?? "") || /^tinkercad|tinkercad$/i.test(l.label.trim()) || /classe tinkercad/i.test(l.label))
     ? "tinkercad"
-    : l.kind;
+    : l.kind === "autre" && (/kwyk\.fr/i.test(l.url ?? "") || /\bkwyk\b/i.test(l.label))
+      ? "kwyk"
+      : l.kind;
 
 /** Copier un code, avec un retour pour les lecteurs d'écran. */
 function CopyCode({ code }: { code: string }) {
@@ -72,11 +76,12 @@ function LinkDialog({ classId, link, trigger }: { classId: string; link?: ClassL
           setError(null);
           start(async () => {
             // Tinkercad : type « autre » ; sans lien, celui de la page « Rejoindre une classe ».
-            const finalUrl = kind === "tinkercad" && !url.trim() ? TINKERCAD_JOIN : url.trim();
+            const finalUrl =
+              kind === "tinkercad" && !url.trim() ? TINKERCAD_JOIN : kind === "kwyk" && !url.trim() ? KWYK : url.trim();
             const r = await saveClassLink({
               id: link?.id ?? null,
               classId,
-              kind: kind === "tinkercad" ? "autre" : kind,
+              kind: kind === "tinkercad" || kind === "kwyk" ? "autre" : kind,
               label: label.trim(),
               url: finalUrl,
               code: code.trim(),
