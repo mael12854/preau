@@ -9,6 +9,10 @@ export type ReportEditorView = {
   classes: { id: string; name: string }[];
   classId: string | null;
   term: number;
+  /** Bulletin du trimestre affiché (1 : bulletin habituel). */
+  seq: number;
+  /** Bulletins déjà préparés pour cette classe et ce trimestre. */
+  sets: { seq: number; label: string | null }[];
   /** Direction et secrétariat préparent les bulletins de la classe. */
   canPrepare: boolean;
   /** La direction rédige l'avis du conseil de classe. */
@@ -30,6 +34,7 @@ export async function getReportEditor(
   profile: Viewer,
   classParam: string | undefined,
   term: number,
+  seq = 1,
 ): Promise<ReportEditorView | null> {
   const targets = await getPublishTargets(supabase, profile);
   if (!targets) return null;
@@ -43,6 +48,8 @@ export async function getReportEditor(
     classes: targets.classes,
     classId,
     term,
+    seq,
+    sets: [] as { seq: number; label: string | null }[],
     canPrepare,
     canCouncil,
     subjects: [],
@@ -83,16 +90,21 @@ export async function getReportEditor(
     ? await supabase
         .from("report_cards")
         .select(
-          "id, student_id, publish_on, council_mention, council_text, report_card_lines(subject_id, level, comment, score)",
+          "id, student_id, seq, label, publish_on, council_mention, council_text, report_card_lines(subject_id, level, comment, score)",
         )
         .in("student_id", ids)
         .eq("school_year", year)
         .eq("term", term)
     : { data: [] };
-  const byStudent = new Map((cards ?? []).map((c) => [c.student_id, c]));
+  // Bulletins du trimestre (n° 1, 2…), et celui qu'on affiche.
+  const sets = [
+    ...new Map((cards ?? []).map((c) => [c.seq, { seq: c.seq, label: c.label }])).values(),
+  ].sort((a, b) => a.seq - b.seq);
+  const byStudent = new Map((cards ?? []).filter((c) => c.seq === seq).map((c) => [c.student_id, c]));
 
   return {
     ...base,
+    sets,
     subjects,
     // Déjà triés par nom (classStudents).
     students: students.map((s) => {

@@ -1589,6 +1589,10 @@ export type Database = {
           school_year: string
           student_id: string
           term: number
+          /** N° du bulletin dans le trimestre (1 : bulletin habituel). */
+          seq: number
+          /** Titre facultatif (« Bulletin de mi-trimestre »). */
+          label: string | null
         }
         Insert: {
           council_id?: string | null
@@ -1955,7 +1959,11 @@ export type Database = {
         Returns: number
       }
       delete_report_card: { Args: { p_report_card: string }; Returns: undefined }
-      delete_report_cards: { Args: { p_class: string; p_term: number }; Returns: number }
+      delete_report_cards: { Args: { p_class: string; p_term: number; p_seq: number }; Returns: number }
+      prepare_report_card_set: {
+        Args: { p_class: string; p_term: number; p_seq: number; p_label: string; p_publish_on: string }
+        Returns: number
+      }
       delete_assessment: { Args: { p_assessment: string }; Returns: undefined }
       delete_lesson: { Args: { p_lesson: string }; Returns: undefined }
       delete_lesson_series: { Args: { p_from: string; p_series: string }; Returns: number }

@@ -12,17 +12,19 @@ import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Bulletins" };
 
-export default async function Page({ searchParams }: { searchParams: Promise<{ classe?: string; trimestre?: string }> }) {
+export default async function Page({ searchParams }: { searchParams: Promise<{ classe?: string; trimestre?: string; bulletin?: string }> }) {
   const profile = await requireModule("bulletins");
   const supabase = await createClient();
   const reference = now();
 
   // Personnel : préparation et saisie. Familles et élèves : consultation des bulletins publiés.
   if (profile.staff) {
-    const { classe, trimestre } = await searchParams;
+    const { classe, trimestre, bulletin } = await searchParams;
     const term = [1, 2, 3].includes(Number(trimestre)) ? Number(trimestre) : 1;
+    // Plusieurs bulletins possibles dans un trimestre : n° 1 à 6.
+    const seq = [1, 2, 3, 4, 5, 6].includes(Number(bulletin)) ? Number(bulletin) : 1;
     const sections = await getSections(profile, "bulletins");
-    const views = await Promise.all(sections.map((s) => getReportEditor(s.supabase, s.viewer, classe, term)));
+    const views = await Promise.all(sections.map((s) => getReportEditor(s.supabase, s.viewer, classe, term, seq)));
     return (
       <AppShell profile={profile} module="bulletins">
         <Sections

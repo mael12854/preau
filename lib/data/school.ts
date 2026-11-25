@@ -240,16 +240,17 @@ export async function getReportCards(
   const { data } = await supabase
     .from("report_cards")
     .select(
-      "id, school_year, term, class_name, head_teacher, publish_on, published_at, council_id, council_mention, council_text, students(profiles!students_profile_id_fkey(display_name)), report_card_lines(level, comment, score, position, subjects(id, name, hue))",
+      "id, school_year, term, seq, label, class_name, head_teacher, publish_on, published_at, council_id, council_mention, council_text, students(profiles!students_profile_id_fkey(display_name)), report_card_lines(level, comment, score, position, subjects(id, name, hue))",
     )
-    .order("publish_on", { ascending: false });
+    .order("publish_on", { ascending: false })
+    .order("seq", { ascending: false });
   return (data ?? []).map((rc) => {
     // Bulletin d'un conseil : publié à la clôture (la base ne le montre aux familles qu'à ce moment-là).
     const available = rc.council_id ? !!rc.published_at : rc.publish_on <= today;
     const publishedOn = rc.published_at ? isoDay(rc.published_at) : rc.publish_on;
     return {
       id: rc.id,
-      title: `Trimestre ${rc.term} · ${rc.school_year}`,
+      title: `Trimestre ${rc.term}${rc.label ? ` · ${rc.label}` : rc.seq > 1 ? ` · Bulletin n° ${rc.seq}` : ""} · ${rc.school_year}`,
       detail: available
         ? `${rc.class_name} · publié le ${formatDayMonth(publishedOn)}`
         : `Publication le ${formatDayMonth(rc.publish_on)}`,

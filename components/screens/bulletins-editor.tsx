@@ -304,9 +304,14 @@ export function BulletinsEditor({
   const toast = useToast();
   const router = useRouter();
   const [publishOn, setPublishOn] = useState(today);
+  const [label, setLabel] = useState("");
   const [pending, start] = useTransition();
-  const go = (classId: string | null, term: number) =>
-    router.push(`/bulletins?classe=${classId ?? ""}&trimestre=${term}`);
+  const go = (classId: string | null, term: number, seq = 1) =>
+    router.push(`/bulletins?classe=${classId ?? ""}&trimestre=${term}${seq > 1 ? `&bulletin=${seq}` : ""}`);
+  // Bulletins du trimestre : ceux déjà préparés, celui affiché, et (préparation) le suivant à créer.
+  const setName = (seq: number, l: string | null) => l || (seq === 1 ? "Bulletin du trimestre" : `Bulletin n° ${seq}`);
+  const known = view.sets.some((x) => x.seq === view.seq) ? view.sets : [...view.sets, { seq: view.seq, label: null }].sort((a, b) => a.seq - b.seq);
+  const nextSeq = Math.max(1, ...view.sets.map((x) => x.seq)) + 1;
 
   if (view.classes.length === 0)
     return (
@@ -334,6 +339,18 @@ export function BulletinsEditor({
           onValueChange={(v) => go(view.classId, Number(v))}
           className="min-w-44"
         />
+        <SelectField
+          label="Bulletin"
+          options={[
+            ...known.map((x) => ({ value: String(x.seq), label: setName(x.seq, x.label) })),
+            ...(view.canPrepare && view.sets.length > 0 && nextSeq <= 6 && !known.some((x) => x.seq === nextSeq)
+              ? [{ value: String(nextSeq), label: "+ Nouveau bulletin dans ce trimestre" }]
+              : []),
+          ]}
+          value={String(view.seq)}
+          onValueChange={(v) => go(view.classId, view.term, Number(v))}
+          className="min-w-56"
+        />
       </div>
 
       {view.canPrepare && view.classId && view.students.length > 0 && (
@@ -346,6 +363,8 @@ export function BulletinsEditor({
                 view.classId!,
                 view.term,
                 publishOn,
+                view.seq,
+                label,
               );
               toast({
                 title: r.ok ? "Bulletins préparés pour la classe" : r.error,
@@ -364,6 +383,15 @@ export function BulletinsEditor({
               Les familles voient le contenu à partir de la date de publication.
             </span>
           </div>
+          {missing > 0 && (view.seq > 1 || view.sets.length > 0) && (
+            <TextField
+              label="Titre du bulletin (facultatif)"
+              value={label}
+              onChange={(e) => setLabel(e.target.value)}
+              maxLength={80}
+              placeholder={view.seq > 1 ? "Ex. Bulletin de mi-trimestre" : ""}
+            />
+          )}
           <TextField
             label="Publication le"
             type="date"
@@ -387,12 +415,12 @@ export function BulletinsEditor({
               onClick={() => {
                 if (
                   !window.confirm(
-                    "Supprimer tous les bulletins de cette classe pour ce trimestre ? Les appréciations et les avis du conseil seront perdus.",
+                    `Supprimer « ${setName(view.seq, view.sets.find((x) => x.seq === view.seq)?.label ?? null)} » de cette classe pour ce trimestre ? Les appréciations et les avis du conseil seront perdus.`,
                   )
                 )
                   return;
                 start(async () => {
-                  const r = await deleteReportCards(view.classId!, view.term);
+                  const r = await deleteReportCards(view.classId!, view.term, view.seq);
                   toast({
                     title: r.ok ? "Bulletins de la classe supprimés" : r.error,
                   });
@@ -420,7 +448,7 @@ export function BulletinsEditor({
           )}
           {view.students.map((s) => (
             <StudentReport
-              key={`${s.id}-${view.term}-${s.reportCardId}`}
+              key={`${s.id}-${view.term}-${view.seq}-${s.reportCardId}`}
               student={s}
               view={view}
               scale={scale}

@@ -477,12 +477,16 @@ export async function prepareReportCards(
   classId: string,
   term: number,
   publishOn: string,
+  seq = 1,
+  label = "",
 ): Promise<ActionResult> {
   return run(
     (s) =>
-      s.rpc("create_report_cards", {
+      s.rpc("prepare_report_card_set", {
         p_class: classId,
         p_term: term,
+        p_seq: seq,
+        p_label: label,
         p_publish_on: publishOn,
       }),
     ["/bulletins"],
@@ -538,9 +542,10 @@ export async function deleteReportCard(
 export async function deleteReportCards(
   classId: string,
   term: number,
+  seq = 1,
 ): Promise<ActionResult> {
   return run(
-    (s) => s.rpc("delete_report_cards", { p_class: classId, p_term: term }),
+    (s) => s.rpc("delete_report_cards", { p_class: classId, p_term: term, p_seq: seq }),
     ["/bulletins"],
   );
 }
